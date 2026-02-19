@@ -17,7 +17,7 @@ irm https://astral.sh/uv/install.ps1 | iex
 ### 2. Clone the repository
 
 ```bash
-git clone https://github.com/julienexe/trendsync.git
+git clone https://github.com/Julienexe/trendsync.git
 cd trendsync
 ```
 
