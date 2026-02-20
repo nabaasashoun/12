@@ -1,5 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from products.views.feeds import ProductFeedViewSet
 from . import views
 
 router = DefaultRouter()
@@ -7,6 +8,7 @@ router.register(r'products', views.ProductViewSet)
 router.register(r'wishlist', views.WishlistViewSet, basename='wishlist')
 router.register(r'sellers', views.SellerViewSet)
 router.register(r'categories', views.CategoryViewSet, basename='category')
+router.register(r'products/feed', ProductFeedViewSet, basename='product-feed')
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -58,3 +60,5 @@ urlpatterns = [
     path('comments/<int:comment_id>/helpful/', views.mark_helpful, name='comment-helpful'),
 
 ]
+
+urlpatterns += router.urls
