@@ -12,13 +12,13 @@ router.register(r'products/feed', ProductFeedViewSet, basename='product-feed')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('cart/', views.CartView.as_view()),
-    path('cart/merge/', views.merge_cart),
-    path('categories/', views.category_list, name='category_list'),
-    path('login/', views.login_view, name='login'),
-    path('verify-token/', views.verify_token_view, name='verify_token'),
-    path('register/buyer/', views.BuyerRegisterView.as_view()),
-    path('register/seller/', views.SellerRegisterView.as_view()),
+    path('api/cart/', views.CartView.as_view()),
+    path('api/cart/merge/', views.merge_cart),
+    path('api/categories/', views.category_list, name='category_list'),
+    path('api/login/', views.login_view, name='login'),
+    path('api/verify-token/', views.verify_token_view, name='verify_token'),
+    path('api/register/buyer/', views.BuyerRegisterView.as_view()),
+    path('api/register/seller/', views.SellerRegisterView.as_view()),
 
     # Like URLs
     path('liked-products/', views.LikedProductsView.as_view(), name='liked-products'),
