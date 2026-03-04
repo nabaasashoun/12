@@ -6,13 +6,12 @@ from .models import CommentHelpful
 from .models import (
     Category, Seller, Buyer, Product, ProductLike, ProductComment,
     Wishlist, Cart, CartItem, Address, Order, OrderItem, QuickDeal, WishlistItem,
-    ProductQuestion, QuestionOption, ProductImage
+    ProductQuestion, QuestionOption, ProductImage, SellerFollow
 )
 
 User = get_user_model()
 
 
-# -------------------- Registration Serializers --------------------
 class BuyerRegisterSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     email = serializers.EmailField(required=True)
@@ -20,7 +19,7 @@ class BuyerRegisterSerializer(serializers.Serializer):
     name = serializers.CharField(required=False, allow_blank=True)
     location = serializers.CharField(required=False, allow_blank=True)
     contact = serializers.CharField(required=False, allow_blank=True)
-    dob = serializers.DateField(required=False, allow_null=True)   # allow null
+    dob = serializers.DateField(required=False, allow_null=True)
     profile_photo = serializers.ImageField(required=False)
 
     def validate_username(self, value):
@@ -34,9 +33,8 @@ class BuyerRegisterSerializer(serializers.Serializer):
         return value
 
     def to_internal_value(self, data):
-        # Convert empty string dob to None (null)
         if data.get('dob') == '':
-            data = data.copy()   # make mutable
+            data = data.copy()
             data['dob'] = None
         return super().to_internal_value(data)
 
@@ -90,14 +88,12 @@ class SellerRegisterSerializer(serializers.Serializer):
         return user
 
 
-# -------------------- Category Serializer --------------------
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = '__all__'
 
 
-# -------------------- Question Serializers (must be before ProductSerializer) --------------------
 class QuestionOptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuestionOption
@@ -112,7 +108,6 @@ class ProductQuestionSerializer(serializers.ModelSerializer):
         fields = ['id', 'question_text', 'question_type', 'required', 'order', 'options']
 
 
-# -------------------- Product Serializer --------------------
 class ProductSerializer(serializers.ModelSerializer):
     product_photo = serializers.SerializerMethodField()
     is_liked = serializers.SerializerMethodField()
@@ -241,9 +236,8 @@ class ProductSerializer(serializers.ModelSerializer):
         return instance
 
 
-# -------------------- Comment Serializer --------------------
 class ProductCommentSerializer(serializers.ModelSerializer):
-    comment = serializers.CharField(source='comment_text')                 
+    comment = serializers.CharField(source='comment_text')
     user_name = serializers.CharField(source='buyer.name', read_only=True)
     user_photo = serializers.ImageField(source='buyer.profile_photo', read_only=True)
     is_own_comment = serializers.SerializerMethodField()
@@ -296,23 +290,31 @@ class ProductCommentSerializer(serializers.ModelSerializer):
             return obj.created_at.strftime('%b %d, %Y')
 
 
-# -------------------- Seller Serializer --------------------
 class SellerSerializer(serializers.ModelSerializer):
     products = ProductSerializer(many=True, read_only=True)
+    is_following = serializers.SerializerMethodField()
 
     class Meta:
         model = Seller
         fields = '__all__'
 
+    def get_is_following(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated and hasattr(request.user, 'buyer_profile'):
+            return SellerFollow.objects.filter(
+                buyer=request.user.buyer_profile,
+                seller=obj
+            ).exists()
+        return False
 
-# -------------------- Cart & CartItem --------------------
+
 class CartItemSerializer(serializers.ModelSerializer):
     product = ProductSerializer(read_only=True)
     product_id = serializers.PrimaryKeyRelatedField(
         queryset=Product.objects.all(), source='product', write_only=True
     )
     subtotal = serializers.SerializerMethodField()
-    answers = serializers.JSONField(read_only=True)   # <-- add this line
+    answers = serializers.JSONField(read_only=True)
 
     class Meta:
         model = CartItem
@@ -334,7 +336,6 @@ class CartSerializer(serializers.ModelSerializer):
         return sum(item.subtotal() for item in obj.items.all())
 
 
-# -------------------- User Serializers (optional) --------------------
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -358,7 +359,6 @@ class CustomUserCreateSerializer(serializers.ModelSerializer):
         return user
 
 
-# -------------------- Wishlist --------------------
 class WishlistItemSerializer(serializers.ModelSerializer):
     product = ProductSerializer(read_only=True)
     product_id = serializers.PrimaryKeyRelatedField(
@@ -385,7 +385,6 @@ class WishlistSerializer(serializers.ModelSerializer):
         fields = ['id', 'products']
 
 
-# -------------------- QuickDeal --------------------
 class QuickDealSerializer(serializers.ModelSerializer):
     product = ProductSerializer(read_only=True)
     product_id = serializers.PrimaryKeyRelatedField(
@@ -397,6 +396,7 @@ class QuickDealSerializer(serializers.ModelSerializer):
     seller_info = serializers.SerializerMethodField()
     time_remaining = serializers.SerializerMethodField()
     is_expired = serializers.SerializerMethodField()
+    category_name = serializers.CharField(source='product.category.name', read_only=True, default='Category')
 
     class Meta:
         model = QuickDeal
@@ -404,7 +404,7 @@ class QuickDealSerializer(serializers.ModelSerializer):
             'id', 'product', 'product_id', 'caption',
             'views', 'picture', 'timestamp', 'time_ago',
             'is_active', 'priority', 'seller_info', 'expires_at',
-            'time_remaining', 'is_expired'
+            'time_remaining', 'is_expired', 'category_name'
         ]
         read_only_fields = ['views', 'timestamp', 'seller_info', 'expires_at', 'time_remaining', 'is_expired']
 
@@ -439,12 +439,33 @@ class QuickDealSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        if not instance.picture and instance.product.product_photo:
-            rep['picture'] = instance.product.product_photo.url
+        request = self.context.get('request')
+
+        if instance.picture:
+            if request:
+                rep['picture'] = request.build_absolute_uri(instance.picture.url)
+            else:
+                rep['picture'] = instance.picture.url
+            return rep
+
+        if instance.product.product_photo:
+            if request:
+                rep['picture'] = request.build_absolute_uri(instance.product.product_photo.url)
+            else:
+                rep['picture'] = instance.product.product_photo.url
+            return rep
+
+        first_image = instance.product.images.first()
+        if first_image:
+            if request:
+                rep['picture'] = request.build_absolute_uri(first_image.image.url)
+            else:
+                rep['picture'] = first_image.image.url
+            return rep
+
+        rep['picture'] = '/add/assets/glasses.jpg'
         return rep
-
-
-# ================== SELLER-SPECIFIC SERIALIZERS ==================
+    
 
 class SellerProfileSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source='user.email', read_only=True)
@@ -490,7 +511,7 @@ class SellerQuickDealSerializer(serializers.ModelSerializer):
     product_id = serializers.PrimaryKeyRelatedField(
         queryset=Product.objects.all(),
         write_only=True,
-        source='product'         
+        source='product'
     )
     time_remaining = serializers.SerializerMethodField()
     is_expired = serializers.SerializerMethodField()
@@ -518,3 +539,17 @@ class SellerStatsSerializer(serializers.Serializer):
     total_quick_deals = serializers.IntegerField()
     trust_percentage = serializers.DecimalField(max_digits=5, decimal_places=2)
     followers = serializers.IntegerField()
+
+
+
+class InitiatePaymentSerializer(serializers.Serializer):
+    order_id = serializers.IntegerField()
+
+class RefundSerializer(serializers.Serializer):
+    order_id = serializers.IntegerField()
+    amount = serializers.DecimalField(max_digits=10, decimal_places=2)
+    remarks = serializers.CharField()
+    username = serializers.CharField(required=False, allow_blank=True)
+
+class CancelOrderSerializer(serializers.Serializer):
+    order_id = serializers.IntegerField()

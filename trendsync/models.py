@@ -89,7 +89,7 @@ class ProductComment(models.Model):
         default=5
     )
     helpful_votes = models.PositiveIntegerField(default=0)
-    reply = models.TextField(blank=True)                     # seller reply
+    reply = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -146,6 +146,7 @@ class Address(models.Model):
     city = models.CharField(max_length=100)
     state = models.CharField(max_length=100)
     country = models.CharField(max_length=100)
+    iso_country_code = models.CharField(max_length=2, blank=True, help_text="ISO 3166-1 alpha-2 code")
     postal_code = models.CharField(max_length=50)
     is_default = models.BooleanField(default=False)
 
@@ -160,6 +161,7 @@ class Order(models.Model):
         ('shipped', 'Shipped'),
         ('delivered', 'Delivered'),
         ('cancelled', 'Cancelled'),
+        ('refunded', 'Refunded'),
     )
     PAYMENT_METHOD_CHOICES = (
         ('card', 'Card'),
@@ -176,6 +178,8 @@ class Order(models.Model):
     delivery_date = models.DateTimeField(null=True, blank=True)
     tracking_number = models.CharField(max_length=100, blank=True, null=True)
     delivery_partner = models.CharField(max_length=100, blank=True, null=True)
+    currency = models.CharField(max_length=3, default='UGX')   
+    pesapal_tracking_id = models.CharField(max_length=100, blank=True, null=True, help_text="Pesapal order tracking ID")
 
 
 class OrderItem(models.Model):
@@ -309,3 +313,21 @@ class ProductImage(models.Model):
 
     class Meta:
         ordering = ['order']
+
+
+class PesapalConfig(models.Model):
+    ipn_id = models.CharField(max_length=100, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Pesapal Configuration"
+        verbose_name_plural = "Pesapal Configuration"
+
+
+class SellerFollow(models.Model):
+    buyer = models.ForeignKey(Buyer, on_delete=models.CASCADE, related_name='following')
+    seller = models.ForeignKey(Seller, on_delete=models.CASCADE, related_name='followers_relations')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('buyer', 'seller')

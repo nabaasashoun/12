@@ -8,7 +8,6 @@ from .models import (
 )
 
 
-# ================== INLINES ==================
 class QuestionOptionInline(admin.TabularInline):
     model = QuestionOption
     extra = 0
@@ -19,7 +18,7 @@ class ProductQuestionInline(admin.TabularInline):
     extra = 0
     show_change_link = True
 
-# ================== CATEGORY ==================
+
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'is_active', 'created_at', 'created_by')
@@ -28,7 +27,6 @@ class CategoryAdmin(admin.ModelAdmin):
     list_editable = ('is_active',)
 
 
-# ================== SELLER ==================
 class SellerAdminForm(forms.ModelForm):
     email = forms.EmailField(required=True, help_text="Seller's email address")
 
@@ -52,11 +50,11 @@ class SellerAdminForm(forms.ModelForm):
         seller = super().save(commit=False)
         email = self.cleaned_data.get('email')
 
-        if seller.pk:  # Existing seller
+        if seller.pk:
             if seller.user:
                 seller.user.email = email
                 seller.user.save()
-        else:  # New seller
+        else:
             username = self.cleaned_data.get('name', '').replace(' ', '_').lower()
             if not username:
                 username = email.split('@')[0]
@@ -111,7 +109,6 @@ class SellerAdmin(admin.ModelAdmin):
     trust_display.short_description = 'Trust'
 
 
-# ================== BUYER ==================
 class BuyerAdminForm(forms.ModelForm):
     email = forms.EmailField(required=True, help_text="Buyer's email address")
 
@@ -185,7 +182,6 @@ class BuyerAdmin(admin.ModelAdmin):
     email_display.short_description = 'Email'
 
 
-# ================== PRODUCT ==================
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     inlines = [ProductQuestionInline]  
@@ -211,7 +207,6 @@ class ProductAdmin(admin.ModelAdmin):
     )
 
 
-# ================== OTHER MODELS ==================
 @admin.register(ProductLike)
 class ProductLikeAdmin(admin.ModelAdmin):
     list_display = ('product', 'buyer', 'liked_at')

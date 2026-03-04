@@ -3,7 +3,7 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from django.utils import timezone
 from datetime import timedelta
-from .models import Product, Buyer, Order, Category, Cart, CartItem, ProductLike, ProductComment, Wishlist, WishlistItem, Seller, QuickDeal
+from .models import Product, Buyer, Order, Category, Address, Cart, CartItem, ProductLike, ProductComment, Wishlist, WishlistItem, Seller, QuickDeal
 from .serializers import (
     ProductSerializer, CategorySerializer, WishlistItemSerializer, CartSerializer,
     CartItemSerializer, ProductCommentSerializer, SellerSerializer, BuyerRegisterSerializer,
@@ -18,17 +18,24 @@ import traceback
 from django.shortcuts import get_object_or_404
 from .permissions import IsSeller, IsBuyer, IsOwner
 from rest_framework import filters
-#HELLO WO
+from django.shortcuts import redirect
+from django.conf import settings
+from .models import PesapalConfig, Payment, OrderItem, CommentHelpful
+from .serializers import InitiatePaymentSerializer, RefundSerializer, CancelOrderSerializer
+from . import pesapal_utils  
+from django.db import transaction
+from .models import SellerFollow
+from django_filters.rest_framework import DjangoFilterBackend  
+import logging
+logger = logging.getLogger('pesapal')
 
-# ---------- Helper: get_cart with duplicate merging ----------
+
 def get_cart(request):
-    """Retrieve the current cart, merging any duplicates if they exist."""
     if request.user.is_authenticated and hasattr(request.user, 'buyer_profile'):
         buyer = request.user.buyer_profile
         carts = Cart.objects.filter(buyer=buyer)
         if carts.exists():
             if carts.count() > 1:
-                # Merge all extra carts into the first one
                 primary_cart = carts.first()
                 for extra_cart in carts[1:]:
                     for item in extra_cart.items.all():
@@ -39,7 +46,6 @@ def get_cart(request):
                         )
                         if not created:
                             cart_item.quantity += item.quantity
-                            # Merge answers: keep existing (could be improved)
                             cart_item.save()
                     extra_cart.delete()
                 return primary_cart
@@ -70,8 +76,6 @@ def get_cart(request):
         else:
             return Cart.objects.create(session_key=session_key)
 
-
-# ---------- Existing views (unchanged except where noted) ----------
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -189,11 +193,13 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [AllowAny]
 
 
+
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    filter_backends = [filters.SearchFilter]
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     search_fields = ['name', 'description']
+    filterset_fields = ['category']
 
     def perform_create(self, serializer):
         if not hasattr(self.request.user, 'seller_profile'):
@@ -377,11 +383,9 @@ def check_product_like(request, product_id):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-# ---------- add_to_cart  ----------
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def add_to_cart(request):
-    """Add a product to cart"""
     product_id = request.data.get('product_id')
     quantity = request.data.get('quantity', 1)
     answers = request.data.get('answers', {})
@@ -401,7 +405,6 @@ def add_to_cart(request):
 
         if not created:
             cart_item.quantity += quantity
-            # Merge answers (keep existing, but could be enhanced)
             if answers:
                 cart_item.answers.update(answers)
             cart_item.save()
@@ -436,7 +439,6 @@ def remove_from_cart(request, product_id):
 @api_view(['PUT'])
 @permission_classes([AllowAny])
 def update_cart_item(request, product_id):
-    """Update quantity and/or answers of a cart item"""
     quantity = request.data.get('quantity')
     answers = request.data.get('answers')
 
@@ -482,7 +484,6 @@ def clear_cart(request):
     return Response({'status': 'success', 'message': 'Cart cleared successfully'}, status=status.HTTP_200_OK)
 
 
-# ---------- Quick Deals ----------
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_quick_deals(request):
@@ -497,11 +498,14 @@ def get_quick_deals(request):
             'status': 'success',
             'count': quick_deals.count(),
             'deals': serializer.data
-        }, status=status.HTTP_200_OK)
+        })
     except Exception as e:
-        print(f"Error fetching quick deals: {e}")
-        return Response({'status': 'error', 'message': 'Failed to fetch quick deals'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+        print("!!! ERROR in get_quick_deals:")
+        traceback.print_exc()
+        return Response(
+            {'status': 'error', 'message': 'Failed to fetch quick deals'},
+            status=500
+        )
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -516,7 +520,6 @@ def increment_quickdeal_views(request, deal_id):
         return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-# ---------- Wishlist ----------
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def get_wishlist(request):
@@ -607,7 +610,6 @@ def toggle_wishlist(request, product_id):
         return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-# ---------- Buyer profile and order count ----------
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def get_buyer_profile(request):
@@ -656,7 +658,6 @@ def get_seller_profile(request):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-# ---------- Seller-specific views ----------
 class SellerProfileView(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated, IsSeller]
     serializer_class = SellerProfileSerializer
@@ -743,7 +744,6 @@ class SellerStatsView(generics.GenericAPIView):
         return Response(serializer.data)
 
 
-# ---------- Comments ----------
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
 def comment_detail(request, comment_id):
@@ -786,3 +786,346 @@ def mark_helpful(request, comment_id):
         return Response({'status': 'marked helpful', 'helpful_votes': comment.helpful_votes})
     else:
         return Response({'status': 'already marked helpful'}, status=400)
+
+
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def initiate_payment(request):
+    logger.info(f"Payment initiation by user {request.user.id}")
+    serializer = InitiatePaymentSerializer(data=request.data)
+    if not serializer.is_valid():
+        logger.warning(f"Invalid initiate_payment data: {serializer.errors}")
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    order_id = serializer.validated_data['order_id']
+    try:
+        order = Order.objects.get(id=order_id, buyer=request.user.buyer_profile, status='pending')
+    except Order.DoesNotExist:
+        logger.warning(f"Order {order_id} not found or not pending for user {request.user.id}")
+        return Response({'error': 'Order not found or not pending'}, status=status.HTTP_404_NOT_FOUND)
+
+    address = order.delivery_address or request.user.buyer_profile.addresses.filter(is_default=True).first()
+    if not address:
+        logger.warning(f"No delivery address for order {order_id}")
+        return Response({'error': 'No delivery address'}, status=status.HTTP_400_BAD_REQUEST)
+
+    billing_address = {
+        "email_address": request.user.email,
+        "phone_number": address.phone,
+        "country_code": address.iso_country_code,
+        "first_name": request.user.buyer_profile.name.split()[0] if request.user.buyer_profile.name else "",
+        "last_name": " ".join(request.user.buyer_profile.name.split()[1:]) if request.user.buyer_profile.name else "",
+        "line_1": address.street,
+        "city": address.city,
+        "state": address.state,
+        "postal_code": address.postal_code,
+    }
+    billing_address = {k: v for k, v in billing_address.items() if v is not None}
+
+    config, _ = PesapalConfig.objects.get_or_create(pk=1)
+    if not config.ipn_id:
+        logger.info("No IPN ID found, registering new IPN URL")
+        try:
+            ipn_id = pesapal_utils.register_ipn_url(settings.PESAPAL_IPN_URL)
+            config.ipn_id = ipn_id
+            config.save()
+            logger.info(f"IPN registered, ipn_id={ipn_id}")
+        except Exception as e:
+            logger.error(f"IPN registration failed: {str(e)}", exc_info=True)
+            return Response({'error': f'IPN registration failed: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    else:
+        ipn_id = config.ipn_id
+        logger.debug(f"Using existing IPN ID: {ipn_id}")
+
+    try:
+        pesapal_response = pesapal_utils.submit_order_request(
+            merchant_reference=str(order.id),
+            amount=order.total_amount,
+            currency=order.currency,
+            description=f"Order #{order.id}",
+            callback_url=settings.PESAPAL_CALLBACK_URL,
+            notification_id=ipn_id,
+            billing_address=billing_address
+        )
+    except Exception as e:
+        logger.error(f"Pesapal submit error for order {order.id}: {str(e)}", exc_info=True)
+        return Response({'error': f'Pesapal error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    order.pesapal_tracking_id = pesapal_response.get('order_tracking_id')
+    order.save()
+    logger.info(f"Order {order.id} initiated, tracking_id={order.pesapal_tracking_id}")
+
+    return Response({
+        'redirect_url': pesapal_response.get('redirect_url'),
+        'order_tracking_id': pesapal_response.get('order_tracking_id')
+    })
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([permissions.AllowAny])
+def pesapal_ipn(request):
+    params = request.GET if request.method == 'GET' else request.data
+    order_tracking_id = params.get('OrderTrackingId')
+    merchant_reference = params.get('OrderMerchantReference')
+    notification_type = params.get('OrderNotificationType')
+
+    logger.info(f"IPN received: tracking_id={order_tracking_id}, ref={merchant_reference}, type={notification_type}")
+
+    if not order_tracking_id or not merchant_reference:
+        logger.warning("IPN missing required parameters")
+        return Response({"status": 200, "message": "Missing parameters"}, status=200)
+
+    try:
+        order = Order.objects.get(id=merchant_reference)
+    except Order.DoesNotExist:
+        logger.error(f"Order {merchant_reference} not found for IPN")
+        return Response({"status": 200, "message": "Order not found"}, status=200)
+
+    if order.status == 'paid':
+        logger.info(f"Order {order.id} already marked paid, ignoring duplicate IPN")
+        return Response({"status": 200}, status=200)
+
+    try:
+        status_data = pesapal_utils.get_transaction_status(order_tracking_id)
+    except Exception as e:
+        logger.error(f"IPN get_transaction_status failed for {order_tracking_id}: {str(e)}", exc_info=True)
+        return Response({"status": 200, "message": "Status fetch failed"}, status=200)
+
+    payment_status = status_data.get('payment_status_description')
+    status_code = status_data.get('status_code')
+    confirmation_code = status_data.get('confirmation_code')
+    amount = status_data.get('amount')
+    payment_method = status_data.get('payment_method')
+    currency = status_data.get('currency', order.currency)
+
+    logger.info(f"Transaction status for order {order.id}: {payment_status}")
+
+    if payment_status and payment_status.lower() == 'completed':
+        pm_lower = (payment_method or '').lower()
+        if 'visa' in pm_lower or 'mastercard' in pm_lower or 'card' in pm_lower:
+            order.payment_method = 'card'
+        elif 'bank' in pm_lower:
+            order.payment_method = 'bank_transfer'
+        else:
+            order.payment_method = 'wallet'
+
+        order.status = 'paid'
+        order.save()
+
+        Payment.objects.update_or_create(
+            order=order,
+            defaults={
+                'amount': amount,
+                'payment_method': payment_method,
+                'payment_status': 'successful',
+                'transaction_reference': confirmation_code,
+                'gateway_response': status_data,
+                'payment_date': timezone.now()
+            }
+        )
+        logger.info(f"Order {order.id} marked as paid with method {order.payment_method}")
+    elif payment_status and payment_status.lower() in ['failed', 'invalid']:
+        order.status = 'cancelled'
+        order.save()
+        logger.info(f"Order {order.id} cancelled due to {payment_status}")
+
+        return Response({"status": 200}, status=200)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def pesapal_callback(request):
+    merchant_reference = request.GET.get('OrderMerchantReference')
+    logger.info(f"Callback received for order {merchant_reference}")
+    frontend_url = f"{settings.FRONTEND_BASE_URL}/order/{merchant_reference}/"
+    return redirect(frontend_url)
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def refund_payment(request):
+    if not request.user.is_staff:
+        return Response({'error': 'Only administrators can perform refunds.'}, status=status.HTTP_403_FORBIDDEN)
+
+    logger.info(f"Refund requested by admin {request.user.id}")
+    serializer = RefundSerializer(data=request.data)
+    if not serializer.is_valid():
+        logger.warning(f"Invalid refund data: {serializer.errors}")
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    order_id = serializer.validated_data['order_id']
+    amount = serializer.validated_data['amount']
+    remarks = serializer.validated_data['remarks']
+    username = serializer.validated_data.get('username') or request.user.username
+
+    try:
+        order = Order.objects.get(id=order_id, status='paid')
+    except Order.DoesNotExist:
+        logger.warning(f"Order {order_id} not found or not paid for refund")
+        return Response({'error': 'Order not found or not paid'}, status=status.HTTP_404_NOT_FOUND)
+
+    try:
+        payment = order.payment
+    except Payment.DoesNotExist:
+        logger.error(f"No payment record for order {order_id}")
+        return Response({'error': 'Payment record not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    confirmation_code = payment.transaction_reference
+    if not confirmation_code:
+        logger.error(f"No confirmation code for order {order_id}")
+        return Response({'error': 'No confirmation code'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        refund_resp = pesapal_utils.refund_request(confirmation_code, amount, username, remarks)
+    except Exception as e:
+        logger.error(f"Refund API error for order {order_id}: {str(e)}", exc_info=True)
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    if refund_resp.get('status') == '200':
+        order.status = 'refunded'
+        order.save()
+        logger.info(f"Order {order_id} refund requested successfully")
+        return Response({'message': 'Refund request submitted successfully'})
+    else:
+        logger.error(f"Refund failed for order {order_id}: {refund_resp.get('message')}")
+        return Response({'error': refund_resp.get('message', 'Refund failed')}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def cancel_pesapal_order(request):
+    logger.info(f"Cancel order requested by user {request.user.id}")
+    serializer = CancelOrderSerializer(data=request.data)
+    if not serializer.is_valid():
+        logger.warning(f"Invalid cancel data: {serializer.errors}")
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    order_id = serializer.validated_data['order_id']
+    try:
+        order = Order.objects.get(id=order_id, buyer=request.user.buyer_profile, status='pending')
+    except Order.DoesNotExist:
+        logger.warning(f"Order {order_id} not found or not pending for cancellation")
+        return Response({'error': 'Order not found or not pending'}, status=status.HTTP_404_NOT_FOUND)
+
+    if not order.pesapal_tracking_id:
+        logger.error(f"Order {order_id} has no Pesapal tracking ID")
+        return Response({'error': 'No Pesapal tracking ID'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        cancel_resp = pesapal_utils.cancel_order(order.pesapal_tracking_id)
+    except Exception as e:
+        logger.error(f"Cancel API error for order {order_id}: {str(e)}", exc_info=True)
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    if cancel_resp.get('status') == '200':
+        order.status = 'cancelled'
+        order.save()
+        logger.info(f"Order {order_id} cancelled successfully")
+        return Response({'message': 'Order cancelled successfully'})
+    else:
+        logger.error(f"Cancel failed for order {order_id}: {cancel_resp.get('message')}")
+        return Response({'error': cancel_resp.get('message', 'Cancellation failed')}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def order_status(request, order_id):
+    try:
+        order = Order.objects.get(id=order_id, buyer=request.user.buyer_profile)
+    except Order.DoesNotExist:
+        return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    return Response({
+        'status': order.status,
+        'pesapal_tracking_id': order.pesapal_tracking_id
+    })
+
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def pesapal_health(request):
+    try:
+        pesapal_utils.get_access_token()
+        return Response({"status": "healthy", "message": "Pesapal API is reachable"}, status=200)
+    except Exception as e:
+        logger.error(f"Pesapal health check failed: {str(e)}", exc_info=True)
+        return Response({"status": "unhealthy", "message": str(e)}, status=503)
+ 
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated, IsBuyer])
+def create_order_from_cart(request):
+    cart = get_cart(request)
+    if not cart.items.exists():
+        return Response({'error': 'Cart is empty'}, status=status.HTTP_400_BAD_REQUEST)
+
+    buyer = request.user.buyer_profile
+    total_amount = sum(item.subtotal() for item in cart.items.all())
+
+    address = buyer.addresses.filter(is_default=True).first()
+    if not address:
+        address = Address.objects.create(
+            buyer=buyer,
+            recipient_name=buyer.name or 'Buyer',
+            phone=buyer.contact or '0000000000',
+            street='Temporary Address',
+            city='Kampala',
+            state='Central',
+            country='Uganda',
+            iso_country_code='UG',
+            postal_code='',
+            is_default=True
+        )
+        logger.info(f"Temporary address created for buyer {buyer.id}")
+
+    order = Order.objects.create(
+        buyer=buyer,
+        total_amount=total_amount,
+        status='pending',
+        delivery_address=address,
+    )
+
+    for cart_item in cart.items.all():
+        OrderItem.objects.create(
+            order=order,
+            product=cart_item.product,
+            quantity=cart_item.quantity,
+            unit_price=cart_item.product.unit_price,
+            subtotal=cart_item.subtotal()
+        )
+
+    cart.items.all().delete()
+
+    return Response({'order_id': order.id}, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated, IsBuyer])
+def toggle_follow_seller(request, seller_id):
+    try:
+        seller = Seller.objects.get(id=seller_id)
+    except Seller.DoesNotExist:
+        return Response({'error': 'Seller not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    buyer = request.user.buyer_profile
+
+    follow = SellerFollow.objects.filter(buyer=buyer, seller=seller).first()
+
+    with transaction.atomic():
+        if follow:
+            follow.delete()
+            seller.followers -= 1
+            seller.save(update_fields=['followers'])
+            following = False
+        else:
+            SellerFollow.objects.create(buyer=buyer, seller=seller)
+            seller.followers += 1
+            seller.save(update_fields=['followers'])
+            following = True
+
+    return Response({
+        'following': following,
+        'followers_count': seller.followers
+    })
