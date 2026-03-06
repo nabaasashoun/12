@@ -1,0 +1,275 @@
+INFO 2026-03-06 12:13:00,651 autoreload 9872 11312 Watching for file changes with StatReloader
+INFO 2026-03-06 12:15:23,034 log 9872 420 "OPTIONS /api/login/ HTTP/1.1" 200 0
+INFO 2026-03-06 12:15:29,363 log 9872 420 "POST /api/login/ HTTP/1.1" 200 588
+INFO 2026-03-06 12:15:59,030 log 9872 420 "POST /api/login/ HTTP/1.1" 200 588
+INFO 2026-03-06 12:15:59,093 log 9872 420 "OPTIONS /api/verify-token/ HTTP/1.1" 200 0
+INFO 2026-03-06 12:15:59,095 log 9872 27852 "OPTIONS /api/verify-token/ HTTP/1.1" 200 0
+INFO 2026-03-06 12:15:59,329 log 9872 420 "GET /api/verify-token/ HTTP/1.1" 200 66
+INFO 2026-03-06 12:15:59,335 log 9872 27852 "OPTIONS /api/seller/products/ HTTP/1.1" 200 0
+INFO 2026-03-06 12:15:59,338 log 9872 27852 "OPTIONS /api/seller/quick-deals/ HTTP/1.1" 200 0
+INFO 2026-03-06 12:15:59,338 log 9872 420 "GET /api/verify-token/ HTTP/1.1" 200 66
+INFO 2026-03-06 12:15:59,831 log 9872 27852 "GET /api/seller/products/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:15:59,843 log 9872 420 "GET /api/seller/quick-deals/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:15:59,849 log 9872 27852 "GET /api/seller/products/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:15:59,856 log 9872 420 "GET /api/seller/quick-deals/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:16:31,589 log 9872 420 "OPTIONS /api/categories/ HTTP/1.1" 200 0
+INFO 2026-03-06 12:16:31,590 log 9872 27852 "OPTIONS /api/categories/ HTTP/1.1" 200 0
+INFO 2026-03-06 12:16:31,699 log 9872 27852 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 12:16:31,719 log 9872 27852 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 12:16:51,640 log 9872 27852 "OPTIONS /api/products/ HTTP/1.1" 200 0
+INFO 2026-03-06 12:16:53,614 log 9872 27852 "POST /api/products/ HTTP/1.1" 201 761
+INFO 2026-03-06 12:16:55,676 log 9872 27852 "GET /api/verify-token/ HTTP/1.1" 200 66
+INFO 2026-03-06 12:16:55,694 log 9872 27852 "GET /api/verify-token/ HTTP/1.1" 200 66
+INFO 2026-03-06 12:16:55,726 log 9872 33144 "GET /api/seller/quick-deals/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:16:55,731 log 9872 420 "GET /api/seller/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 12:16:55,741 log 9872 33144 "GET /api/seller/quick-deals/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:16:55,754 log 9872 420 "GET /api/seller/products/ HTTP/1.1" 200 763
+WARNING 2026-03-06 12:16:56,173 log 9872 2480 Not Found: /media/products/0a967922e19eb7d22aae18f1c2b98afe.jpg
+WARNING 2026-03-06 12:16:56,175 log 9872 2480 "GET /media/products/0a967922e19eb7d22aae18f1c2b98afe.jpg HTTP/1.1" 404 2475
+WARNING 2026-03-06 12:17:01,321 log 9872 23096 Not Found: /media/products/1c2c19b1a858f52a1fb8232aff0b63f4.jpg
+WARNING 2026-03-06 12:17:01,324 log 9872 23096 "GET /media/products/1c2c19b1a858f52a1fb8232aff0b63f4.jpg HTTP/1.1" 404 2475
+WARNING 2026-03-06 12:17:03,703 log 9872 30744 Not Found: /media/products/1aea64f50e711f0c77861dccf89c9749.jpg
+WARNING 2026-03-06 12:17:03,723 log 9872 30744 "GET /media/products/1aea64f50e711f0c77861dccf89c9749.jpg HTTP/1.1" 404 2475
+INFO 2026-03-06 12:17:26,962 log 9872 420 "POST /api/seller/quick-deals/ HTTP/1.1" 201 1067
+INFO 2026-03-06 12:17:28,615 log 9872 420 "GET /api/seller/quick-deals/ HTTP/1.1" 200 1069
+WARNING 2026-03-06 12:17:28,656 log 9872 25060 Not Found: /media/quickdeals/0ac3ddd60590b73a4f70791e95b6dd42.jpg
+WARNING 2026-03-06 12:17:28,658 log 9872 25060 "GET /media/quickdeals/0ac3ddd60590b73a4f70791e95b6dd42.jpg HTTP/1.1" 404 2481
+INFO 2026-03-06 12:19:39,210 autoreload 9872 11312 C:\Users\Wor Joshi\Documents\GitHub\trendsync\config\urls.py changed, reloading.
+INFO 2026-03-06 12:19:51,597 autoreload 8312 8768 Watching for file changes with StatReloader
+INFO 2026-03-06 12:23:56,565 autoreload 33800 33272 Watching for file changes with StatReloader
+INFO 2026-03-06 12:24:03,381 log 33800 14324 "POST /api/login/ HTTP/1.1" 200 588
+INFO 2026-03-06 12:24:03,453 log 33800 14324 "GET /api/verify-token/ HTTP/1.1" 200 66
+INFO 2026-03-06 12:24:03,480 log 33800 14324 "GET /api/verify-token/ HTTP/1.1" 200 66
+INFO 2026-03-06 12:24:03,511 log 33800 31068 "GET /api/seller/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 12:24:03,518 log 33800 14324 "GET /api/seller/quick-deals/ HTTP/1.1" 200 1069
+INFO 2026-03-06 12:24:03,549 log 33800 31068 "GET /api/seller/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 12:24:03,576 log 33800 14324 "GET /api/seller/quick-deals/ HTTP/1.1" 200 1069
+INFO 2026-03-06 12:24:04,020 log 33800 37304 "GET /media/products/0a967922e19eb7d22aae18f1c2b98afe.jpg HTTP/1.1" 200 108899
+INFO 2026-03-06 12:24:04,026 log 33800 6680 "GET /media/quickdeals/0ac3ddd60590b73a4f70791e95b6dd42.jpg HTTP/1.1" 200 103246
+INFO 2026-03-06 12:24:07,719 log 33800 6680 "GET /media/products/1c2c19b1a858f52a1fb8232aff0b63f4.jpg HTTP/1.1" 200 38138
+INFO 2026-03-06 12:24:08,898 log 33800 6680 "GET /media/products/1aea64f50e711f0c77861dccf89c9749.jpg HTTP/1.1" 200 39699
+INFO 2026-03-06 12:24:19,189 log 33800 9872 "GET /api/seller/profile/ HTTP/1.1" 200 276
+INFO 2026-03-06 12:24:19,215 log 33800 37688 "GET /api/seller/profile/ HTTP/1.1" 200 276
+INFO 2026-03-06 12:24:19,242 log 33800 16740 "GET /api/seller/stats/ HTTP/1.1" 200 115
+INFO 2026-03-06 12:24:19,257 log 33800 40608 "GET /api/seller/stats/ HTTP/1.1" 200 115
+INFO 2026-03-06 12:24:26,151 log 33800 14324 "GET /api/verify-token/ HTTP/1.1" 200 66
+INFO 2026-03-06 12:24:26,170 log 33800 14324 "GET /api/verify-token/ HTTP/1.1" 200 66
+INFO 2026-03-06 12:24:26,193 log 33800 40636 "GET /api/seller/quick-deals/ HTTP/1.1" 200 1069
+INFO 2026-03-06 12:24:26,197 log 33800 31068 "GET /api/seller/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 12:24:26,221 log 33800 40636 "GET /api/seller/quick-deals/ HTTP/1.1" 200 1069
+INFO 2026-03-06 12:24:26,225 log 33800 31068 "GET /api/seller/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 12:24:40,713 log 33800 31068 "POST /api/login/ HTTP/1.1" 200 582
+INFO 2026-03-06 12:24:40,721 log 33800 31068 "OPTIONS /api/cart/items/ HTTP/1.1" 200 0
+INFO 2026-03-06 12:24:41,169 log 33800 34988 "OPTIONS /api/quick-deals/ HTTP/1.1" 200 0
+INFO 2026-03-06 12:24:41,173 log 33800 34988 "OPTIONS /api/quick-deals/ HTTP/1.1" 200 0
+INFO 2026-03-06 12:24:41,360 log 33800 31068 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 12:24:41,390 log 33800 40636 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 12:24:41,408 log 33800 40636 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 12:24:41,409 log 33800 14324 "GET /api/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 12:24:41,411 log 33800 34988 "GET /api/quick-deals/ HTTP/1.1" 200 1214
+INFO 2026-03-06 12:24:41,417 log 33800 40636 "OPTIONS /api/wishlist/ HTTP/1.1" 200 0
+INFO 2026-03-06 12:24:41,442 log 33800 14324 "GET /api/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 12:24:41,451 log 33800 34988 "GET /api/quick-deals/ HTTP/1.1" 200 1214
+INFO 2026-03-06 12:24:42,056 log 33800 40636 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:24:42,095 log 33800 34988 "OPTIONS /api/liked-products/ HTTP/1.1" 200 0
+INFO 2026-03-06 12:24:42,104 log 33800 40636 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:24:42,146 log 33800 34988 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:24:42,160 log 33800 34988 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:24:47,697 log 33800 34988 "OPTIONS /api/buyer/profile/ HTTP/1.1" 200 0
+INFO 2026-03-06 12:24:47,699 log 33800 40636 "OPTIONS /api/buyer/profile/ HTTP/1.1" 200 0
+INFO 2026-03-06 12:24:47,706 log 33800 34988 "GET /api/buyer/profile/ HTTP/1.1" 200 99
+INFO 2026-03-06 12:24:47,718 log 33800 40636 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 12:24:47,719 log 33800 34988 "GET /api/buyer/profile/ HTTP/1.1" 200 99
+INFO 2026-03-06 12:24:47,728 log 33800 40636 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 12:30:26,076 autoreload 41892 31400 Watching for file changes with StatReloader
+INFO 2026-03-06 12:30:56,173 log 41892 38148 "POST /api/login/ HTTP/1.1" 200 588
+INFO 2026-03-06 12:31:19,044 log 41892 38148 "POST /api/login/ HTTP/1.1" 200 588
+INFO 2026-03-06 12:31:19,195 log 41892 38148 "GET /api/seller/quick-deals/ HTTP/1.1" 200 1069
+INFO 2026-03-06 12:31:19,221 log 41892 15444 "GET /api/seller/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 12:31:19,241 log 41892 38148 "GET /api/seller/quick-deals/ HTTP/1.1" 200 1069
+INFO 2026-03-06 12:31:19,261 log 41892 12828 "GET /api/seller/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 12:31:19,413 log 41892 27404 "GET /media/products/0a967922e19eb7d22aae18f1c2b98afe.jpg HTTP/1.1" 200 108899
+INFO 2026-03-06 12:31:19,587 log 41892 2452 "GET /media/quickdeals/0ac3ddd60590b73a4f70791e95b6dd42.jpg HTTP/1.1" 304 0
+INFO 2026-03-06 12:31:32,755 log 41892 38148 "POST /api/seller/quick-deals/ HTTP/1.1" 201 1068
+INFO 2026-03-06 12:31:34,230 log 41892 38148 "GET /api/seller/quick-deals/ HTTP/1.1" 200 2138
+INFO 2026-03-06 12:31:34,316 log 41892 2452 "GET /media/quickdeals/0ac658891f0fb946167a4347a944f1db.jpg HTTP/1.1" 200 213525
+INFO 2026-03-06 12:31:37,164 log 41892 33628 "GET /api/seller/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 12:31:37,180 log 41892 38148 "GET /api/seller/quick-deals/ HTTP/1.1" 200 2138
+INFO 2026-03-06 12:31:37,194 log 41892 38460 "GET /api/seller/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 12:31:37,209 log 41892 36040 "GET /api/seller/quick-deals/ HTTP/1.1" 200 2138
+INFO 2026-03-06 12:31:38,446 log 41892 36040 "GET /api/seller/quick-deals/ HTTP/1.1" 200 2138
+INFO 2026-03-06 12:31:38,453 log 41892 8756 "GET /api/seller/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 12:31:38,479 log 41892 36040 "GET /api/seller/quick-deals/ HTTP/1.1" 200 2138
+INFO 2026-03-06 12:31:38,484 log 41892 13936 "GET /api/seller/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 12:31:57,010 log 41892 29036 "GET /api/seller/profile/ HTTP/1.1" 200 276
+INFO 2026-03-06 12:31:57,025 log 41892 33852 "GET /api/seller/profile/ HTTP/1.1" 200 276
+INFO 2026-03-06 12:31:57,031 log 41892 9768 "GET /api/seller/stats/ HTTP/1.1" 200 115
+INFO 2026-03-06 12:31:57,045 log 41892 30012 "GET /api/seller/stats/ HTTP/1.1" 200 115
+INFO 2026-03-06 12:31:59,275 log 41892 29756 "GET /api/seller/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 12:31:59,282 log 41892 36040 "GET /api/seller/quick-deals/ HTTP/1.1" 200 2138
+INFO 2026-03-06 12:31:59,302 log 41892 31260 "GET /api/seller/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 12:31:59,312 log 41892 36040 "GET /api/seller/quick-deals/ HTTP/1.1" 200 2138
+WARNING 2026-03-06 12:32:21,380 log 41892 36040 Unauthorized: /api/login/
+WARNING 2026-03-06 12:32:21,383 log 41892 36040 "POST /api/login/ HTTP/1.1" 401 31
+INFO 2026-03-06 12:32:21,397 log 41892 36040 "OPTIONS /api/auth/jwt/refresh/ HTTP/1.1" 200 0
+INFO 2026-03-06 12:32:21,463 log 41892 36040 "POST /api/auth/jwt/refresh/ HTTP/1.1" 200 244
+WARNING 2026-03-06 12:32:21,471 log 41892 36040 Unauthorized: /api/login/
+WARNING 2026-03-06 12:32:21,476 log 41892 36040 "POST /api/login/ HTTP/1.1" 401 31
+WARNING 2026-03-06 12:32:57,256 log 41892 37924 Not Found: /
+WARNING 2026-03-06 12:32:57,284 log 41892 37924 "GET / HTTP/1.1" 404 2777
+WARNING 2026-03-06 12:32:57,554 log 41892 37924 Not Found: /favicon.ico
+WARNING 2026-03-06 12:32:57,556 log 41892 37924 "GET /favicon.ico HTTP/1.1" 404 2828
+WARNING 2026-03-06 12:33:00,976 base 41892 41844 Session data corrupted
+INFO 2026-03-06 12:33:01,071 log 41892 41844 "GET /admin/ HTTP/1.1" 302 0
+WARNING 2026-03-06 12:33:01,077 base 41892 41844 Session data corrupted
+INFO 2026-03-06 12:33:01,482 log 41892 41844 "GET /admin/login/?next=/admin/ HTTP/1.1" 200 4084
+INFO 2026-03-06 12:33:01,569 log 41892 36936 "GET /static/admin/css/nav_sidebar.css HTTP/1.1" 200 2810
+INFO 2026-03-06 12:33:01,577 log 41892 9016 "GET /static/admin/css/dark_mode.css HTTP/1.1" 200 3538
+INFO 2026-03-06 12:33:01,583 log 41892 24316 "GET /static/admin/css/login.css HTTP/1.1" 200 951
+INFO 2026-03-06 12:33:01,583 log 41892 22036 "GET /static/admin/css/responsive.css HTTP/1.1" 200 16273
+INFO 2026-03-06 12:33:01,590 log 41892 39632 "GET /static/admin/js/theme.js HTTP/1.1" 200 1653
+INFO 2026-03-06 12:33:01,622 log 41892 41844 "GET /static/admin/css/base.css HTTP/1.1" 200 23100
+INFO 2026-03-06 12:33:01,817 log 41892 22036 "GET /static/admin/js/nav_sidebar.js HTTP/1.1" 200 3063
+WARNING 2026-03-06 12:33:04,932 base 41892 22036 Session data corrupted
+WARNING 2026-03-06 12:33:06,445 base 41892 41844 Session data corrupted
+INFO 2026-03-06 12:33:07,392 basehttp 41892 22036 - Broken pipe from ('127.0.0.1', 65435)
+INFO 2026-03-06 12:33:08,598 log 41892 41844 "POST /admin/login/?next=/admin/ HTTP/1.1" 302 0
+INFO 2026-03-06 12:33:08,694 log 41892 41844 "GET /admin/ HTTP/1.1" 200 14949
+INFO 2026-03-06 12:33:08,709 log 41892 41844 "GET /static/admin/css/dashboard.css HTTP/1.1" 200 441
+INFO 2026-03-06 12:33:08,874 log 41892 41844 "GET /static/admin/img/icon-changelink.svg HTTP/1.1" 200 978
+INFO 2026-03-06 12:33:08,886 log 41892 39632 "GET /static/admin/img/icon-addlink.svg HTTP/1.1" 200 593
+INFO 2026-03-06 12:33:45,165 log 41892 39632 "GET /admin/trendsync/buyer/ HTTP/1.1" 200 16024
+INFO 2026-03-06 12:33:45,209 log 41892 39632 "GET /static/admin/css/changelists.css HTTP/1.1" 200 7498
+INFO 2026-03-06 12:33:45,297 log 41892 9016 "GET /static/admin/js/jquery.init.js HTTP/1.1" 200 347
+INFO 2026-03-06 12:33:45,329 log 41892 41844 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-03-06 12:33:45,337 log 41892 36936 "GET /static/admin/js/core.js HTTP/1.1" 200 6208
+INFO 2026-03-06 12:33:45,341 log 41892 39632 "GET /static/admin/js/actions.js HTTP/1.1" 200 8076
+INFO 2026-03-06 12:33:45,345 log 41892 39632 "GET /static/admin/img/search.svg HTTP/1.1" 200 607
+INFO 2026-03-06 12:33:45,348 log 41892 13164 "GET /static/admin/js/admin/RelatedObjectLookups.js HTTP/1.1" 200 9777
+INFO 2026-03-06 12:33:45,408 log 41892 24316 "GET /static/admin/js/vendor/jquery/jquery.js HTTP/1.1" 200 285314
+INFO 2026-03-06 12:33:45,454 log 41892 36936 "GET /static/admin/js/vendor/xregexp/xregexp.js HTTP/1.1" 200 325171
+INFO 2026-03-06 12:33:45,465 log 41892 9016 "GET /static/admin/js/urlify.js HTTP/1.1" 200 7887
+INFO 2026-03-06 12:33:45,586 log 41892 41844 "GET /static/admin/js/prepopulate.js HTTP/1.1" 200 1531
+INFO 2026-03-06 12:33:45,591 log 41892 41844 "GET /static/admin/js/filters.js HTTP/1.1" 200 978
+INFO 2026-03-06 12:33:45,648 log 41892 41844 "GET /static/admin/img/tooltag-add.svg HTTP/1.1" 200 593
+INFO 2026-03-06 12:33:52,396 log 41892 41844 "GET /admin/trendsync/seller/ HTTP/1.1" 200 17008
+INFO 2026-03-06 12:33:52,412 log 41892 41844 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-03-06 12:33:52,462 log 41892 41844 "GET /static/admin/img/icon-viewlink.svg HTTP/1.1" 200 928
+INFO 2026-03-06 12:34:11,069 log 41892 41844 "GET /admin/trendsync/buyer/ HTTP/1.1" 200 16024
+INFO 2026-03-06 12:34:11,086 log 41892 41844 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-03-06 12:34:17,166 log 41892 21064 "POST /api/login/ HTTP/1.1" 200 582
+INFO 2026-03-06 12:34:17,182 log 41892 21064 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 12:34:17,251 log 41892 21064 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 12:34:17,273 log 41892 41072 "GET /api/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 12:34:17,283 log 41892 41072 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 12:34:17,297 log 41892 21064 "GET /api/quick-deals/ HTTP/1.1" 200 2390
+INFO 2026-03-06 12:34:17,310 log 41892 41072 "GET /api/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 12:34:17,475 log 41892 21064 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:34:17,486 log 41892 21064 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:34:17,501 log 41892 41072 "GET /api/quick-deals/ HTTP/1.1" 200 2390
+INFO 2026-03-06 12:34:17,516 log 41892 21064 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:34:17,525 log 41892 21064 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:34:17,868 log 41892 10320 "GET /media/quickdeals/0ac3ddd60590b73a4f70791e95b6dd42.jpg HTTP/1.1" 304 0
+INFO 2026-03-06 12:34:17,868 log 41892 6456 "GET /media/products/0a967922e19eb7d22aae18f1c2b98afe.jpg HTTP/1.1" 304 0
+INFO 2026-03-06 12:34:17,869 log 41892 6952 "GET /media/quickdeals/0ac658891f0fb946167a4347a944f1db.jpg HTTP/1.1" 304 0
+INFO 2026-03-06 12:34:36,115 log 41892 21064 "OPTIONS /api/quick-deals/1/view/ HTTP/1.1" 200 0
+INFO 2026-03-06 12:34:36,789 log 41892 21064 "POST /api/quick-deals/1/view/ HTTP/1.1" 200 61
+INFO 2026-03-06 12:34:36,858 log 41892 7508 "GET /api/products/1/comments/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:34:36,867 log 41892 1216 "GET /api/products/1/ HTTP/1.1" 200 761
+INFO 2026-03-06 12:34:36,875 log 41892 4416 "GET /api/products/1/comments/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:34:36,883 log 41892 28112 "GET /api/products/1/related/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:34:36,886 log 41892 32588 "GET /api/products/1/ HTTP/1.1" 200 761
+INFO 2026-03-06 12:34:36,888 log 41892 16900 "GET /api/products/1/related/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:34:36,907 log 41892 10580 "GET /media/products/0a967922e19eb7d22aae18f1c2b98afe.jpg HTTP/1.1" 304 0
+INFO 2026-03-06 12:34:42,537 log 41892 10580 "GET /media/products/1c2c19b1a858f52a1fb8232aff0b63f4.jpg HTTP/1.1" 200 38138
+INFO 2026-03-06 12:34:43,213 log 41892 10580 "GET /media/products/1aea64f50e711f0c77861dccf89c9749.jpg HTTP/1.1" 200 39699
+INFO 2026-03-06 12:34:46,415 log 41892 21064 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 12:34:46,446 log 41892 41072 "GET /api/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 12:34:46,448 log 41892 21064 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 12:34:46,484 log 41892 9136 "GET /api/quick-deals/ HTTP/1.1" 200 2390
+INFO 2026-03-06 12:34:46,488 log 41892 21064 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:34:46,525 log 41892 41072 "GET /api/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 12:34:46,526 log 41892 21064 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:34:46,553 log 41892 41072 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:34:46,554 log 41892 9136 "GET /api/quick-deals/ HTTP/1.1" 200 2390
+INFO 2026-03-06 12:34:46,585 log 41892 6456 "GET /media/quickdeals/0ac658891f0fb946167a4347a944f1db.jpg HTTP/1.1" 304 0
+INFO 2026-03-06 12:34:46,609 log 41892 9136 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:34:47,788 log 41892 27504 "GET /api/products/?ordering=-like_count HTTP/1.1" 200 763
+INFO 2026-03-06 12:34:47,802 log 41892 39608 "GET /api/products/?ordering=-like_count HTTP/1.1" 200 763
+INFO 2026-03-06 12:34:48,689 log 41892 9136 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 12:34:48,715 log 41892 9136 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 12:34:48,719 log 41892 41072 "GET /api/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 12:34:48,746 log 41892 41072 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:34:48,753 log 41892 9136 "GET /api/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 12:34:48,760 log 41892 41072 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:34:48,769 log 41892 21064 "GET /api/quick-deals/ HTTP/1.1" 200 2390
+INFO 2026-03-06 12:34:48,771 log 41892 9136 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:34:48,795 log 41892 21064 "GET /api/quick-deals/ HTTP/1.1" 200 2390
+INFO 2026-03-06 12:34:48,816 log 41892 21064 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:34:49,371 log 41892 24160 "GET /api/products/?ordering=-like_count HTTP/1.1" 200 763
+INFO 2026-03-06 12:34:49,388 log 41892 4760 "GET /api/products/?ordering=-like_count HTTP/1.1" 200 763
+INFO 2026-03-06 12:34:51,403 log 41892 21064 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 12:34:51,428 log 41892 21064 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 12:34:51,451 log 41892 21064 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 12:34:51,470 log 41892 21064 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 12:34:52,748 log 41892 21064 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 12:34:52,772 log 41892 9136 "GET /api/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 12:34:52,784 log 41892 21064 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 12:34:52,801 log 41892 41072 "GET /api/quick-deals/ HTTP/1.1" 200 2390
+INFO 2026-03-06 12:34:52,801 log 41892 13224 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:34:52,820 log 41892 13224 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:34:52,820 log 41892 9136 "GET /api/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 12:34:52,838 log 41892 21064 "GET /api/quick-deals/ HTTP/1.1" 200 2390
+INFO 2026-03-06 12:34:52,858 log 41892 13224 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:34:52,881 log 41892 13224 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:34:54,208 log 41892 13224 "OPTIONS /api/cart/add/ HTTP/1.1" 200 0
+INFO 2026-03-06 12:34:54,793 log 41892 13224 "POST /api/cart/add/ HTTP/1.1" 200 63
+INFO 2026-03-06 12:34:54,813 log 41892 13224 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 12:34:56,620 log 41892 13224 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 12:34:56,644 log 41892 13224 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 12:34:56,668 log 41892 13224 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 12:34:56,695 log 41892 13224 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 12:35:05,403 log 41892 13224 "OPTIONS /api/cart/update/1/ HTTP/1.1" 200 0
+INFO 2026-03-06 12:35:05,865 log 41892 13224 "PUT /api/cart/update/1/ HTTP/1.1" 200 104
+INFO 2026-03-06 12:35:07,603 log 41892 13224 "OPTIONS /api/orders/create-from-cart/ HTTP/1.1" 200 0
+INFO 2026-03-06 12:35:08,116 views 41892 13224 Temporary address created for buyer 1
+INFO 2026-03-06 12:35:09,183 log 41892 13224 "POST /api/orders/create-from-cart/ HTTP/1.1" 201 14
+INFO 2026-03-06 12:35:09,190 log 41892 13224 "OPTIONS /api/payments/initiate/ HTTP/1.1" 200 0
+INFO 2026-03-06 12:35:09,194 views 41892 13224 Payment initiation by user 2
+INFO 2026-03-06 12:35:09,273 views 41892 13224 No IPN ID found, registering new IPN URL
+INFO 2026-03-06 12:35:09,274 pesapal_utils 41892 13224 Requesting new access token from Pesapal
+INFO 2026-03-06 12:35:11,419 pesapal_utils 41892 13224 Access token obtained successfully
+INFO 2026-03-06 12:35:11,425 pesapal_utils 41892 13224 Registering IPN URL: https://subordinative-phyliss-hemispherically.ngrok-free.dev/api/payments/ipn/
+INFO 2026-03-06 12:35:13,052 pesapal_utils 41892 13224 IPN registered successfully, ipn_id: f14212b4-078d-4ae3-9038-dab181ebe23f
+INFO 2026-03-06 12:35:13,161 views 41892 13224 IPN registered, ipn_id=f14212b4-078d-4ae3-9038-dab181ebe23f
+INFO 2026-03-06 12:35:13,162 pesapal_utils 41892 13224 Submitting order: ref=1, amount=33.00 UGX
+INFO 2026-03-06 12:35:14,785 pesapal_utils 41892 13224 Full response from Pesapal: {'error': {'error_type': 'duplicate_order_reference', 'code': 'missing_unique_id', 'message': 'You have not provided a unique request ID. Please check ID value in your POST data.'}, 'status': '500'}
+ERROR 2026-03-06 12:35:14,785 views 41892 13224 Pesapal submit error for order 1: Pesapal error: Unknown error
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 843, in initiate_payment
+    pesapal_response = pesapal_utils.submit_order_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\pesapal_utils.py", line 98, in submit_order_request
+    raise Exception(f"Pesapal error: {error_msg}")
+Exception: Pesapal error: Unknown error
+ERROR 2026-03-06 12:35:14,789 log 41892 13224 Internal Server Error: /api/payments/initiate/
+ERROR 2026-03-06 12:35:14,792 log 41892 13224 "POST /api/payments/initiate/ HTTP/1.1" 500 55
+INFO 2026-03-06 12:35:35,234 log 41892 13224 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 12:35:35,244 log 41892 13224 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 12:35:35,248 log 41892 21064 "GET /api/buyer/profile/ HTTP/1.1" 200 99
+INFO 2026-03-06 12:35:35,258 log 41892 9136 "OPTIONS /api/orders/count/ HTTP/1.1" 200 0
+INFO 2026-03-06 12:35:35,270 log 41892 21064 "GET /api/buyer/profile/ HTTP/1.1" 200 99
+INFO 2026-03-06 12:35:35,271 log 41892 41072 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:35:35,274 log 41892 13224 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:35:35,278 log 41892 9136 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-06 12:35:35,295 log 41892 13224 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:35:35,304 log 41892 9136 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-06 12:35:35,305 log 41892 41072 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:35:35,311 log 41892 13224 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:35:35,321 log 41892 13224 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 12:35:37,519 log 41892 13224 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 12:35:37,536 log 41892 13224 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 12:35:37,549 log 41892 13224 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 12:35:37,559 log 41892 13224 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 12:35:37,973 log 41892 25480 "GET /api/products/?ordering=-like_count HTTP/1.1" 200 763
+INFO 2026-03-06 12:35:37,994 log 41892 8844 "GET /api/products/?ordering=-like_count HTTP/1.1" 200 763

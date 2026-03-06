@@ -1,0 +1,10 @@
+ERROR 2026-03-06 12:35:14,785 views 41892 13224 Pesapal submit error for order 1: Pesapal error: Unknown error
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 843, in initiate_payment
+    pesapal_response = pesapal_utils.submit_order_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\pesapal_utils.py", line 98, in submit_order_request
+    raise Exception(f"Pesapal error: {error_msg}")
+Exception: Pesapal error: Unknown error
+ERROR 2026-03-06 12:35:14,789 log 41892 13224 Internal Server Error: /api/payments/initiate/
+ERROR 2026-03-06 12:35:14,792 log 41892 13224 "POST /api/payments/initiate/ HTTP/1.1" 500 55
