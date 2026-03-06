@@ -2080,3 +2080,4 @@ INFO 2026-03-06 21:01:38,002 log 37664 32272 "GET /api/seller/products/ HTTP/1.1
 INFO 2026-03-06 21:01:38,036 log 37664 41672 "GET /api/seller/quick-deals/ HTTP/1.1" 200 8165
 INFO 2026-03-06 21:01:38,045 log 37664 48264 "GET /api/seller/products/ HTTP/1.1" 200 763
 INFO 2026-03-06 21:03:42,357 log 37664 39064 "POST /api/register/seller/ HTTP/1.1" 201 44
+INFO 2026-03-07 00:56:03,389 autoreload 1224 8212 Watching for file changes with StatReloader
