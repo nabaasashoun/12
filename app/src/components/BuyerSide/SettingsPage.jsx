@@ -39,7 +39,6 @@ const SettingsPage = () => {
   }, []);
 
   const handleSaveChanges = () => {
-    // Here you can save other settings (not dark mode, it's already auto-saved by context)
     alert('Settings saved successfully!');
   };
 
@@ -65,7 +64,7 @@ const SettingsPage = () => {
       </div>
 
       <div className="space-y-6">
-        {/* User Profile Card – real backend data */}
+        {/* User Profile Card */}
         <Card className="mb-6">
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center space-x-4">
@@ -124,7 +123,7 @@ const SettingsPage = () => {
                   <p className="text-xs sm:text-sm text-gray-600">Toggle dark theme across the app</p>
                 </div>
                 <button
-                  onClick={toggleDarkMode}   // 👈 use context toggle
+                  onClick={toggleDarkMode} 
                   className={`w-10 h-5 sm:w-12 sm:h-6 rounded-full transition-colors duration-200 ${
                     darkMode ? 'bg-blue-500' : 'bg-gray-300'
                   }`}

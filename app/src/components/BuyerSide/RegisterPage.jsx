@@ -1,9 +1,23 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Camera, Check } from 'lucide-react';
+import { Eye, EyeOff, Camera, Check, ChevronDown } from 'lucide-react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import styled from 'styled-components';
+
+// East African country codes
+const EAST_AFRICAN_COUNTRIES = [
+  { code: 'UG', name: 'Uganda', dialCode: '+256', flag: '🇺🇬' },
+  { code: 'KE', name: 'Kenya', dialCode: '+254', flag: '🇰🇪' },
+  { code: 'TZ', name: 'Tanzania', dialCode: '+255', flag: '🇹🇿' },
+  { code: 'RW', name: 'Rwanda', dialCode: '+250', flag: '🇷🇼' },
+  { code: 'BI', name: 'Burundi', dialCode: '+257', flag: '🇧🇮' },
+  { code: 'SS', name: 'South Sudan', dialCode: '+211', flag: '🇸🇸' },
+  { code: 'ET', name: 'Ethiopia', dialCode: '+251', flag: '🇪🇹' },
+  { code: 'SO', name: 'Somalia', dialCode: '+252', flag: '🇸🇴' },
+  { code: 'DJ', name: 'Djibouti', dialCode: '+253', flag: '🇩🇯' },
+  { code: 'ER', name: 'Eritrea', dialCode: '+291', flag: '🇪🇷' },
+];
 
 const AnimatedInput = ({ type, name, value, onChange, label, required, autoComplete, ...props }) => {
   const labelChars = label.split('').map((char, index) => (
@@ -95,6 +109,8 @@ const RegisterPage = ({ setIsAuthenticated, setUserRole }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
+  const [selectedCountry, setSelectedCountry] = useState(EAST_AFRICAN_COUNTRIES[0]); // Default to Uganda
+  const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
   const [formData, setFormData] = useState({
     buyerName: '',
     buyerLocation: '',
@@ -118,7 +134,7 @@ const RegisterPage = ({ setIsAuthenticated, setUserRole }) => {
   };
 
   const handlePhoneChange = (e) => {
-    const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+    const value = e.target.value.replace(/\D/g, '').slice(0, 9); // Max 9 digits after country code
     setFormData(prev => ({ ...prev, buyerContact: value }));
   };
 
@@ -130,6 +146,11 @@ const RegisterPage = ({ setIsAuthenticated, setUserRole }) => {
       reader.onloadend = () => setPhotoPreview(reader.result);
       reader.readAsDataURL(file);
     }
+  };
+
+  const selectCountry = (country) => {
+    setSelectedCountry(country);
+    setIsCountryDropdownOpen(false);
   };
 
   const handleSubmit = async (e) => {
@@ -153,7 +174,11 @@ const RegisterPage = ({ setIsAuthenticated, setUserRole }) => {
     data.append('password', formData.password);
     data.append('name', formData.buyerName);
     data.append('location', formData.buyerLocation);
-    data.append('contact', formData.buyerContact);
+    
+    // Format phone number with country code
+    const formattedPhone = `${selectedCountry.code} ${selectedCountry.dialCode} ${formData.buyerContact}`;
+    data.append('contact', formattedPhone);
+    
     data.append('dob', formData.buyerDoB);
     if (profilePhoto) {
       data.append('profile_photo', profilePhoto);
@@ -253,14 +278,64 @@ const RegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                   autoComplete="off"
                 />
 
-                <AnimatedInput
-                  type="tel"
-                  name="buyerContact"
-                  value={formData.buyerContact}
-                  onChange={handlePhoneChange}
-                  label="Phone Number"
-                  autoComplete="off"
-                />
+                {/* Phone Input with Country Code */}
+                <div className="mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                  <div className="flex">
+                    {/* Country Code Dropdown */}
+                    <div className="relative mr-1">
+                      <button
+                        type="button"
+                        onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
+                        className="h-[35px] px-3 text-black bg-gray-50 border border-gray-300 rounded-l-lg flex items-center gap-2 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        <span className="text-sm">{selectedCountry.flag}</span>
+                        <span className="text-sm font-medium">{selectedCountry.dialCode}</span>
+                        <ChevronDown size={16} className="text-gray-500" />
+                      </button>
+
+                      {/* Dropdown Menu */}
+                      {isCountryDropdownOpen && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-10"
+                            onClick={() => setIsCountryDropdownOpen(false)}
+                          />
+                          <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto">
+                            {EAST_AFRICAN_COUNTRIES.map((country) => (
+                              <button
+                                key={country.code}
+                                type="button"
+                                onClick={() => selectCountry(country)}
+                                className="w-full text-black px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-3"
+                              >
+                                <span className="text-lg">{country.flag}</span>
+                                <span className="flex-1">
+                                  <span className="font-medium">{country.name}</span>
+                                  <span className="text-sm text-gray-500 ml-2">{country.dialCode}</span>
+                                </span>
+                                {selectedCountry.code === country.code && (
+                                  <Check size={16} className="text-indigo-500" />
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Phone Number Input */}
+                    <input
+                      type="tel"
+                      name="buyerContact"
+                      value={formData.buyerContact}
+                      onChange={handlePhoneChange}
+                      placeholder="701 234 567"
+                      className="flex-1 h-[35px] text-black px-3 py-2 border border-gray-300 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      autoComplete="off"
+                    />
+                  </div>
+                </div>
 
                 <AnimatedInput
                   type="date"
