@@ -1250,3 +1250,833 @@ INFO 2026-03-06 18:17:01,659 log 9356 30364 "GET /api/buyer/profile/ HTTP/1.1" 2
 INFO 2026-03-06 18:17:01,799 log 9356 47224 "GET /api/verify-token/ HTTP/1.1" 200 60
 INFO 2026-03-06 18:17:01,800 log 9356 30364 "GET /api/buyer/profile/ HTTP/1.1" 200 99
 INFO 2026-03-06 18:17:01,815 log 9356 30364 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 18:33:35,624 log 9356 42236 "POST /api/register/buyer/ HTTP/1.1" 201 57
+INFO 2026-03-06 19:12:43,799 autoreload 9356 24052 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-06 19:12:59,163 autoreload 47300 26356 Watching for file changes with StatReloader
+INFO 2026-03-06 19:13:07,899 autoreload 47300 26356 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-06 19:13:10,220 autoreload 47628 46652 Watching for file changes with StatReloader
+INFO 2026-03-06 19:13:29,198 autoreload 47628 46652 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\models.py changed, reloading.
+INFO 2026-03-06 19:13:32,233 autoreload 20136 24132 Watching for file changes with StatReloader
+INFO 2026-03-06 19:13:37,934 autoreload 20136 24132 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\models.py changed, reloading.
+INFO 2026-03-06 19:13:38,914 autoreload 37468 9852 Watching for file changes with StatReloader
+INFO 2026-03-06 19:13:52,010 autoreload 37468 9852 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\urls.py changed, reloading.
+INFO 2026-03-06 19:13:53,294 autoreload 48464 1712 Watching for file changes with StatReloader
+INFO 2026-03-06 19:24:18,937 log 48464 35072 "POST /api/login/ HTTP/1.1" 200 588
+INFO 2026-03-06 19:24:42,839 log 48464 35072 "POST /api/login/ HTTP/1.1" 200 582
+INFO 2026-03-06 19:24:44,067 log 48464 49484 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 19:24:44,086 log 48464 49524 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:24:44,090 log 48464 49484 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 19:24:44,094 log 48464 35072 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:24:44,114 log 48464 49484 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 19:24:44,131 log 48464 49524 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:24:44,167 log 48464 49484 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 19:24:44,147 log 48464 12304 "GET /api/quick-deals/ HTTP/1.1" 200 9401
+INFO 2026-03-06 19:24:44,251 log 48464 49524 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:24:44,368 log 48464 49524 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:24:44,397 log 48464 12304 "GET /api/quick-deals/ HTTP/1.1" 200 9401
+INFO 2026-03-06 19:24:44,630 log 48464 12292 "GET /media/quickdeals/0ac3ddd60590b73a4f70791e95b6dd42.jpg HTTP/1.1" 304 0
+INFO 2026-03-06 19:24:44,630 log 48464 17232 "GET /media/quickdeals/pexels-burst-374054.jpg HTTP/1.1" 304 0
+INFO 2026-03-06 19:24:44,743 log 48464 49172 "GET /media/products/0a967922e19eb7d22aae18f1c2b98afe.jpg HTTP/1.1" 304 0
+INFO 2026-03-06 19:24:47,830 log 48464 12304 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 19:24:47,854 log 48464 12304 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 19:24:47,868 log 48464 49524 "GET /api/buyer/profile/ HTTP/1.1" 200 99
+INFO 2026-03-06 19:24:48,071 log 48464 49524 "GET /api/buyer/profile/ HTTP/1.1" 200 99
+INFO 2026-03-06 19:24:48,075 log 48464 12304 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 19:24:48,249 log 48464 12304 "OPTIONS /api/orders/count/ HTTP/1.1" 200 0
+INFO 2026-03-06 19:24:48,259 log 48464 49524 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 19:24:48,266 log 48464 49484 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:24:48,296 log 48464 49524 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 19:24:48,306 log 48464 12304 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-06 19:24:48,307 log 48464 49484 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:24:48,320 log 48464 49524 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 19:24:48,358 log 48464 12304 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-06 19:24:49,489 log 48464 12304 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:24:49,507 log 48464 12304 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:24:49,524 log 48464 12304 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:24:49,542 log 48464 12304 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:24:59,422 log 48464 12304 "OPTIONS /api/cart/update/1/ HTTP/1.1" 200 0
+INFO 2026-03-06 19:24:59,662 log 48464 12304 "PUT /api/cart/update/1/ HTTP/1.1" 200 102
+INFO 2026-03-06 19:25:01,973 log 48464 12304 "OPTIONS /api/orders/create-from-cart/ HTTP/1.1" 200 0
+INFO 2026-03-06 19:25:02,761 log 48464 12304 "POST /api/orders/create-from-cart/ HTTP/1.1" 201 14
+INFO 2026-03-06 19:25:02,982 log 48464 12304 "OPTIONS /api/payments/initiate/ HTTP/1.1" 200 0
+INFO 2026-03-06 19:25:02,997 views 48464 12304 Payment initiation by user 2
+INFO 2026-03-06 19:25:03,275 pesapal_utils 48464 12304 Requesting new access token from Pesapal
+INFO 2026-03-06 19:25:06,644 pesapal_utils 48464 12304 Access token obtained successfully
+INFO 2026-03-06 19:25:06,661 pesapal_utils 48464 12304 Submitting order: ref=2, amount=66.00 UGX
+INFO 2026-03-06 19:25:08,244 pesapal_utils 48464 12304 Full response from Pesapal: {'order_tracking_id': '91a13f8f-fcc9-458c-b4d5-db546d77bd87', 'merchant_reference': '2', 'redirect_url': 'https://cybqa.pesapal.com/pesapaliframe/PesapalIframe3/Index?OrderTrackingId=91a13f8f-fcc9-458c-b4d5-db546d77bd87', 'error': None, 'status': '200'}
+INFO 2026-03-06 19:25:08,297 pesapal_utils 48464 12304 Order submitted successfully, tracking_id=91a13f8f-fcc9-458c-b4d5-db546d77bd87
+INFO 2026-03-06 19:25:08,453 views 48464 12304 Order 2 initiated, tracking_id=91a13f8f-fcc9-458c-b4d5-db546d77bd87
+INFO 2026-03-06 19:25:08,455 log 48464 12304 "POST /api/payments/initiate/ HTTP/1.1" 200 191
+INFO 2026-03-06 19:36:25,091 autoreload 7364 31188 Watching for file changes with StatReloader
+INFO 2026-03-06 19:36:56,664 log 7364 17232 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 19:36:56,664 log 7364 26088 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 19:36:56,696 log 7364 48044 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 19:36:56,764 log 7364 48044 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 19:36:56,926 log 7364 48044 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 19:36:56,966 log 7364 48044 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 19:36:56,990 log 7364 28104 "GET /api/buyer/profile/ HTTP/1.1" 200 99
+INFO 2026-03-06 19:36:56,999 log 7364 28104 "GET /api/buyer/profile/ HTTP/1.1" 200 99
+INFO 2026-03-06 19:36:57,012 log 7364 28104 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-06 19:36:57,063 log 7364 48044 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 19:36:57,072 log 7364 48044 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-06 19:36:57,141 log 7364 48044 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 19:36:57,197 log 7364 28104 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:36:57,202 log 7364 48044 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 19:36:57,216 log 7364 48044 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 19:36:57,221 log 7364 28104 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:36:58,714 log 7364 28104 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 19:36:58,978 log 7364 48044 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:36:58,761 log 7364 49528 "GET /api/quick-deals/ HTTP/1.1" 200 9402
+INFO 2026-03-06 19:36:58,999 log 7364 15644 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 19:36:59,000 log 7364 28104 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 19:36:59,026 log 7364 48044 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:36:59,041 log 7364 15644 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:36:59,047 log 7364 48044 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 19:36:59,095 log 7364 49528 "GET /api/quick-deals/ HTTP/1.1" 200 9402
+INFO 2026-03-06 19:36:59,294 log 7364 49528 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:37:01,240 log 7364 49528 "POST /api/cart/add/ HTTP/1.1" 200 63
+INFO 2026-03-06 19:37:01,276 log 7364 49528 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:37:02,022 log 7364 49528 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:37:02,041 log 7364 49528 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:37:02,061 log 7364 49528 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:37:02,084 log 7364 49528 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:37:12,074 log 7364 10828 "PUT /api/cart/update/1/ HTTP/1.1" 200 102
+INFO 2026-03-06 19:37:12,906 log 7364 8676 "PUT /api/cart/update/1/ HTTP/1.1" 200 102
+INFO 2026-03-06 19:37:16,106 log 7364 8676 "POST /api/orders/create-from-cart/ HTTP/1.1" 201 14
+INFO 2026-03-06 19:37:16,113 views 7364 8676 Payment initiation by user 2
+INFO 2026-03-06 19:37:16,256 pesapal_utils 7364 8676 Requesting new access token from Pesapal
+INFO 2026-03-06 19:37:20,650 pesapal_utils 7364 8676 Access token obtained successfully
+INFO 2026-03-06 19:37:20,651 pesapal_utils 7364 8676 Submitting order: ref=3, amount=33.00 UGX
+INFO 2026-03-06 19:37:22,828 pesapal_utils 7364 8676 Full response from Pesapal: {'error': {'error_type': 'duplicate_order_reference', 'code': 'missing_unique_id', 'message': 'You have not provided a unique request ID. Please check ID value in your POST data.'}, 'status': '500'}
+ERROR 2026-03-06 19:37:22,831 views 7364 8676 Pesapal submit error for order 3: Pesapal error: Unknown error
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 843, in initiate_payment
+    pesapal_response = pesapal_utils.submit_order_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\pesapal_utils.py", line 98, in submit_order_request
+    raise Exception(f"Pesapal error: {error_msg}")
+Exception: Pesapal error: Unknown error
+ERROR 2026-03-06 19:37:22,884 log 7364 8676 Internal Server Error: /api/payments/initiate/
+ERROR 2026-03-06 19:37:22,889 log 7364 8676 "POST /api/payments/initiate/ HTTP/1.1" 500 55
+WARNING 2026-03-06 19:37:38,093 log 7364 8676 Not Found: /api/cart/update/1/
+WARNING 2026-03-06 19:37:38,094 log 7364 8676 "PUT /api/cart/update/1/ HTTP/1.1" 404 31
+WARNING 2026-03-06 19:37:41,480 log 7364 8676 Not Found: /api/cart/update/1/
+WARNING 2026-03-06 19:37:41,481 log 7364 8676 "PUT /api/cart/update/1/ HTTP/1.1" 404 31
+INFO 2026-03-06 19:37:47,869 log 7364 8676 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 19:37:47,877 log 7364 50620 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 19:37:47,886 log 7364 8676 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 19:37:47,894 log 7364 10220 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 19:37:48,028 log 7364 8676 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 19:37:48,041 log 7364 8676 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 19:37:48,065 log 7364 8676 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 19:37:48,080 log 7364 8676 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 19:37:50,026 log 7364 8676 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 19:37:50,062 log 7364 8676 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 19:37:50,066 log 7364 10828 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:37:50,093 log 7364 8676 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 19:37:50,135 log 7364 10828 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:37:50,140 log 7364 8676 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:37:50,153 log 7364 10828 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 19:37:50,169 log 7364 13608 "GET /api/quick-deals/ HTTP/1.1" 200 9402
+INFO 2026-03-06 19:37:50,220 log 7364 10828 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:37:50,243 log 7364 13608 "GET /api/quick-deals/ HTTP/1.1" 200 9402
+INFO 2026-03-06 19:37:51,466 log 7364 13608 "POST /api/cart/add/ HTTP/1.1" 200 63
+INFO 2026-03-06 19:37:51,483 log 7364 13608 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:37:52,205 log 7364 13608 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:37:52,222 log 7364 13608 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:37:52,241 log 7364 13608 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:37:52,292 log 7364 13608 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:37:53,707 log 7364 13608 "POST /api/orders/create-from-cart/ HTTP/1.1" 201 14
+INFO 2026-03-06 19:37:53,713 views 7364 13608 Payment initiation by user 2
+INFO 2026-03-06 19:37:53,715 pesapal_utils 7364 13608 Submitting order: ref=4, amount=33.00 UGX
+INFO 2026-03-06 19:37:55,623 pesapal_utils 7364 13608 Full response from Pesapal: {'error': {'error_type': 'duplicate_order_reference', 'code': 'missing_unique_id', 'message': 'You have not provided a unique request ID. Please check ID value in your POST data.'}, 'status': '500'}
+ERROR 2026-03-06 19:37:55,624 views 7364 13608 Pesapal submit error for order 4: Pesapal error: Unknown error
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 843, in initiate_payment
+    pesapal_response = pesapal_utils.submit_order_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\pesapal_utils.py", line 98, in submit_order_request
+    raise Exception(f"Pesapal error: {error_msg}")
+Exception: Pesapal error: Unknown error
+ERROR 2026-03-06 19:37:55,628 log 7364 13608 Internal Server Error: /api/payments/initiate/
+ERROR 2026-03-06 19:37:55,630 log 7364 13608 "POST /api/payments/initiate/ HTTP/1.1" 500 55
+WARNING 2026-03-06 19:38:01,321 log 7364 13608 Not Found: /api/cart/update/1/
+WARNING 2026-03-06 19:38:01,324 log 7364 13608 "PUT /api/cart/update/1/ HTTP/1.1" 404 31
+WARNING 2026-03-06 19:38:05,284 log 7364 13608 Not Found: /api/cart/update/1/
+WARNING 2026-03-06 19:38:05,286 log 7364 13608 "PUT /api/cart/update/1/ HTTP/1.1" 404 31
+INFO 2026-03-06 19:38:07,497 log 7364 13608 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 19:38:07,519 log 7364 13608 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 19:38:07,524 log 7364 10828 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:38:07,565 log 7364 13608 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 19:38:07,579 log 7364 10828 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:38:07,598 log 7364 13608 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:38:07,605 log 7364 8676 "GET /api/quick-deals/ HTTP/1.1" 200 9402
+INFO 2026-03-06 19:38:07,613 log 7364 10828 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 19:38:07,673 log 7364 10828 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:38:07,705 log 7364 8676 "GET /api/quick-deals/ HTTP/1.1" 200 9402
+INFO 2026-03-06 19:38:09,523 log 7364 8676 "OPTIONS /api/cart/remove/1/ HTTP/1.1" 200 0
+WARNING 2026-03-06 19:38:09,533 log 7364 8676 Not Found: /api/cart/remove/1/
+WARNING 2026-03-06 19:38:09,535 log 7364 8676 "DELETE /api/cart/remove/1/ HTTP/1.1" 404 31
+WARNING 2026-03-06 19:38:10,478 log 7364 8676 Not Found: /api/cart/remove/1/
+WARNING 2026-03-06 19:38:10,479 log 7364 8676 "DELETE /api/cart/remove/1/ HTTP/1.1" 404 31
+INFO 2026-03-06 19:38:12,219 log 7364 44408 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 19:38:12,224 log 7364 8676 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 19:38:12,242 log 7364 8676 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 19:38:12,254 log 7364 20016 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 19:38:12,384 log 7364 8676 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 19:38:12,400 log 7364 10828 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:38:12,404 log 7364 8676 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 19:38:12,446 log 7364 10828 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:38:12,446 log 7364 8676 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 19:38:12,488 log 7364 10828 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:38:12,490 log 7364 8676 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 19:38:12,519 log 7364 13608 "GET /api/quick-deals/ HTTP/1.1" 200 9402
+INFO 2026-03-06 19:38:12,598 log 7364 8676 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:38:12,641 log 7364 13608 "GET /api/quick-deals/ HTTP/1.1" 200 9402
+INFO 2026-03-06 19:38:14,153 log 7364 13608 "POST /api/cart/add/ HTTP/1.1" 200 63
+INFO 2026-03-06 19:38:14,182 log 7364 13608 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:38:15,184 log 7364 13608 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:38:15,203 log 7364 13608 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:38:15,221 log 7364 13608 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:38:15,241 log 7364 13608 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:38:27,203 log 7364 37312 "POST /api/orders/create-from-cart/ HTTP/1.1" 201 14
+INFO 2026-03-06 19:38:27,210 views 7364 37312 Payment initiation by user 2
+INFO 2026-03-06 19:38:27,216 pesapal_utils 7364 37312 Submitting order: ref=5, amount=33.00 UGX
+INFO 2026-03-06 19:38:29,151 pesapal_utils 7364 37312 Full response from Pesapal: {'error': {'error_type': 'duplicate_order_reference', 'code': 'missing_unique_id', 'message': 'You have not provided a unique request ID. Please check ID value in your POST data.'}, 'status': '500'}
+ERROR 2026-03-06 19:38:29,156 views 7364 37312 Pesapal submit error for order 5: Pesapal error: Unknown error
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 843, in initiate_payment
+    pesapal_response = pesapal_utils.submit_order_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\pesapal_utils.py", line 98, in submit_order_request
+    raise Exception(f"Pesapal error: {error_msg}")
+Exception: Pesapal error: Unknown error
+ERROR 2026-03-06 19:38:29,217 log 7364 37312 Internal Server Error: /api/payments/initiate/
+ERROR 2026-03-06 19:38:29,219 log 7364 37312 "POST /api/payments/initiate/ HTTP/1.1" 500 55
+WARNING 2026-03-06 19:38:33,769 log 7364 37312 Not Found: /api/cart/update/1/
+WARNING 2026-03-06 19:38:33,771 log 7364 37312 "PUT /api/cart/update/1/ HTTP/1.1" 404 31
+WARNING 2026-03-06 19:39:01,666 log 7364 37312 Bad Request: /api/orders/create-from-cart/
+WARNING 2026-03-06 19:39:01,667 log 7364 37312 "POST /api/orders/create-from-cart/ HTTP/1.1" 400 25
+WARNING 2026-03-06 19:39:05,190 log 7364 37312 Not Found: /api/cart/remove/1/
+WARNING 2026-03-06 19:39:05,194 log 7364 37312 "DELETE /api/cart/remove/1/ HTTP/1.1" 404 31
+WARNING 2026-03-06 19:39:06,497 log 7364 37312 Not Found: /api/cart/remove/1/
+WARNING 2026-03-06 19:39:06,498 log 7364 37312 "DELETE /api/cart/remove/1/ HTTP/1.1" 404 31
+WARNING 2026-03-06 19:39:07,241 log 7364 37312 Not Found: /api/cart/remove/1/
+WARNING 2026-03-06 19:39:07,243 log 7364 37312 "DELETE /api/cart/remove/1/ HTTP/1.1" 404 31
+WARNING 2026-03-06 19:39:07,757 log 7364 37312 Not Found: /api/cart/remove/1/
+WARNING 2026-03-06 19:39:07,759 log 7364 37312 "DELETE /api/cart/remove/1/ HTTP/1.1" 404 31
+WARNING 2026-03-06 19:39:08,375 log 7364 37312 Not Found: /api/cart/remove/1/
+WARNING 2026-03-06 19:39:08,376 log 7364 37312 "DELETE /api/cart/remove/1/ HTTP/1.1" 404 31
+WARNING 2026-03-06 19:39:08,915 log 7364 37312 Not Found: /api/cart/remove/1/
+WARNING 2026-03-06 19:39:08,916 log 7364 37312 "DELETE /api/cart/remove/1/ HTTP/1.1" 404 31
+WARNING 2026-03-06 19:39:12,754 log 7364 37312 Not Found: /api/cart/update/1/
+WARNING 2026-03-06 19:39:12,755 log 7364 37312 "PUT /api/cart/update/1/ HTTP/1.1" 404 31
+WARNING 2026-03-06 19:39:13,841 log 7364 37312 Not Found: /api/cart/update/1/
+WARNING 2026-03-06 19:39:13,842 log 7364 37312 "PUT /api/cart/update/1/ HTTP/1.1" 404 31
+WARNING 2026-03-06 19:39:14,306 log 7364 37312 Not Found: /api/cart/update/1/
+WARNING 2026-03-06 19:39:14,307 log 7364 37312 "PUT /api/cart/update/1/ HTTP/1.1" 404 31
+INFO 2026-03-06 19:42:51,515 log 7364 4072 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 19:42:51,557 log 7364 31044 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 19:42:51,815 log 7364 39084 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 19:42:51,827 log 7364 39084 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 19:42:51,836 log 7364 39084 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 19:42:51,845 log 7364 39084 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 19:42:51,890 log 7364 39084 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 19:42:51,899 log 7364 39084 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 19:42:59,080 log 7364 39084 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 19:42:59,097 log 7364 48256 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:42:59,107 log 7364 48256 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 19:42:59,132 log 7364 48256 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:42:59,152 log 7364 39084 "GET /api/quick-deals/ HTTP/1.1" 200 9402
+INFO 2026-03-06 19:42:59,190 log 7364 48256 "GET /api/quick-deals/ HTTP/1.1" 200 9402
+INFO 2026-03-06 19:42:59,227 log 7364 48256 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 19:42:59,240 log 7364 48256 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 19:42:59,247 log 7364 39084 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:42:59,259 log 7364 39084 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:43:17,758 log 7364 39084 "POST /api/cart/add/ HTTP/1.1" 200 63
+INFO 2026-03-06 19:43:17,780 log 7364 39084 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:43:18,877 log 7364 39084 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:43:19,016 log 7364 39084 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:43:19,039 log 7364 39084 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:43:19,059 log 7364 39084 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:43:29,298 log 7364 39084 "PUT /api/cart/update/1/ HTTP/1.1" 200 105
+INFO 2026-03-06 19:43:34,566 log 7364 39084 "POST /api/orders/create-from-cart/ HTTP/1.1" 201 14
+INFO 2026-03-06 19:43:34,573 views 7364 39084 Payment initiation by user 2
+INFO 2026-03-06 19:43:34,577 pesapal_utils 7364 39084 Requesting new access token from Pesapal
+INFO 2026-03-06 19:43:36,428 pesapal_utils 7364 39084 Access token obtained successfully
+INFO 2026-03-06 19:43:36,430 pesapal_utils 7364 39084 Submitting order: ref=6, amount=33.00 UGX
+INFO 2026-03-06 19:43:38,844 pesapal_utils 7364 39084 Full response from Pesapal: {'order_tracking_id': '9116c410-67f7-472f-9407-dc389f0a884d', 'merchant_reference': '6', 'redirect_url': 'https://cybqa.pesapal.com/pesapaliframe/PesapalIframe3/Index?OrderTrackingId=9116c410-67f7-472f-9407-dc389f0a884d', 'error': None, 'status': '200'}
+INFO 2026-03-06 19:43:38,845 pesapal_utils 7364 39084 Order submitted successfully, tracking_id=9116c410-67f7-472f-9407-dc389f0a884d
+INFO 2026-03-06 19:43:39,478 views 7364 39084 Order 6 initiated, tracking_id=9116c410-67f7-472f-9407-dc389f0a884d
+INFO 2026-03-06 19:43:39,787 log 7364 39084 "POST /api/payments/initiate/ HTTP/1.1" 200 191
+INFO 2026-03-06 19:48:05,930 log 7364 48104 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 19:48:05,992 log 7364 39084 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 19:48:05,992 log 7364 44724 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 19:48:06,040 log 7364 39084 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 19:48:06,049 log 7364 39084 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 19:48:06,231 log 7364 39084 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:48:06,358 log 7364 38328 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 19:48:06,374 log 7364 48048 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:48:06,419 log 7364 39084 "GET /api/quick-deals/ HTTP/1.1" 200 9399
+INFO 2026-03-06 19:48:06,478 log 7364 39084 "GET /api/quick-deals/ HTTP/1.1" 200 9399
+INFO 2026-03-06 19:48:06,595 log 7364 39084 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 19:48:06,625 log 7364 39084 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 19:48:06,677 log 7364 48048 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:48:06,697 log 7364 48048 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:48:07,062 log 7364 25760 "GET /media/quickdeals/pexels-burst-374054.jpg HTTP/1.1" 304 0
+INFO 2026-03-06 19:48:36,101 log 7364 48048 "GET /api/quick-deals/ HTTP/1.1" 200 9399
+INFO 2026-03-06 19:49:06,123 log 7364 48048 "GET /api/quick-deals/ HTTP/1.1" 200 9399
+INFO 2026-03-06 19:49:10,213 log 7364 48048 "POST /api/cart/add/ HTTP/1.1" 200 63
+INFO 2026-03-06 19:49:10,342 log 7364 48048 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:49:14,589 log 7364 48048 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:49:14,613 log 7364 48048 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:49:14,639 log 7364 48048 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:49:14,667 log 7364 48048 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:49:19,923 log 7364 48048 "PUT /api/cart/update/1/ HTTP/1.1" 200 104
+INFO 2026-03-06 19:49:22,269 log 7364 48048 "POST /api/orders/create-from-cart/ HTTP/1.1" 201 14
+INFO 2026-03-06 19:49:22,298 views 7364 48048 Payment initiation by user 2
+INFO 2026-03-06 19:49:22,304 pesapal_utils 7364 48048 Requesting new access token from Pesapal
+INFO 2026-03-06 19:49:24,362 pesapal_utils 7364 48048 Access token obtained successfully
+INFO 2026-03-06 19:49:24,365 pesapal_utils 7364 48048 Submitting order: ref=7, amount=33.00 UGX
+INFO 2026-03-06 19:49:26,184 pesapal_utils 7364 48048 Full response from Pesapal: {'error': {'error_type': 'duplicate_order_reference', 'code': 'missing_unique_id', 'message': 'You have not provided a unique request ID. Please check ID value in your POST data.'}, 'status': '500'}
+ERROR 2026-03-06 19:49:26,185 views 7364 48048 Pesapal submit error for order 7: Pesapal error: Unknown error
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 843, in initiate_payment
+    pesapal_response = pesapal_utils.submit_order_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\pesapal_utils.py", line 98, in submit_order_request
+    raise Exception(f"Pesapal error: {error_msg}")
+Exception: Pesapal error: Unknown error
+ERROR 2026-03-06 19:49:26,188 log 7364 48048 Internal Server Error: /api/payments/initiate/
+ERROR 2026-03-06 19:49:26,188 log 7364 48048 "POST /api/payments/initiate/ HTTP/1.1" 500 55
+INFO 2026-03-06 19:50:24,236 log 7364 31572 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 19:50:24,237 log 7364 48048 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 19:50:24,256 log 7364 48048 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 19:50:24,271 log 7364 43040 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 19:50:24,369 log 7364 48048 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 19:50:24,382 log 7364 48048 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 19:50:24,395 log 7364 48048 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 19:50:24,408 log 7364 48048 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 19:50:26,894 log 7364 48048 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 19:50:26,919 log 7364 39084 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:50:26,919 log 7364 48048 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 19:50:26,959 log 7364 48048 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 19:50:26,974 log 7364 39084 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:50:26,998 log 7364 48048 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:50:27,006 log 7364 38328 "GET /api/quick-deals/ HTTP/1.1" 200 9399
+INFO 2026-03-06 19:50:27,011 log 7364 39084 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 19:50:27,111 log 7364 38328 "GET /api/quick-deals/ HTTP/1.1" 200 9399
+INFO 2026-03-06 19:50:27,123 log 7364 39084 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 19:50:28,506 log 7364 39084 "POST /api/cart/add/ HTTP/1.1" 200 63
+INFO 2026-03-06 19:50:28,543 log 7364 39084 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:50:29,395 log 7364 39084 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:50:29,444 log 7364 39084 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:50:29,469 log 7364 39084 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:50:29,491 log 7364 39084 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:50:30,922 log 7364 39084 "PUT /api/cart/update/1/ HTTP/1.1" 200 92
+INFO 2026-03-06 19:50:30,967 log 7364 39084 "GET /api/cart/items/ HTTP/1.1" 200 864
+INFO 2026-03-06 19:50:36,876 log 7364 39084 "PUT /api/cart/update/1/ HTTP/1.1" 200 101
+INFO 2026-03-06 19:50:39,654 log 7364 39084 "POST /api/orders/create-from-cart/ HTTP/1.1" 201 14
+INFO 2026-03-06 19:50:39,664 views 7364 39084 Payment initiation by user 2
+INFO 2026-03-06 19:50:39,671 pesapal_utils 7364 39084 Submitting order: ref=8, amount=66.00 UGX
+INFO 2026-03-06 19:50:41,621 pesapal_utils 7364 39084 Full response from Pesapal: {'error': {'error_type': 'duplicate_order_reference', 'code': 'missing_unique_id', 'message': 'You have not provided a unique request ID. Please check ID value in your POST data.'}, 'status': '500'}
+ERROR 2026-03-06 19:50:41,622 views 7364 39084 Pesapal submit error for order 8: Pesapal error: Unknown error
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 843, in initiate_payment
+    pesapal_response = pesapal_utils.submit_order_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\pesapal_utils.py", line 98, in submit_order_request
+    raise Exception(f"Pesapal error: {error_msg}")
+Exception: Pesapal error: Unknown error
+ERROR 2026-03-06 19:50:41,670 log 7364 39084 Internal Server Error: /api/payments/initiate/
+ERROR 2026-03-06 19:50:41,671 log 7364 39084 "POST /api/payments/initiate/ HTTP/1.1" 500 55
+INFO 2026-03-06 19:54:32,527 log 7364 36356 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 19:54:32,794 log 7364 46736 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 19:54:34,225 log 7364 19824 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 19:54:34,241 log 7364 20760 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 19:54:34,611 log 7364 46232 "OPTIONS /api/cart/ HTTP/1.1" 200 0
+INFO 2026-03-06 19:54:34,612 log 7364 23756 "OPTIONS /api/cart/ HTTP/1.1" 200 0
+INFO 2026-03-06 19:55:23,036 autoreload 7364 31188 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\urls.py changed, reloading.
+INFO 2026-03-06 19:55:31,794 autoreload 348 11428 Watching for file changes with StatReloader
+INFO 2026-03-06 19:55:38,731 autoreload 348 11428 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\urls.py changed, reloading.
+INFO 2026-03-06 19:55:39,547 autoreload 50408 44728 Watching for file changes with StatReloader
+INFO 2026-03-06 19:55:42,784 autoreload 50408 44728 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\urls.py changed, reloading.
+INFO 2026-03-06 19:55:43,810 autoreload 30048 45520 Watching for file changes with StatReloader
+INFO 2026-03-06 19:56:23,371 autoreload 30048 45520 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-06 19:56:25,727 autoreload 49164 7076 Watching for file changes with StatReloader
+INFO 2026-03-06 19:56:36,194 autoreload 49164 7076 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-06 19:56:38,082 autoreload 43528 50704 Watching for file changes with StatReloader
+INFO 2026-03-06 19:58:25,711 autoreload 43528 50704 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-06 19:58:26,695 autoreload 19468 32268 Watching for file changes with StatReloader
+INFO 2026-03-06 19:58:30,674 autoreload 19468 32268 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-06 19:58:31,491 autoreload 13008 48700 Watching for file changes with StatReloader
+INFO 2026-03-06 19:58:39,730 autoreload 13008 48700 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-06 19:58:40,988 autoreload 31852 7532 Watching for file changes with StatReloader
+INFO 2026-03-06 19:58:42,750 autoreload 31852 7532 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-06 19:58:43,991 autoreload 49380 44236 Watching for file changes with StatReloader
+INFO 2026-03-06 19:58:46,994 autoreload 49380 44236 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-06 19:58:47,724 autoreload 41348 49684 Watching for file changes with StatReloader
+INFO 2026-03-06 19:58:58,953 autoreload 41348 49684 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-06 19:59:02,469 autoreload 49992 23828 Watching for file changes with StatReloader
+INFO 2026-03-06 19:59:11,966 autoreload 49992 23828 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-06 19:59:15,615 autoreload 1068 47460 Watching for file changes with StatReloader
+INFO 2026-03-06 19:59:54,248 autoreload 29276 19284 Watching for file changes with StatReloader
+INFO 2026-03-06 20:01:12,665 log 29276 43352 "OPTIONS /api/login/ HTTP/1.1" 200 0
+INFO 2026-03-06 20:01:17,467 log 29276 43352 "POST /api/login/ HTTP/1.1" 200 582
+INFO 2026-03-06 20:01:17,655 log 29276 13552 "OPTIONS /api/categories/ HTTP/1.1" 200 0
+INFO 2026-03-06 20:01:17,660 log 29276 13552 "OPTIONS /api/products/ HTTP/1.1" 200 0
+INFO 2026-03-06 20:01:17,663 log 29276 13552 "OPTIONS /api/quick-deals/ HTTP/1.1" 200 0
+INFO 2026-03-06 20:01:17,820 log 29276 13552 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 20:01:17,821 log 29276 43352 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:01:17,991 log 29276 47744 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 20:01:18,011 log 29276 13552 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:01:18,033 log 29276 47744 "OPTIONS /api/wishlist/ HTTP/1.1" 200 0
+INFO 2026-03-06 20:01:18,087 log 29276 13552 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:01:18,149 log 29276 43352 "GET /api/quick-deals/ HTTP/1.1" 200 9399
+INFO 2026-03-06 20:01:18,155 log 29276 47744 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 20:01:18,167 log 29276 43352 "OPTIONS /api/liked-products/ HTTP/1.1" 200 0
+INFO 2026-03-06 20:01:18,180 log 29276 47744 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 20:01:18,265 log 29276 13552 "GET /api/quick-deals/ HTTP/1.1" 200 9399
+INFO 2026-03-06 20:01:18,302 log 29276 47744 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:01:18,333 log 29276 47744 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:01:21,132 log 29276 47744 "POST /api/cart/add/ HTTP/1.1" 200 64
+INFO 2026-03-06 20:01:21,164 log 29276 47744 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:01:21,840 log 29276 47744 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:01:21,866 log 29276 47744 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:01:21,901 log 29276 47744 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:01:21,944 log 29276 47744 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:01:26,808 log 29276 47744 "PUT /api/cart/update/1/ HTTP/1.1" 200 100
+INFO 2026-03-06 20:01:28,857 log 29276 47744 "POST /api/orders/create-from-cart/ HTTP/1.1" 201 14
+INFO 2026-03-06 20:01:28,866 views 29276 47744 Payment initiation by user 2
+INFO 2026-03-06 20:01:28,876 pesapal_utils 29276 47744 Requesting new access token from Pesapal
+INFO 2026-03-06 20:01:32,311 pesapal_utils 29276 47744 Access token obtained successfully
+INFO 2026-03-06 20:01:32,314 pesapal_utils 29276 47744 Submitting order: ref=9, amount=33.00 UGX
+INFO 2026-03-06 20:01:34,773 pesapal_utils 29276 47744 Full response from Pesapal: {'error': {'error_type': 'duplicate_order_reference', 'code': 'missing_unique_id', 'message': 'You have not provided a unique request ID. Please check ID value in your POST data.'}, 'status': '500'}
+ERROR 2026-03-06 20:01:34,773 views 29276 47744 Pesapal submit error for order 9: Pesapal error: Unknown error
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 845, in initiate_payment
+    pesapal_response = pesapal_utils.submit_order_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\pesapal_utils.py", line 98, in submit_order_request
+    raise Exception(f"Pesapal error: {error_msg}")
+Exception: Pesapal error: Unknown error
+ERROR 2026-03-06 20:01:34,909 log 29276 47744 Internal Server Error: /api/payments/initiate/
+ERROR 2026-03-06 20:01:34,932 log 29276 47744 "POST /api/payments/initiate/ HTTP/1.1" 500 55
+INFO 2026-03-06 20:04:45,298 log 29276 37364 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 20:04:45,437 log 29276 5580 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 20:04:46,319 log 29276 43496 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 20:04:46,327 log 29276 47744 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:04:46,391 log 29276 46452 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 20:04:46,394 log 29276 47744 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:06:13,248 autoreload 29276 19284 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-06 20:06:19,819 autoreload 36876 4196 Watching for file changes with StatReloader
+INFO 2026-03-06 20:07:00,367 log 36876 14784 "POST /api/login/ HTTP/1.1" 200 582
+INFO 2026-03-06 20:07:00,393 log 36876 14784 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:07:00,454 log 36876 14784 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 20:07:00,480 log 36876 20124 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:07:00,503 log 36876 20124 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 20:07:00,556 log 36876 20124 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:07:00,586 log 36876 20124 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 20:07:00,610 log 36876 14784 "GET /api/quick-deals/ HTTP/1.1" 200 9402
+INFO 2026-03-06 20:07:00,614 log 36876 20124 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 20:07:00,665 log 36876 14784 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:07:00,759 log 36876 14784 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:07:00,762 log 36876 20124 "GET /api/quick-deals/ HTTP/1.1" 200 9402
+INFO 2026-03-06 20:07:02,985 log 36876 20124 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:07:03,003 log 36876 20124 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:07:03,017 log 36876 20124 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:07:03,032 log 36876 20124 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:07:05,068 log 36876 20124 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 20:07:05,093 log 36876 14784 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:07:05,104 log 36876 20124 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 20:07:05,122 log 36876 14820 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 20:07:05,137 log 36876 14784 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:07:05,179 log 36876 14784 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 20:07:05,188 log 36876 14820 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:07:05,217 log 36876 32632 "GET /api/quick-deals/ HTTP/1.1" 200 9402
+INFO 2026-03-06 20:07:05,237 log 36876 14820 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:07:05,292 log 36876 32632 "GET /api/quick-deals/ HTTP/1.1" 200 9402
+INFO 2026-03-06 20:07:06,349 log 36876 32632 "POST /api/cart/add/ HTTP/1.1" 200 64
+INFO 2026-03-06 20:07:06,378 log 36876 32632 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:07:07,554 log 36876 32632 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:07:07,577 log 36876 32632 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:07:07,602 log 36876 32632 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:07:07,626 log 36876 32632 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:07:11,717 log 36876 32632 "PUT /api/cart/update/1/ HTTP/1.1" 200 92
+INFO 2026-03-06 20:07:11,747 log 36876 32632 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:07:15,542 log 36876 32632 "PUT /api/cart/update/1/ HTTP/1.1" 200 104
+INFO 2026-03-06 20:07:17,262 log 36876 32632 "POST /api/orders/create-from-cart/ HTTP/1.1" 201 15
+INFO 2026-03-06 20:07:17,272 views 36876 32632 Payment initiation by user 2
+INFO 2026-03-06 20:07:17,277 views 36876 32632 Submitting order to Pesapal: order_id=10, amount=66.00, currency=UGX
+INFO 2026-03-06 20:07:17,278 pesapal_utils 36876 32632 Requesting new access token from Pesapal
+INFO 2026-03-06 20:07:19,722 pesapal_utils 36876 32632 Access token obtained successfully
+INFO 2026-03-06 20:07:19,726 pesapal_utils 36876 32632 Submitting order: ref=10, amount=66.00 UGX
+INFO 2026-03-06 20:07:22,009 pesapal_utils 36876 32632 Full response from Pesapal: {'order_tracking_id': 'a4562c91-157d-4d9a-8749-dbd0cdfc8d31', 'merchant_reference': '10', 'redirect_url': 'https://cybqa.pesapal.com/pesapaliframe/PesapalIframe3/Index?OrderTrackingId=a4562c91-157d-4d9a-8749-dbd0cdfc8d31', 'error': None, 'status': '200'}
+INFO 2026-03-06 20:07:22,038 pesapal_utils 36876 32632 Order submitted successfully, tracking_id=a4562c91-157d-4d9a-8749-dbd0cdfc8d31
+INFO 2026-03-06 20:07:22,046 views 36876 32632 Pesapal response: {'order_tracking_id': 'a4562c91-157d-4d9a-8749-dbd0cdfc8d31', 'merchant_reference': '10', 'redirect_url': 'https://cybqa.pesapal.com/pesapaliframe/PesapalIframe3/Index?OrderTrackingId=a4562c91-157d-4d9a-8749-dbd0cdfc8d31', 'error': None, 'status': '200'}
+INFO 2026-03-06 20:07:22,108 views 36876 32632 Order 10 initiated, tracking_id=a4562c91-157d-4d9a-8749-dbd0cdfc8d31
+INFO 2026-03-06 20:07:22,111 log 36876 32632 "POST /api/payments/initiate/ HTTP/1.1" 200 191
+INFO 2026-03-06 20:20:39,220 log 36876 9512 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:20:39,269 log 36876 9512 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:20:39,315 log 36876 14416 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 20:20:39,431 log 36876 16880 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 20:20:39,579 log 36876 9512 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 20:20:39,663 log 36876 9512 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 20:20:39,670 log 36876 44748 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:20:39,701 log 36876 44748 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:20:39,728 log 36876 44748 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 20:20:39,766 log 36876 44748 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 20:20:39,790 log 36876 9512 "GET /api/quick-deals/ HTTP/1.1" 200 9402
+INFO 2026-03-06 20:20:39,831 log 36876 44748 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:20:39,873 log 36876 44748 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:20:39,908 log 36876 9512 "GET /api/quick-deals/ HTTP/1.1" 200 9402
+INFO 2026-03-06 20:20:40,226 log 36876 23828 "GET /media/quickdeals/pexels-burst-374054.jpg HTTP/1.1" 304 0
+INFO 2026-03-06 20:20:40,226 log 36876 724 "GET /media/products/0a967922e19eb7d22aae18f1c2b98afe.jpg HTTP/1.1" 304 0
+INFO 2026-03-06 20:20:40,226 log 36876 25344 "GET /media/quickdeals/0ac3ddd60590b73a4f70791e95b6dd42.jpg HTTP/1.1" 304 0
+INFO 2026-03-06 20:20:42,985 log 36876 50068 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 20:20:42,994 log 36876 9512 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:20:43,001 log 36876 5672 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 20:20:43,016 log 36876 9512 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:20:43,108 log 36876 9512 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 20:20:43,150 log 36876 9512 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 20:20:43,155 log 36876 44748 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:20:43,214 log 36876 9512 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 20:20:43,222 log 36876 44748 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:20:43,257 log 36876 37108 "GET /api/quick-deals/ HTTP/1.1" 200 9402
+INFO 2026-03-06 20:20:43,258 log 36876 9512 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:20:43,285 log 36876 44748 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 20:20:43,391 log 36876 37108 "GET /api/quick-deals/ HTTP/1.1" 200 9402
+INFO 2026-03-06 20:20:43,401 log 36876 44748 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:20:45,289 log 36876 23672 "GET /api/products/1/ HTTP/1.1" 200 761
+INFO 2026-03-06 20:20:45,360 log 36876 45796 "GET /api/products/1/comments/ HTTP/1.1" 200 2
+INFO 2026-03-06 20:20:45,371 log 36876 26912 "GET /api/products/1/related/ HTTP/1.1" 200 2
+INFO 2026-03-06 20:20:45,414 log 36876 11516 "GET /media/products/0a967922e19eb7d22aae18f1c2b98afe.jpg HTTP/1.1" 304 0
+INFO 2026-03-06 20:20:46,668 log 36876 44748 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 20:20:46,675 log 36876 37108 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:20:46,704 log 36876 46864 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 20:20:46,705 log 36876 44748 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 20:20:46,740 log 36876 37108 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:20:46,752 log 36876 44748 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:20:46,770 log 36876 37108 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 20:20:46,778 log 36876 9512 "GET /api/quick-deals/ HTTP/1.1" 200 9402
+INFO 2026-03-06 20:20:46,832 log 36876 9512 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:20:46,853 log 36876 37108 "GET /api/quick-deals/ HTTP/1.1" 200 9402
+INFO 2026-03-06 20:20:50,410 log 36876 23828 "GET /media/quickdeals/0ac658891f0fb946167a4347a944f1db.jpg HTTP/1.1" 304 0
+INFO 2026-03-06 20:20:54,865 log 36876 37108 "OPTIONS /api/cart/add/ HTTP/1.1" 200 0
+INFO 2026-03-06 20:20:55,020 log 36876 37108 "POST /api/cart/add/ HTTP/1.1" 200 64
+INFO 2026-03-06 20:20:55,056 log 36876 37108 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:20:56,099 log 36876 37108 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:20:56,131 log 36876 37108 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:20:56,153 log 36876 37108 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:20:56,231 log 36876 37108 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:21:00,668 log 36876 37108 "PUT /api/cart/update/1/ HTTP/1.1" 200 92
+INFO 2026-03-06 20:21:00,698 log 36876 37108 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:21:05,586 log 36876 37108 "PUT /api/cart/update/1/ HTTP/1.1" 200 103
+INFO 2026-03-06 20:21:11,681 log 36876 37108 "POST /api/orders/create-from-cart/ HTTP/1.1" 201 15
+INFO 2026-03-06 20:21:11,692 views 36876 37108 Payment initiation by user 2
+INFO 2026-03-06 20:21:11,698 views 36876 37108 Submitting order to Pesapal: order_id=11, amount=66.00, currency=UGX
+INFO 2026-03-06 20:21:11,698 pesapal_utils 36876 37108 Requesting new access token from Pesapal
+INFO 2026-03-06 20:21:14,929 pesapal_utils 36876 37108 Access token obtained successfully
+INFO 2026-03-06 20:21:14,933 pesapal_utils 36876 37108 Submitting order: ref=11, amount=66.00 UGX
+INFO 2026-03-06 20:21:17,472 pesapal_utils 36876 37108 Full response from Pesapal: {'error': {'error_type': 'duplicate_order_reference', 'code': 'missing_unique_id', 'message': 'You have not provided a unique request ID. Please check ID value in your POST data.'}, 'status': '500'}
+ERROR 2026-03-06 20:21:17,473 views 36876 37108 Pesapal submit error for order 11: Pesapal error: Unknown error
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 851, in initiate_payment
+    pesapal_response = pesapal_utils.submit_order_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\pesapal_utils.py", line 98, in submit_order_request
+    raise Exception(f"Pesapal error: {error_msg}")
+Exception: Pesapal error: Unknown error
+ERROR 2026-03-06 20:21:17,592 log 36876 37108 Internal Server Error: /api/payments/initiate/
+ERROR 2026-03-06 20:21:17,594 log 36876 37108 "POST /api/payments/initiate/ HTTP/1.1" 500 55
+INFO 2026-03-06 20:21:33,623 log 36876 33556 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 20:21:33,633 log 36876 37108 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:21:33,640 log 36876 15912 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 20:21:33,651 log 36876 37108 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:21:33,747 log 36876 37108 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:21:33,762 log 36876 37108 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:21:33,781 log 36876 37108 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:21:33,798 log 36876 37108 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:21:35,447 log 36876 37108 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 20:21:35,492 log 36876 46864 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 20:21:35,471 log 36876 9512 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:21:35,518 log 36876 37108 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 20:21:35,549 log 36876 44748 "GET /api/quick-deals/ HTTP/1.1" 200 9401
+INFO 2026-03-06 20:21:35,588 log 36876 46864 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:21:35,604 log 36876 9512 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:21:35,653 log 36876 44748 "GET /api/quick-deals/ HTTP/1.1" 200 9401
+INFO 2026-03-06 20:21:35,660 log 36876 9512 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 20:21:35,709 log 36876 9512 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:21:37,462 log 36876 9512 "POST /api/cart/add/ HTTP/1.1" 200 64
+INFO 2026-03-06 20:21:37,496 log 36876 9512 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:21:38,891 log 36876 9512 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:21:38,912 log 36876 9512 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:21:38,939 log 36876 9512 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:21:38,968 log 36876 9512 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:21:42,158 log 36876 9512 "PUT /api/cart/update/1/ HTTP/1.1" 200 92
+INFO 2026-03-06 20:21:42,193 log 36876 9512 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:21:46,874 log 36876 9512 "PUT /api/cart/update/1/ HTTP/1.1" 200 103
+INFO 2026-03-06 20:21:49,153 log 36876 9512 "POST /api/orders/create-from-cart/ HTTP/1.1" 201 15
+INFO 2026-03-06 20:21:49,157 views 36876 9512 Payment initiation by user 2
+INFO 2026-03-06 20:21:49,165 views 36876 9512 Submitting order to Pesapal: order_id=12, amount=66.00, currency=UGX
+INFO 2026-03-06 20:21:49,165 pesapal_utils 36876 9512 Submitting order: ref=12, amount=66.00 UGX
+INFO 2026-03-06 20:21:51,389 pesapal_utils 36876 9512 Full response from Pesapal: {'error': {'error_type': 'duplicate_order_reference', 'code': 'missing_unique_id', 'message': 'You have not provided a unique request ID. Please check ID value in your POST data.'}, 'status': '500'}
+ERROR 2026-03-06 20:21:51,390 views 36876 9512 Pesapal submit error for order 12: Pesapal error: Unknown error
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 851, in initiate_payment
+    pesapal_response = pesapal_utils.submit_order_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\pesapal_utils.py", line 98, in submit_order_request
+    raise Exception(f"Pesapal error: {error_msg}")
+Exception: Pesapal error: Unknown error
+ERROR 2026-03-06 20:21:51,398 log 36876 9512 Internal Server Error: /api/payments/initiate/
+ERROR 2026-03-06 20:21:51,401 log 36876 9512 "POST /api/payments/initiate/ HTTP/1.1" 500 55
+WARNING 2026-03-06 20:22:02,062 log 36876 9512 Not Found: /api/cart/update/1/
+WARNING 2026-03-06 20:22:02,065 log 36876 9512 "PUT /api/cart/update/1/ HTTP/1.1" 404 31
+WARNING 2026-03-06 20:22:05,186 log 36876 9512 Not Found: /api/cart/update/1/
+WARNING 2026-03-06 20:22:05,189 log 36876 9512 "PUT /api/cart/update/1/ HTTP/1.1" 404 31
+INFO 2026-03-06 20:22:08,529 log 36876 28764 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 20:22:08,536 log 36876 9512 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:22:08,561 log 36876 9512 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:22:08,562 log 36876 12816 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 20:22:08,646 log 36876 9512 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:22:08,658 log 36876 9512 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:22:08,679 log 36876 9512 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:22:08,701 log 36876 9512 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:22:17,345 log 36876 9512 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 20:22:17,365 log 36876 37108 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 20:22:17,375 log 36876 44748 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:22:17,408 log 36876 37108 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 20:22:17,429 log 36876 44748 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:22:17,453 log 36876 37108 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:22:17,466 log 36876 44748 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 20:22:17,487 log 36876 46864 "GET /api/quick-deals/ HTTP/1.1" 200 9401
+INFO 2026-03-06 20:22:17,544 log 36876 44748 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:22:17,569 log 36876 46864 "GET /api/quick-deals/ HTTP/1.1" 200 9401
+INFO 2026-03-06 20:22:19,196 log 36876 46864 "POST /api/cart/add/ HTTP/1.1" 200 64
+INFO 2026-03-06 20:22:19,229 log 36876 46864 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:22:24,073 log 36876 46864 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:22:24,097 log 36876 46864 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:22:24,120 log 36876 46864 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:22:24,142 log 36876 46864 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:22:25,501 log 36876 46864 "POST /api/orders/create-from-cart/ HTTP/1.1" 201 15
+INFO 2026-03-06 20:22:25,510 views 36876 46864 Payment initiation by user 2
+INFO 2026-03-06 20:22:25,513 views 36876 46864 Submitting order to Pesapal: order_id=13, amount=33.00, currency=UGX
+INFO 2026-03-06 20:22:25,513 pesapal_utils 36876 46864 Submitting order: ref=13, amount=33.00 UGX
+INFO 2026-03-06 20:22:28,004 pesapal_utils 36876 46864 Full response from Pesapal: {'error': {'error_type': 'duplicate_order_reference', 'code': 'missing_unique_id', 'message': 'You have not provided a unique request ID. Please check ID value in your POST data.'}, 'status': '500'}
+ERROR 2026-03-06 20:22:28,005 views 36876 46864 Pesapal submit error for order 13: Pesapal error: Unknown error
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 851, in initiate_payment
+    pesapal_response = pesapal_utils.submit_order_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\pesapal_utils.py", line 98, in submit_order_request
+    raise Exception(f"Pesapal error: {error_msg}")
+Exception: Pesapal error: Unknown error
+ERROR 2026-03-06 20:22:28,012 log 36876 46864 Internal Server Error: /api/payments/initiate/
+ERROR 2026-03-06 20:22:28,015 log 36876 46864 "POST /api/payments/initiate/ HTTP/1.1" 500 55
+INFO 2026-03-06 20:24:28,652 log 36876 14240 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 20:24:28,662 log 36876 46864 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:24:28,678 log 36876 31376 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 20:24:28,684 log 36876 46864 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:24:28,772 log 36876 46864 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:24:28,789 log 36876 46864 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:24:28,877 log 36876 46864 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:24:28,897 log 36876 46864 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:24:30,890 log 36876 46864 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 20:24:30,915 log 36876 44748 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:24:30,923 log 36876 46864 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 20:24:30,948 log 36876 9512 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 20:24:30,966 log 36876 44748 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:24:31,013 log 36876 44748 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 20:24:31,016 log 36876 9512 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:24:31,057 log 36876 9512 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:24:31,057 log 36876 37108 "GET /api/quick-deals/ HTTP/1.1" 200 9401
+INFO 2026-03-06 20:24:31,135 log 36876 9512 "GET /api/quick-deals/ HTTP/1.1" 200 9401
+INFO 2026-03-06 20:24:32,488 log 36876 9512 "POST /api/cart/add/ HTTP/1.1" 200 64
+INFO 2026-03-06 20:24:32,544 log 36876 37108 "POST /api/cart/add/ HTTP/1.1" 200 64
+INFO 2026-03-06 20:24:32,565 log 36876 9512 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:24:32,582 log 36876 9512 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:24:34,790 log 36876 9512 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:24:34,811 log 36876 9512 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:24:34,830 log 36876 9512 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:24:34,871 log 36876 9512 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:24:40,736 log 36876 9512 "PUT /api/cart/update/1/ HTTP/1.1" 200 101
+INFO 2026-03-06 20:24:42,893 log 36876 9512 "POST /api/orders/create-from-cart/ HTTP/1.1" 201 15
+INFO 2026-03-06 20:24:42,905 views 36876 9512 Payment initiation by user 2
+INFO 2026-03-06 20:24:42,913 views 36876 9512 Submitting order to Pesapal: order_id=14, amount=66.00, currency=UGX
+INFO 2026-03-06 20:24:42,914 pesapal_utils 36876 9512 Submitting order: ref=14, amount=66.00 UGX
+ERROR 2026-03-06 20:24:59,062 pesapal_utils 36876 9512 SubmitOrderRequest failed: HTTPSConnectionPool(host='cybqa.pesapal.com', port=443): Read timed out. (read timeout=15)
+ERROR 2026-03-06 20:24:59,063 views 36876 9512 Pesapal submit error for order 14: HTTPSConnectionPool(host='cybqa.pesapal.com', port=443): Read timed out. (read timeout=15)
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\connectionpool.py", line 464, in _make_request
+    self._validate_conn(conn)
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\connectionpool.py", line 1093, in _validate_conn
+    conn.connect()
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\connection.py", line 796, in connect
+    sock_and_verified = _ssl_wrap_socket_and_match_hostname(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\connection.py", line 975, in _ssl_wrap_socket_and_match_hostname
+    ssl_sock = ssl_wrap_socket(
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\util\ssl_.py", line 483, in ssl_wrap_socket
+    ssl_sock = _ssl_wrap_socket_impl(sock, context, tls_in_tls, server_hostname)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\util\ssl_.py", line 527, in _ssl_wrap_socket_impl
+    return ssl_context.wrap_socket(sock, server_hostname=server_hostname)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python312\Lib\ssl.py", line 455, in wrap_socket
+    return self.sslsocket_class._create(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python312\Lib\ssl.py", line 1046, in _create
+    self.do_handshake()
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python312\Lib\ssl.py", line 1317, in do_handshake
+    self._sslobj.do_handshake()
+TimeoutError: _ssl.c:983: The handshake operation timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\requests\adapters.py", line 644, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\util\retry.py", line 490, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\util\util.py", line 39, in reraise
+    raise value
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\connectionpool.py", line 488, in _make_request
+    raise new_e
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\connectionpool.py", line 466, in _make_request
+    self._raise_timeout(err=e, url=url, timeout_value=conn.timeout)
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\connectionpool.py", line 367, in _raise_timeout
+    raise ReadTimeoutError(
+urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host='cybqa.pesapal.com', port=443): Read timed out. (read timeout=15)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 851, in initiate_payment
+    pesapal_response = pesapal_utils.submit_order_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\pesapal_utils.py", line 91, in submit_order_request
+    response = requests.post(url, json=payload, headers=headers, timeout=15)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\requests\api.py", line 115, in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\requests\api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\requests\adapters.py", line 690, in send
+    raise ReadTimeout(e, request=request)
+requests.exceptions.ReadTimeout: HTTPSConnectionPool(host='cybqa.pesapal.com', port=443): Read timed out. (read timeout=15)
+ERROR 2026-03-06 20:24:59,322 log 36876 9512 Internal Server Error: /api/payments/initiate/
+ERROR 2026-03-06 20:24:59,326 log 36876 9512 "POST /api/payments/initiate/ HTTP/1.1" 500 117
+INFO 2026-03-06 20:26:11,890 autoreload 44188 30804 Watching for file changes with StatReloader
+INFO 2026-03-06 20:44:23,381 log 44188 16256 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 20:44:23,381 log 44188 3560 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 20:44:23,400 log 44188 33312 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:44:23,520 log 44188 33312 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:44:23,540 log 44188 33312 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:44:23,556 log 44188 33312 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:44:23,569 log 44188 33312 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:44:23,580 log 44188 33312 "GET /api/cart/ HTTP/1.1" 200 77
+INFO 2026-03-06 20:44:26,768 log 44188 33312 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 20:44:26,876 log 44188 33380 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:44:26,900 log 44188 33380 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 20:44:26,947 log 44188 33380 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:44:26,972 log 44188 33380 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 20:44:26,984 log 44188 33312 "GET /api/quick-deals/ HTTP/1.1" 200 9402
+INFO 2026-03-06 20:44:26,988 log 44188 33380 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 20:44:27,075 log 44188 33312 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:44:27,106 log 44188 33312 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 20:44:27,136 log 44188 33380 "GET /api/quick-deals/ HTTP/1.1" 200 9402
+INFO 2026-03-06 20:44:29,794 log 44188 33380 "POST /api/cart/add/ HTTP/1.1" 200 64
+INFO 2026-03-06 20:44:29,821 log 44188 33380 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:44:31,203 log 44188 33380 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:44:31,224 log 44188 33380 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:44:31,249 log 44188 33380 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:44:31,273 log 44188 33380 "GET /api/cart/ HTTP/1.1" 200 865
+INFO 2026-03-06 20:44:40,593 log 44188 33380 "PUT /api/cart/update/1/ HTTP/1.1" 200 103
+INFO 2026-03-06 20:44:43,405 log 44188 33380 "POST /api/orders/create-from-cart/ HTTP/1.1" 201 15
+INFO 2026-03-06 20:44:43,418 views 44188 33380 Payment initiation by user 2
+INFO 2026-03-06 20:44:43,427 views 44188 33380 Submitting order to Pesapal: order_id=15, amount=33.00, currency=UGX
+INFO 2026-03-06 20:44:43,428 pesapal_utils 44188 33380 Requesting new access token from Pesapal
+INFO 2026-03-06 20:44:46,700 pesapal_utils 44188 33380 Access token obtained successfully
+INFO 2026-03-06 20:44:46,703 pesapal_utils 44188 33380 Submitting order: ref=15, amount=33.00 UGX
+INFO 2026-03-06 20:44:49,323 pesapal_utils 44188 33380 Full response from Pesapal: {'order_tracking_id': '8c3058fa-fb59-4f11-9426-dbcaa70f9c97', 'merchant_reference': '15', 'redirect_url': 'https://cybqa.pesapal.com/pesapaliframe/PesapalIframe3/Index?OrderTrackingId=8c3058fa-fb59-4f11-9426-dbcaa70f9c97', 'error': None, 'status': '200'}
+INFO 2026-03-06 20:44:49,324 pesapal_utils 44188 33380 Order submitted successfully, tracking_id=8c3058fa-fb59-4f11-9426-dbcaa70f9c97
+INFO 2026-03-06 20:44:49,362 views 44188 33380 Pesapal response: {'order_tracking_id': '8c3058fa-fb59-4f11-9426-dbcaa70f9c97', 'merchant_reference': '15', 'redirect_url': 'https://cybqa.pesapal.com/pesapaliframe/PesapalIframe3/Index?OrderTrackingId=8c3058fa-fb59-4f11-9426-dbcaa70f9c97', 'error': None, 'status': '200'}
+INFO 2026-03-06 20:44:49,485 views 44188 33380 Order 15 initiated, tracking_id=8c3058fa-fb59-4f11-9426-dbcaa70f9c97
+INFO 2026-03-06 20:44:49,487 log 44188 33380 "POST /api/payments/initiate/ HTTP/1.1" 200 191
+INFO 2026-03-06 20:48:24,492 autoreload 44188 30804 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-06 20:48:41,229 autoreload 37664 27276 Watching for file changes with StatReloader
+INFO 2026-03-06 21:00:48,294 log 37664 28688 "OPTIONS /api/cart/items/ HTTP/1.1" 200 0
+INFO 2026-03-06 21:00:48,294 log 37664 41672 "OPTIONS /api/cart/items/ HTTP/1.1" 200 0
+INFO 2026-03-06 21:00:48,710 log 37664 38060 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 21:00:48,740 log 37664 41672 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 21:00:48,747 log 37664 15592 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 21:00:48,761 log 37664 41672 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-06 21:00:48,970 log 37664 41672 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 21:00:48,997 log 37664 41672 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 21:00:49,048 log 37664 26920 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 21:00:49,101 log 37664 41672 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 21:00:49,111 log 37664 26920 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 21:00:49,154 log 37664 26920 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 21:00:49,172 log 37664 41672 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 21:00:49,173 log 37664 28688 "GET /api/quick-deals/ HTTP/1.1" 200 9399
+INFO 2026-03-06 21:00:49,199 log 37664 41672 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 21:00:49,295 log 37664 28688 "GET /api/quick-deals/ HTTP/1.1" 200 9399
+INFO 2026-03-06 21:00:49,592 log 37664 43108 "GET /media/quickdeals/pexels-burst-374054.jpg HTTP/1.1" 304 0
+INFO 2026-03-06 21:00:56,806 log 37664 28688 "OPTIONS /api/buyer/profile/ HTTP/1.1" 200 0
+INFO 2026-03-06 21:00:56,809 log 37664 41672 "OPTIONS /api/buyer/profile/ HTTP/1.1" 200 0
+INFO 2026-03-06 21:00:56,858 log 37664 41672 "GET /api/buyer/profile/ HTTP/1.1" 200 99
+INFO 2026-03-06 21:00:56,864 log 37664 28688 "OPTIONS /api/verify-token/ HTTP/1.1" 200 0
+INFO 2026-03-06 21:00:56,867 log 37664 41672 "GET /api/buyer/profile/ HTTP/1.1" 200 99
+INFO 2026-03-06 21:00:56,890 log 37664 41672 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 21:00:56,916 log 37664 41672 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 21:01:05,480 log 37664 41672 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 21:01:05,506 log 37664 41672 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-06 21:01:05,508 log 37664 28688 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 21:01:05,557 log 37664 41672 "GET /api/products/ HTTP/1.1" 200 762
+INFO 2026-03-06 21:01:05,578 log 37664 28688 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 21:01:05,608 log 37664 26920 "GET /api/quick-deals/ HTTP/1.1" 200 9399
+INFO 2026-03-06 21:01:05,615 log 37664 28688 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-06 21:01:05,639 log 37664 41672 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 21:01:05,688 log 37664 41672 "GET /api/liked-products/ HTTP/1.1" 200 762
+INFO 2026-03-06 21:01:05,713 log 37664 26920 "GET /api/quick-deals/ HTTP/1.1" 200 9399
+INFO 2026-03-06 21:01:13,132 log 37664 26920 "GET /api/buyer/profile/ HTTP/1.1" 200 99
+INFO 2026-03-06 21:01:13,144 log 37664 26920 "GET /api/buyer/profile/ HTTP/1.1" 200 99
+INFO 2026-03-06 21:01:13,146 log 37664 41672 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 21:01:13,155 log 37664 41672 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-06 21:01:28,647 log 37664 41672 "POST /api/login/ HTTP/1.1" 200 588
+INFO 2026-03-06 21:01:28,713 log 37664 41672 "OPTIONS /api/seller/quick-deals/ HTTP/1.1" 200 0
+INFO 2026-03-06 21:01:28,814 log 37664 38520 "GET /api/seller/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 21:01:28,848 log 37664 23228 "GET /api/seller/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 21:01:29,004 log 37664 41672 "GET /api/seller/quick-deals/ HTTP/1.1" 200 8165
+INFO 2026-03-06 21:01:29,062 log 37664 41672 "GET /api/seller/quick-deals/ HTTP/1.1" 200 8165
+INFO 2026-03-06 21:01:33,406 log 37664 1068 "GET /api/seller/profile/ HTTP/1.1" 200 276
+INFO 2026-03-06 21:01:33,447 log 37664 47204 "GET /api/seller/profile/ HTTP/1.1" 200 276
+INFO 2026-03-06 21:01:33,456 log 37664 7504 "GET /api/seller/stats/ HTTP/1.1" 200 116
+INFO 2026-03-06 21:01:33,467 log 37664 30048 "GET /api/seller/stats/ HTTP/1.1" 200 116
+INFO 2026-03-06 21:01:34,814 log 37664 40372 "GET /api/seller/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 21:01:34,882 log 37664 31176 "GET /api/seller/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 21:01:34,882 log 37664 41672 "GET /api/seller/quick-deals/ HTTP/1.1" 200 8165
+INFO 2026-03-06 21:01:34,970 log 37664 41672 "GET /api/seller/quick-deals/ HTTP/1.1" 200 8165
+INFO 2026-03-06 21:01:37,935 log 37664 41672 "GET /api/seller/quick-deals/ HTTP/1.1" 200 8165
+INFO 2026-03-06 21:01:38,002 log 37664 32272 "GET /api/seller/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 21:01:38,036 log 37664 41672 "GET /api/seller/quick-deals/ HTTP/1.1" 200 8165
+INFO 2026-03-06 21:01:38,045 log 37664 48264 "GET /api/seller/products/ HTTP/1.1" 200 763
+INFO 2026-03-06 21:03:42,357 log 37664 39064 "POST /api/register/seller/ HTTP/1.1" 201 44

@@ -8,3 +8,172 @@ Traceback (most recent call last):
 Exception: Pesapal error: Unknown error
 ERROR 2026-03-06 12:35:14,789 log 41892 13224 Internal Server Error: /api/payments/initiate/
 ERROR 2026-03-06 12:35:14,792 log 41892 13224 "POST /api/payments/initiate/ HTTP/1.1" 500 55
+ERROR 2026-03-06 19:37:22,831 views 7364 8676 Pesapal submit error for order 3: Pesapal error: Unknown error
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 843, in initiate_payment
+    pesapal_response = pesapal_utils.submit_order_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\pesapal_utils.py", line 98, in submit_order_request
+    raise Exception(f"Pesapal error: {error_msg}")
+Exception: Pesapal error: Unknown error
+ERROR 2026-03-06 19:37:22,884 log 7364 8676 Internal Server Error: /api/payments/initiate/
+ERROR 2026-03-06 19:37:22,889 log 7364 8676 "POST /api/payments/initiate/ HTTP/1.1" 500 55
+ERROR 2026-03-06 19:37:55,624 views 7364 13608 Pesapal submit error for order 4: Pesapal error: Unknown error
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 843, in initiate_payment
+    pesapal_response = pesapal_utils.submit_order_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\pesapal_utils.py", line 98, in submit_order_request
+    raise Exception(f"Pesapal error: {error_msg}")
+Exception: Pesapal error: Unknown error
+ERROR 2026-03-06 19:37:55,628 log 7364 13608 Internal Server Error: /api/payments/initiate/
+ERROR 2026-03-06 19:37:55,630 log 7364 13608 "POST /api/payments/initiate/ HTTP/1.1" 500 55
+ERROR 2026-03-06 19:38:29,156 views 7364 37312 Pesapal submit error for order 5: Pesapal error: Unknown error
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 843, in initiate_payment
+    pesapal_response = pesapal_utils.submit_order_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\pesapal_utils.py", line 98, in submit_order_request
+    raise Exception(f"Pesapal error: {error_msg}")
+Exception: Pesapal error: Unknown error
+ERROR 2026-03-06 19:38:29,217 log 7364 37312 Internal Server Error: /api/payments/initiate/
+ERROR 2026-03-06 19:38:29,219 log 7364 37312 "POST /api/payments/initiate/ HTTP/1.1" 500 55
+ERROR 2026-03-06 19:49:26,185 views 7364 48048 Pesapal submit error for order 7: Pesapal error: Unknown error
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 843, in initiate_payment
+    pesapal_response = pesapal_utils.submit_order_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\pesapal_utils.py", line 98, in submit_order_request
+    raise Exception(f"Pesapal error: {error_msg}")
+Exception: Pesapal error: Unknown error
+ERROR 2026-03-06 19:49:26,188 log 7364 48048 Internal Server Error: /api/payments/initiate/
+ERROR 2026-03-06 19:49:26,188 log 7364 48048 "POST /api/payments/initiate/ HTTP/1.1" 500 55
+ERROR 2026-03-06 19:50:41,622 views 7364 39084 Pesapal submit error for order 8: Pesapal error: Unknown error
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 843, in initiate_payment
+    pesapal_response = pesapal_utils.submit_order_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\pesapal_utils.py", line 98, in submit_order_request
+    raise Exception(f"Pesapal error: {error_msg}")
+Exception: Pesapal error: Unknown error
+ERROR 2026-03-06 19:50:41,670 log 7364 39084 Internal Server Error: /api/payments/initiate/
+ERROR 2026-03-06 19:50:41,671 log 7364 39084 "POST /api/payments/initiate/ HTTP/1.1" 500 55
+ERROR 2026-03-06 20:01:34,773 views 29276 47744 Pesapal submit error for order 9: Pesapal error: Unknown error
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 845, in initiate_payment
+    pesapal_response = pesapal_utils.submit_order_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\pesapal_utils.py", line 98, in submit_order_request
+    raise Exception(f"Pesapal error: {error_msg}")
+Exception: Pesapal error: Unknown error
+ERROR 2026-03-06 20:01:34,909 log 29276 47744 Internal Server Error: /api/payments/initiate/
+ERROR 2026-03-06 20:01:34,932 log 29276 47744 "POST /api/payments/initiate/ HTTP/1.1" 500 55
+ERROR 2026-03-06 20:21:17,473 views 36876 37108 Pesapal submit error for order 11: Pesapal error: Unknown error
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 851, in initiate_payment
+    pesapal_response = pesapal_utils.submit_order_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\pesapal_utils.py", line 98, in submit_order_request
+    raise Exception(f"Pesapal error: {error_msg}")
+Exception: Pesapal error: Unknown error
+ERROR 2026-03-06 20:21:17,592 log 36876 37108 Internal Server Error: /api/payments/initiate/
+ERROR 2026-03-06 20:21:17,594 log 36876 37108 "POST /api/payments/initiate/ HTTP/1.1" 500 55
+ERROR 2026-03-06 20:21:51,390 views 36876 9512 Pesapal submit error for order 12: Pesapal error: Unknown error
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 851, in initiate_payment
+    pesapal_response = pesapal_utils.submit_order_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\pesapal_utils.py", line 98, in submit_order_request
+    raise Exception(f"Pesapal error: {error_msg}")
+Exception: Pesapal error: Unknown error
+ERROR 2026-03-06 20:21:51,398 log 36876 9512 Internal Server Error: /api/payments/initiate/
+ERROR 2026-03-06 20:21:51,401 log 36876 9512 "POST /api/payments/initiate/ HTTP/1.1" 500 55
+ERROR 2026-03-06 20:22:28,005 views 36876 46864 Pesapal submit error for order 13: Pesapal error: Unknown error
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 851, in initiate_payment
+    pesapal_response = pesapal_utils.submit_order_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\pesapal_utils.py", line 98, in submit_order_request
+    raise Exception(f"Pesapal error: {error_msg}")
+Exception: Pesapal error: Unknown error
+ERROR 2026-03-06 20:22:28,012 log 36876 46864 Internal Server Error: /api/payments/initiate/
+ERROR 2026-03-06 20:22:28,015 log 36876 46864 "POST /api/payments/initiate/ HTTP/1.1" 500 55
+ERROR 2026-03-06 20:24:59,062 pesapal_utils 36876 9512 SubmitOrderRequest failed: HTTPSConnectionPool(host='cybqa.pesapal.com', port=443): Read timed out. (read timeout=15)
+ERROR 2026-03-06 20:24:59,063 views 36876 9512 Pesapal submit error for order 14: HTTPSConnectionPool(host='cybqa.pesapal.com', port=443): Read timed out. (read timeout=15)
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\connectionpool.py", line 464, in _make_request
+    self._validate_conn(conn)
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\connectionpool.py", line 1093, in _validate_conn
+    conn.connect()
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\connection.py", line 796, in connect
+    sock_and_verified = _ssl_wrap_socket_and_match_hostname(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\connection.py", line 975, in _ssl_wrap_socket_and_match_hostname
+    ssl_sock = ssl_wrap_socket(
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\util\ssl_.py", line 483, in ssl_wrap_socket
+    ssl_sock = _ssl_wrap_socket_impl(sock, context, tls_in_tls, server_hostname)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\util\ssl_.py", line 527, in _ssl_wrap_socket_impl
+    return ssl_context.wrap_socket(sock, server_hostname=server_hostname)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python312\Lib\ssl.py", line 455, in wrap_socket
+    return self.sslsocket_class._create(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python312\Lib\ssl.py", line 1046, in _create
+    self.do_handshake()
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python312\Lib\ssl.py", line 1317, in do_handshake
+    self._sslobj.do_handshake()
+TimeoutError: _ssl.c:983: The handshake operation timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\requests\adapters.py", line 644, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\util\retry.py", line 490, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\util\util.py", line 39, in reraise
+    raise value
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\connectionpool.py", line 488, in _make_request
+    raise new_e
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\connectionpool.py", line 466, in _make_request
+    self._raise_timeout(err=e, url=url, timeout_value=conn.timeout)
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\urllib3\connectionpool.py", line 367, in _raise_timeout
+    raise ReadTimeoutError(
+urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host='cybqa.pesapal.com', port=443): Read timed out. (read timeout=15)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 851, in initiate_payment
+    pesapal_response = pesapal_utils.submit_order_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\pesapal_utils.py", line 91, in submit_order_request
+    response = requests.post(url, json=payload, headers=headers, timeout=15)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\requests\api.py", line 115, in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\requests\api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\requests\adapters.py", line 690, in send
+    raise ReadTimeout(e, request=request)
+requests.exceptions.ReadTimeout: HTTPSConnectionPool(host='cybqa.pesapal.com', port=443): Read timed out. (read timeout=15)
+ERROR 2026-03-06 20:24:59,322 log 36876 9512 Internal Server Error: /api/payments/initiate/
+ERROR 2026-03-06 20:24:59,326 log 36876 9512 "POST /api/payments/initiate/ HTTP/1.1" 500 117
