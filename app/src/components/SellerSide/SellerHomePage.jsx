@@ -34,7 +34,7 @@ const SellerHomePage = () => {
     product_id: '',
     caption: '',
     picture: null,
-    priority: 0,
+    priority: 0,  // kept for backend compatibility, but no UI field
   });
   const [isCreating, setIsCreating] = useState(false);
 
@@ -183,7 +183,7 @@ const SellerHomePage = () => {
         product_id: newQuickDeal.product_id,
         caption: newQuickDeal.caption || '',
         priority: newQuickDeal.priority || 0,
-        picture: newQuickDeal.picture,   // File or null
+        picture: newQuickDeal.picture,          
       };
 
       const result = await api.createQuickDeal(dealData);   
@@ -191,7 +191,7 @@ const SellerHomePage = () => {
       console.log('Quick deal creation result:', result);
 
       if (result.status >= 200 && result.status < 300 && result.data?.id) {
-        alert('Quick deal created successfully!');
+       
         setQuickDealModalOpen(false);
         setNewQuickDeal({ product_id: '', caption: '', picture: null, priority: 0 });
         fetchQuickDeals();
@@ -765,7 +765,7 @@ const SellerHomePage = () => {
         </div>
       )}
 
-      {/* Quick Deal Creation Modal */}
+      {/* Quick Deal Creation Modal (priority field removed) */}
       {quickDealModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -801,7 +801,7 @@ const SellerHomePage = () => {
                     name="caption"
                     value={newQuickDeal.caption}
                     onChange={handleQuickDealInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 text-black  rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="e.g., Limited offer!"
                   />
                 </div>
@@ -816,17 +816,7 @@ const SellerHomePage = () => {
                   />
                   <p className="text-xs text-gray-500 mt-1">If not provided, product image will be used</p>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Priority (higher = more prominent)</label>
-                  <input
-                    type="number"
-                    name="priority"
-                    value={newQuickDeal.priority}
-                    onChange={handleQuickDealInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    min="0"
-                  />
-                </div>
+                {/* Priority field removed */}
               </div>
               <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
                 <button

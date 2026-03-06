@@ -3,18 +3,11 @@ import { Card, CardContent } from './card';
 import { User, Moon, LogOut, Save, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../utils/api';
+import { useDarkMode } from '../../utils/DarkModeContext';
 
 const SettingsPage = () => {
   const navigate = useNavigate();
-
-  // Load saved settings 
-  const [settings, setSettings] = useState(() => {
-    const saved = localStorage.getItem('userSettings');
-    return saved ? JSON.parse(saved) : {
-      darkMode: false,
-    };
-  });
-
+  const { darkMode, toggleDarkMode } = useDarkMode();   
   // Real buyer profile from backend
   const [userInfo, setUserInfo] = useState({
     name: 'Loading...',
@@ -45,21 +38,8 @@ const SettingsPage = () => {
     fetchProfile();
   }, []);
 
-  // Apply dark mode to the whole app
-  useEffect(() => {
-    if (settings.darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    localStorage.setItem('userSettings', JSON.stringify(settings));
-  }, [settings.darkMode]);
-
-  const handleSettingChange = (key, value) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
-  };
-
   const handleSaveChanges = () => {
+    // Here you can save other settings (not dark mode, it's already auto-saved by context)
     alert('Settings saved successfully!');
   };
 
@@ -144,13 +124,13 @@ const SettingsPage = () => {
                   <p className="text-xs sm:text-sm text-gray-600">Toggle dark theme across the app</p>
                 </div>
                 <button
-                  onClick={() => handleSettingChange('darkMode', !settings.darkMode)}
+                  onClick={toggleDarkMode}   // 👈 use context toggle
                   className={`w-10 h-5 sm:w-12 sm:h-6 rounded-full transition-colors duration-200 ${
-                    settings.darkMode ? 'bg-blue-500' : 'bg-gray-300'
+                    darkMode ? 'bg-blue-500' : 'bg-gray-300'
                   }`}
                 >
                   <div className={`w-3 h-3 sm:w-4 sm:h-4 bg-white rounded-full transform transition-transform duration-200 ${
-                    settings.darkMode ? 'translate-x-6 sm:translate-x-7' : 'translate-x-1'
+                    darkMode ? 'translate-x-6 sm:translate-x-7' : 'translate-x-1'
                   }`} />
                 </button>
               </div>
