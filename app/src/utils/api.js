@@ -1,393 +1,487 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const API_BASE_URL = 'http://localhost:8000/api';
 
-console.log('API_URL:', API_URL);
+class Api {
+  getToken() {
+    return localStorage.getItem('accessToken');
+  }
 
-export const api = {
-  async request(endpoint, options = {}) {
-    const baseUrl = API_URL.replace(/\/$/, '');
-    const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-    const url = `${baseUrl}${normalizedEndpoint}`;
-    
-    const token = localStorage.getItem('accessToken');
-    
+  getRefreshToken() {
+    return localStorage.getItem('refreshToken');
+  }
+
+  getHeaders(includeAuth = true) {
     const headers = {
-      'Accept': 'application/json',
-      ...options.headers,
+      'Content-Type': 'application/json',
     };
+    
+    if (includeAuth) {
+      const token = this.getToken();
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+    }
+    
+    return headers;
+  }
 
-    if (options.body instanceof FormData) {
-      delete headers['Content-Type'];
-    } else if (!headers['Content-Type']) {
-      headers['Content-Type'] = 'application/json';
-    }
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
-    console.log('API Request:', url, options.method || 'GET');
-    
-    const timeoutDuration = 30000;
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeoutDuration);
+  async request(endpoint, options = {}) {
+    const url = `${API_BASE_URL}${endpoint}`;
+    const headers = options.headers || this.getHeaders(!options.public);
     
     try {
       const response = await fetch(url, {
         ...options,
-        headers,
-        signal: controller.signal,
+        headers: {
+          ...headers,
+          ...options.headers,
+        },
       });
       
-      clearTimeout(timeoutId);
+      let data;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        data = await response.text();
+      }
       
-      console.log('API Response:', response.status, url);
-      
-      if (response.status === 401) {
-        const refreshed = await this.refreshToken();
-        if (refreshed) {
-          const newToken = localStorage.getItem('accessToken');
-          if (newToken) {
-            headers['Authorization'] = `Bearer ${newToken}`;
-            const retryResponse = await fetch(url, {
-              ...options,
-              headers,
-            });
-            return this.handleResponse(retryResponse);
+      if (!response.ok) {
+        if (response.status === 401) {
+          const refreshed = await this.refreshToken();
+          if (refreshed) {
+            return this.request(endpoint, options);
+          } else {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('user');
+            localStorage.removeItem('userRole');
+            window.location.href = '/login';
           }
         }
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
-        localStorage.removeItem('userRole');
-        window.dispatchEvent(new CustomEvent('authStateChanged'));
-        return { error: 'Authentication failed. Please login again.', status: 401 };
+        return { error: true, status: response.status, data };
       }
       
-      return this.handleResponse(response);
+      return { data, status: response.status };
     } catch (error) {
-      console.error('API request failed:', error);
-      
-      if (error.name === 'AbortError') {
-        return { error: 'Request timeout. Please check your connection.', status: 408 };
-      }
-      
-      if (error.message.includes('Failed to fetch')) {
-        return { 
-          error: `Cannot connect to server at ${url}. Please ensure backend is running on localhost:8000`, 
-          status: 0 
-        };
-      }
-      
-      return { error: 'Network error. Please check your connection.', status: 0 };
+      console.error('API request error:', error);
+      return { error: true, message: error.message };
     }
-  },
-  
-  async handleResponse(response) {
-    const contentType = response.headers.get('content-type');
-    
-    if (contentType && contentType.includes('application/json')) {
-      try {
-        const data = await response.json();
-        
-        if (!response.ok) {
-          return { 
-            error: data.error || data.detail || data.message || 'Request failed', 
-            status: response.status, 
-            data 
-          };
-        }
-        
-        return { data, status: response.status };
-      } catch (jsonError) {
-        console.error('JSON parsing error:', jsonError);
-        return { error: 'Invalid JSON response', status: response.status };
-      }
-    } else {
-      if (!response.ok) {
-        return { error: 'Request failed', status: response.status };
-      }
-      return { data: await response.text(), status: response.status };
-    }
-  },
-  
+  }
+
   async refreshToken() {
-    const refreshToken = localStorage.getItem('refreshToken');
+    const refreshToken = this.getRefreshToken();
     if (!refreshToken) return false;
-    
+
     try {
-      const response = await fetch(`${API_URL}/auth/jwt/refresh/`, {
+      const response = await fetch(`${API_BASE_URL}/token/refresh/`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ refresh: refreshToken }),
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         localStorage.setItem('accessToken', data.access);
-        console.log('Token refreshed successfully');
         return true;
-      } else {
-        console.error('Token refresh failed with status:', response.status);
       }
     } catch (error) {
-      console.error('Token refresh failed:', error);
+      console.error('Token refresh error:', error);
     }
-    
+    return false;
+  }
+
+  async login(username, password) {
+    return this.request('/login/', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+      public: true,
+    });
+  }
+
+  async register(userData, isSeller = false) {
+    const endpoint = isSeller ? '/register/seller/' : '/register/buyer/';
+    return this.request(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(userData),
+      public: true,
+    });
+  }
+
+  async logout() {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
     localStorage.removeItem('userRole');
-    window.dispatchEvent(new CustomEvent('authStateChanged'));
-    return false;
-  },
-    
-  async updateSellerProduct(productId, formData) {
-    return this.request(`/products/${productId}/`, {
-      method: 'PUT',
-      headers: {},
-      body: formData,
-    });
-  },
-  
-  async getSellerProducts() {
-    return this.request('/seller/products/');
-  },
-  
-  async login(username, password) {
-    const result = await this.request('/login/', {
-      method: 'POST',
-      body: JSON.stringify({ username, password }),
-    });
-    
-    if (result.data && result.data.access) {
-      localStorage.setItem('accessToken', result.data.access);
-      localStorage.setItem('refreshToken', result.data.refresh);
-      
-      if (result.data.user) {
-        localStorage.setItem('user', JSON.stringify(result.data.user));
-        localStorage.setItem('userRole', result.data.user.is_seller ? 'seller' : 'buyer');
-      } else {
-        localStorage.setItem('user', JSON.stringify({ username }));
-      }
-      
-      window.dispatchEvent(new CustomEvent('authStateChanged'));
-    }
-    
-    return result;
-  },
-  
+    return { success: true };
+  }
+
   async verifyToken() {
     return this.request('/verify-token/');
-  },
-  
-  async registerBuyer(userData) {
-    return this.request('/register/buyer/', {
-      method: 'POST',
-      body: JSON.stringify(userData),
-    });
-  },
-  
-  async registerSeller(userData) {
-    return this.request('/register/seller/', {
-      method: 'POST',
-      body: JSON.stringify(userData),
-    });
-  },
-  
-  async getSellerProfile() {
-    return this.request('/seller/profile/');
-  },
-  
-  async getProducts() {
-    return this.request('/products/');
-  },
-  
-  async getProduct(id) {
-    return this.request(`/products/${id}/`);
-  },
-  
-  async getCart() {
-    return this.request('/cart/items/');
-  },
-  
-  async addToCart(productId, quantity = 1) {
-    return this.request('/cart/add/', {
-      method: 'POST',
-      body: JSON.stringify({ product_id: productId, quantity }),
-    });
-  },
-  
-  async removeFromCart(productId) {
-    return this.request(`/cart/remove/${productId}/`, {
-      method: 'DELETE',
-    });
-  },
-  
-  async updateCartItem(productId, quantity, answers = null) {
-    const body = {};
-    if (quantity !== undefined && quantity !== null) body.quantity = quantity;
-    if (answers !== null) body.answers = answers;
-    
-    return this.request(`/cart/update/${productId}/`, {
-      method: 'PUT',
-      body: JSON.stringify(body),
-    });
-  },
-  
-  async clearCart() {
-    return this.request('/cart/clear/', {
-      method: 'DELETE',
-    });
-  },
-  
-  async toggleLike(productId) {
-    return this.request(`/products/${productId}/toggle-like/`, {
-      method: 'POST',
-    });
-  },
-  
-  async getLikedProducts() {
-    return this.request('/liked-products/');
-  },
-  
-  async checkLike(productId) {
-    return this.request(`/products/${productId}/check-like/`);
-  },
-  
-  async getCategories() {
-    return this.request('/categories/');
-  },
+  }
 
-  async searchProducts(query, categoryId = 'all') {
-    const params = new URLSearchParams();
-    if (query) params.append('search', query);
-    if (categoryId && categoryId !== 'all') params.append('category', categoryId);
-    return this.request(`/products/?${params.toString()}`);
-  },
-  
-  async getSellers() {
-    return this.request('/sellers/');
-  },
-  
-  async getSeller(id) {
-    return this.request(`/sellers/${id}/`);
-  },
-  
-  async getQuickDeals() {
-    return this.request('/quick-deals/');
-  },
-  
-  async getSellerQuickDeals() {
-    return this.request('/seller/quick-deals/');
-  },
-  
-  async createQuickDeal(dealData) {
+  async getProducts(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    return this.request(`/products/${queryString ? '?' + queryString : ''}`);
+  }
+
+  async getProduct(productId) {
+    return this.request(`/products/${productId}/`);
+  }
+
+  async getSellerProducts(sellerId) {
+    return this.request(`/sellers/${sellerId}/products/`);
+  }
+
+  async createProduct(productData) {
     const formData = new FormData();
-    
-    Object.keys(dealData).forEach(key => {
-      if (dealData[key] !== undefined && dealData[key] !== null) {
-        formData.append(key, dealData[key]);
+    Object.keys(productData).forEach(key => {
+      if (key === 'images' && Array.isArray(productData[key])) {
+        productData[key].forEach(image => {
+          formData.append('images', image);
+        });
+      } else if (productData[key] !== null && productData[key] !== undefined) {
+        formData.append(key, productData[key]);
       }
     });
-    
-    return this.request('/seller/quick-deals/', {
+
+    return fetch(`${API_BASE_URL}/products/`, {
       method: 'POST',
-      headers: {},
+      headers: {
+        'Authorization': `Bearer ${this.getToken()}`,
+      },
       body: formData,
+    }).then(async response => {
+      const data = await response.json();
+      if (!response.ok) {
+        return { error: true, status: response.status, data };
+      }
+      return { data, status: response.status };
     });
-  },
-  
-  async getWishlist() {
-    return this.request('/wishlist/');
-  },
+  }
 
-  async addToWishlist(productId) {
-    return this.request('/wishlist/add/', {
-      method: 'POST',
-      body: JSON.stringify({ product_id: productId }),
+  async updateProduct(productId, productData) {
+    return this.request(`/products/${productId}/`, {
+      method: 'PUT',
+      body: JSON.stringify(productData),
     });
-  },
+  }
 
-  async removeFromWishlist(productId) {
-    return this.request(`/wishlist/remove/${productId}/`, {
+  async deleteProduct(productId) {
+    return this.request(`/products/${productId}/`, {
       method: 'DELETE',
     });
-  },
+  }
 
-  async toggleWishlist(productId) {
-    return this.request(`/wishlist/toggle/${productId}/`, {
+  async getCategories() {
+    return this.request('/categories/');
+  }
+
+  async getLikedProducts() {
+    return this.request('/liked-products/');
+  }
+
+  async toggleLike(productId) {
+    return this.request(`/products/${productId}/like/`, {
       method: 'POST',
     });
-  },
+  }
 
   async getProductComments(productId) {
     return this.request(`/products/${productId}/comments/`);
-  },
+  }
 
   async addComment(productId, commentData) {
     return this.request(`/products/${productId}/comments/`, {
       method: 'POST',
       body: JSON.stringify(commentData),
     });
-  },
+  }
 
   async updateComment(commentId, commentData) {
     return this.request(`/comments/${commentId}/`, {
       method: 'PUT',
       body: JSON.stringify(commentData),
     });
-  },
+  }
 
   async deleteComment(commentId) {
     return this.request(`/comments/${commentId}/`, {
       method: 'DELETE',
     });
-  },
+  }
 
-  async markHelpful(commentId) {
+  async markCommentHelpful(commentId) {
     return this.request(`/comments/${commentId}/helpful/`, {
       method: 'POST',
     });
-  },
+  }
+
+  async getWishlist() {
+    return this.request('/wishlist/');
+  }
+
+  async toggleWishlist(productId) {
+    return this.request(`/wishlist/toggle/${productId}/`, {
+      method: 'POST',
+    });
+  }
+  async addToWishlist(productId) {
+    return this.request('/wishlist/add/', {
+      method: 'POST',
+      body: JSON.stringify({ product_id: productId }),
+    });
+  }
+
+  async removeFromWishlist(productId) {
+    return this.request(`/wishlist/remove/${productId}/`, {
+      method: 'DELETE',
+    });
+  }
+
+    // Add to cart
+  async addToCart(productId, quantity = 1, answers = {}) {
+    return this.request('/cart/add/', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        product_id: productId, 
+        quantity: quantity,
+        answers: answers 
+      }),
+    });
+  }
+
+  // Remove from cart
+  async removeFromCart(productId) {
+    return this.request(`/cart/remove/${productId}/`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Update cart item
+  async updateCartItem(productId, quantity, answers = null) {
+    const body = {};
+    if (quantity !== undefined) body.quantity = quantity;
+    if (answers !== null) body.answers = answers;
     
-  async getOrderCount() {
-    return this.request('/orders/count/');
-  },
-  
-  async getBuyerProfile() {
-    return this.request('/buyer/profile/');
-  },
-  
-  logout() {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('user');
-    localStorage.removeItem('userRole');
-    window.dispatchEvent(new CustomEvent('authStateChanged'));
-    window.dispatchEvent(new CustomEvent('cartUpdated'));
-  },
-
-  async createOrderFromCart() {
-    return this.request('/orders/create-from-cart/', {
-      method: 'POST',
+    return this.request(`/cart/update/${productId}/`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
     });
-  },
+  }
 
-  async initiatePayment(orderId) {
-    return this.request('/payments/initiate/', {
-      method: 'POST',
-      body: JSON.stringify({ order_id: orderId }),
+  // Get cart items
+  async getCart() {
+    return this.request('/cart/items/');
+  }
+
+  // Clear cart
+  async clearCart() {
+    return this.request('/cart/clear/', {
+      method: 'DELETE',
     });
-  },
-  
-  async incrementQuickDealViews(dealId) {
-    return this.request(`/quick-deals/${dealId}/view/`, { method: 'POST' });
-  },
+  }
 
-  toggleFollowSeller(sellerId) {
+  async getSeller(sellerId) {
+    return this.request(`/sellers/${sellerId}/`);
+  }
+
+  async getCurrentSeller() {
+    return this.request('/sellers/me/');
+  }
+
+  async updateSellerProfile(sellerData) {
+    return this.request('/sellers/me/', {
+      method: 'PUT',
+      body: JSON.stringify(sellerData),
+    });
+  }
+
+  async toggleFollowSeller(sellerId) {
     return this.request(`/sellers/${sellerId}/follow/`, {
       method: 'POST',
     });
   }
 
-};
+  async getFollowing() {
+    return this.request('/sellers/following/');
+  }
+
+  async getCurrentBuyer() {
+    return this.request('/buyers/me/');
+  }
+
+  async updateBuyerProfile(buyerData) {
+    return this.request('/buyers/me/', {
+      method: 'PUT',
+      body: JSON.stringify(buyerData),
+    });
+  }
+
+  async getAddresses() {
+    return this.request('/addresses/');
+  }
+
+  async addAddress(addressData) {
+    return this.request('/addresses/', {
+      method: 'POST',
+      body: JSON.stringify(addressData),
+    });
+  }
+
+  async updateAddress(addressId, addressData) {
+    return this.request(`/addresses/${addressId}/`, {
+      method: 'PUT',
+      body: JSON.stringify(addressData),
+    });
+  }
+
+  async deleteAddress(addressId) {
+    return this.request(`/addresses/${addressId}/`, {
+      method: 'DELETE',
+    });
+  }
+
+  async setDefaultAddress(addressId) {
+    return this.request(`/addresses/${addressId}/set-default/`, {
+      method: 'POST',
+    });
+  }
+
+  // Order methods
+  async getOrders() {
+    return this.request('/orders/');
+  }
+
+  async getOrder(orderId) {
+    return this.request(`/orders/${orderId}/`);
+  }
+
+  async createOrder(orderData) {
+    return this.request('/orders/', {
+      method: 'POST',
+      body: JSON.stringify(orderData),
+    });
+  }
+
+  async cancelOrder(orderId) {
+    return this.request(`/orders/${orderId}/cancel/`, {
+      method: 'POST',
+    });
+  }
+
+  async createOrderFromCart() {
+    return this.request('/orders/create-from-cart/', {
+      method: 'POST',
+    });
+  }
+
+  // Payment methods
+  async initiatePayment(orderId) {
+    return this.request('/payments/initiate/', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        order_id: orderId 
+      }),
+    });
+  }
+
+  async verifyPayment(reference) {
+    return this.request(`/payments/verify/${reference}/`);
+  }
+
+  async getNotifications() {
+    return this.request('/notifications/');
+  }
+
+  async markNotificationRead(notificationId) {
+    return this.request(`/notifications/${notificationId}/read/`, {
+      method: 'POST',
+    });
+  }
+
+  async markAllNotificationsRead() {
+    return this.request('/notifications/read-all/', {
+      method: 'POST',
+    });
+  }
+
+  async deleteNotification(notificationId) {
+    return this.request(`/notifications/${notificationId}/delete/`, {
+      method: 'DELETE',
+    });
+  }
+
+  async clearAllNotifications() {
+    return this.request('/notifications/clear-all/', {
+      method: 'DELETE',
+    });
+  }
+
+  async getQuickDeals() {
+    return this.request('/quick-deals/');
+  }
+
+  async incrementQuickDealViews(dealId) {
+    return this.request(`/quick-deals/${dealId}/view/`, {
+      method: 'POST',
+    });
+  }
+
+  async search(query, filters = {}) {
+    const params = new URLSearchParams({ q: query, ...filters });
+    return this.request(`/search/?${params.toString()}`);
+  }
+
+  async getTrendingProducts() {
+    return this.request('/trending/');
+  }
+
+  async getSellerAnalytics() {
+    return this.request('/sellers/analytics/');
+  }
+
+  async getProductQuestions(productId) {
+    return this.request(`/products/${productId}/questions/`);
+  }
+
+  async submitQuestionAnswers(productId, answers) {
+    return this.request(`/products/${productId}/questions/submit/`, {
+      method: 'POST',
+      body: JSON.stringify({ answers }),
+    });
+  }
+
+  // Simple Notifications
+  async getSimpleNotifications() {
+    return this.request('/simple-notifications/');
+  }
+
+  async markSimpleNotificationRead(notificationId) {
+    return this.request(`/simple-notifications/${notificationId}/read/`, {
+      method: 'POST',
+    });
+  }
+
+  async markAllSimpleNotificationsRead() {
+    return this.request('/simple-notifications/read-all/', {
+      method: 'POST',
+    });
+  }
+
+  async deleteSimpleNotification(notificationId) {
+    return this.request(`/simple-notifications/${notificationId}/delete/`, {
+      method: 'DELETE',
+    });
+  }
+
+  async clearAllSimpleNotifications() {
+    return this.request('/simple-notifications/clear-all/', {
+      method: 'DELETE',
+    });
+  }
+}
+
+const api = new Api();
+export default api;

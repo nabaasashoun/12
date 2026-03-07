@@ -6,7 +6,7 @@ import {
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { api } from '../../utils/api';
+import api  from '../../utils/api';
 import { useCart } from '../../utils/CartContext';
 import Loader from '../UISkeleton/Loader';
 import { usePageLoading } from '../../utils/PageLoadingContext';
@@ -557,8 +557,8 @@ const HomePage = () => {
         <div className="flex items-center justify-between w-full">
           <div className="flex-shrink-0 mr-4">
             <div className="flex flex-col leading-tight">
-              <span className="text-lg font-bold text-black">Quick</span>
-              <span className="text-lg font-bold text-black">Deals</span>
+              <span className="text-[15px] font-bold text-black">Quick</span>
+              <span className="text-[15x] font-bold text-black">Deals</span>
             </div>
           </div>
           <div className="flex flex-1 justify-start space-x-3 sm:space-x-4">

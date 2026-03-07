@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from './card';
 import { User, Moon, LogOut, Save, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../../utils/api';
+import api from '../../utils/api';
 import { useDarkMode } from '../../utils/DarkModeContext';
 
 const SettingsPage = () => {

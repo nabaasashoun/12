@@ -2,7 +2,7 @@ import { Card, CardContent } from '../BuyerSide/card';
 import { Heart, MessageSquare, Star, Bookmark, Edit, Settings, Search, MoreHorizontal, X, Plus, ChevronUp, ChevronDown, Camera } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { api } from '../../utils/api';
+import api from '../../utils/api';
 
 const SellerHomePage = () => {
   const [searchFocused, setSearchFocused] = useState(false);

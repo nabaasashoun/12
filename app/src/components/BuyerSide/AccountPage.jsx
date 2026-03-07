@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from './card';
 import { User, Mail, Phone, MapPin, Edit, Heart, ShoppingCart, Bookmark, Eye, X, Plus, MessageSquare, Star, MoreHorizontal } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { api } from '../../utils/api';
+import api from '../../utils/api';
 import { useCart } from '../../utils/CartContext';
 import AnimatedLoader from '../UISkeleton/Loader';
 
@@ -662,6 +662,48 @@ const AccountPage = () => {
             </div>
           ) : bookmarkedProducts.length > 0 ? (
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              {bookmarkedProducts.map((product) => (
+                <Card key={product.id} className="overflow-hidden">
+                  <Link to={`/product/${product.id}`}>
+                    <div className="aspect-square w-full bg-gray-200">
+                      <img 
+                        src={product.images[0]} 
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => e.target.src = '/sample1.jpg'}
+                      />
+                    </div>
+                  </Link>
+                  <CardContent className="p-3">
+                    <div className="flex justify-between items-start mb-1">
+                      <Link to={`/product/${product.id}`} className="font-medium text-sm hover:underline text-black">
+                        {product.name}
+                      </Link>
+                      <button
+                        onClick={() => handleRemoveBookmark(product.id)}
+                        className="text-blue-500 hover:text-blue-600"
+                      >
+                        <Bookmark className="w-4 h-4 fill-current" />
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mb-2 line-clamp-2">{product.content}</p>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-semibold text-green-600">
+                        {formatCurrency(product.price)}
+                      </span>
+                      <div className="flex items-center space-x-1">
+                        <button
+                          onClick={() => toggleLike(product.id)}
+                          className={`p-1 rounded-full ${product.is_liked ? 'text-red-500' : 'text-gray-400'}`}
+                        >
+                          <Heart className="w-3 h-3" fill={product.is_liked ? 'currentColor' : 'none'} />
+                        </button>
+                        <span className="text-xs text-gray-500">{product.like_count}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           ) : (
             <div className="text-center py-8">
@@ -687,6 +729,48 @@ const AccountPage = () => {
             </div>
           ) : likedProducts.length > 0 ? (
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              {likedProducts.map((product) => (
+                <Card key={product.id} className="overflow-hidden">
+                  <Link to={`/product/${product.id}`}>
+                    <div className="aspect-square w-full bg-gray-200">
+                      <img 
+                        src={product.images[0]} 
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => e.target.src = '/sample1.jpg'}
+                      />
+                    </div>
+                  </Link>
+                  <CardContent className="p-3">
+                    <div className="flex justify-between items-start mb-1">
+                      <Link to={`/product/${product.id}`} className="font-medium text-sm hover:underline text-black">
+                        {product.name}
+                      </Link>
+                      <button
+                        onClick={() => toggleFavorite(product.id)}
+                        className={`${product.is_bookmarked ? 'text-blue-500' : 'text-gray-400'} hover:text-blue-600`}
+                      >
+                        <Bookmark className="w-4 h-4" fill={product.is_bookmarked ? 'currentColor' : 'none'} />
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mb-2 line-clamp-2">{product.content}</p>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-semibold text-green-600">
+                        {formatCurrency(product.price)}
+                      </span>
+                      <div className="flex items-center space-x-1">
+                        <button
+                          onClick={() => toggleLike(product.id)}
+                          className="text-red-500"
+                        >
+                          <Heart className="w-3 h-3 fill-current" />
+                        </button>
+                        <span className="text-xs text-gray-500">{product.like_count}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           ) : (
             <div className="text-center py-8">

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { api } from './api'; 
+import api from './api'; 
 
 export function useSearch(initialCategory = 'all') {
   const [query, setQuery] = useState('');
@@ -14,8 +14,8 @@ export function useSearch(initialCategory = 'all') {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const res = await api.getCategories(); // adjust method name if needed
-        // Expecting res.data to be an array of { id, name }
+        const res = await api.getCategories(); 
+   
         if (res.data && Array.isArray(res.data)) {
           setCategories(res.data);
         }

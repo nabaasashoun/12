@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { MapPin, Plus, Check, MessageCircle, MessageSquare, Heart, Star, Bookmark, MoreHorizontal, Settings, Search } from 'lucide-react';
 import { Card, CardContent } from './card';
-import { api } from '../../utils/api';
+import api from '../../utils/api';
 import { useCart } from '../../utils/CartContext';
 import Loader from '../UISkeleton/Loader';
 
@@ -19,6 +19,7 @@ const SellerPage = () => {
   const [showLocationTooltip, setShowLocationTooltip] = useState(false);
   const [animatingLike, setAnimatingLike] = useState(null);
   const [animatingFavorite, setAnimatingFavorite] = useState(null);
+  const [followMessage, setFollowMessage] = useState(''); 
   const [seller, setSeller] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -97,12 +98,26 @@ const SellerPage = () => {
     }
   };
 
-  // Toggle follow seller
   const toggleFollow = async () => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
       navigate('/login');
       return;
+    }
+
+    // Check if user is a buyer
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user.is_seller) {
+          setFollowMessage('Sellers cannot follow other sellers. Please use a buyer account.');
+          setTimeout(() => setFollowMessage(''), 3000);
+          return;
+        }
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
     }
 
     try {
@@ -113,12 +128,26 @@ const SellerPage = () => {
           ...prev,
           followers: result.data.followers_count
         }));
+        
+        if (result.data.following) {
+          setFollowMessage(`You have followed ${seller?.name || 'this seller'}`);
+          
+          // DISPATCH EVENT TO UPDATE NOTIFICATION BADGE
+          // The buyer gets a follow_confirmation notification
+          window.dispatchEvent(new CustomEvent('notificationRead'));
+        } else {
+          setFollowMessage(`You have unfollowed ${seller?.name || 'this seller'}`);
+        }
+        
+        setTimeout(() => setFollowMessage(''), 3000);
       }
     } catch (error) {
       console.error('Error toggling follow:', error);
+      setFollowMessage('Failed to follow. Please try again.');
+      setTimeout(() => setFollowMessage(''), 3000);
     }
   };
-
+      
   // Fetch seller data
   useEffect(() => {
     const fetchSellerData = async () => {

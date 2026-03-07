@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Check } from 'lucide-react';
-import { api } from '../../utils/api';
+import api from '../../utils/api';
 import styled from 'styled-components';
 
 const AnimatedInput = ({ type, name, value, onChange, label, required, autoComplete, ...props }) => {

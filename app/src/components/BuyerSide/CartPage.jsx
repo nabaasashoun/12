@@ -5,7 +5,7 @@ import {
   Package, CreditCard, Truck, X, HelpCircle, CheckCircle, Save, Loader2 
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { api } from  '../../utils/api';
+import api from  '../../utils/api';
 import styled from 'styled-components';
 import Loader from '../UISkeleton/Loader';  
 

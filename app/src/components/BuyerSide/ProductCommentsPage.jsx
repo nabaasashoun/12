@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from './card';
 import { ArrowLeft, Star, Send, Edit, Trash2, User, AlertCircle, ThumbsUp, MessageSquare, Clock, Shield } from 'lucide-react';
-import { api } from '../../utils/api';  
+import api from '../../utils/api';  
 
 const ProductCommentsPage = () => {
   const { productId } = useParams();
@@ -139,7 +139,6 @@ const ProductCommentsPage = () => {
       setComments(prev => [newCommentData, ...prev]);
       setNewComment('');
       setUserComment(newCommentData);
-      alert('Comment submitted successfully!');
     } catch (err) {
       console.error('Error submitting comment:', err);
       alert('Network error. Please try again.');

@@ -26,6 +26,10 @@ from . import pesapal_utils
 from django.db import transaction
 from .models import SellerFollow
 from django_filters.rest_framework import DjangoFilterBackend  
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from .models import Notification
+from .serializers import NotificationSerializer
 import logging
 logger = logging.getLogger('pesapal')
 
@@ -1102,30 +1106,300 @@ def create_order_from_cart(request):
 
 
 @api_view(['POST'])
-@permission_classes([permissions.IsAuthenticated, IsBuyer])
+@permission_classes([permissions.IsAuthenticated])
 def toggle_follow_seller(request, seller_id):
     try:
-        seller = Seller.objects.get(id=seller_id)
-    except Seller.DoesNotExist:
-        return Response({'error': 'Seller not found'}, status=status.HTTP_404_NOT_FOUND)
-
-    buyer = request.user.buyer_profile
-
-    follow = SellerFollow.objects.filter(buyer=buyer, seller=seller).first()
-
-    with transaction.atomic():
-        if follow:
-            follow.delete()
-            seller.followers -= 1
-            seller.save(update_fields=['followers'])
-            following = False
+        # Extensive debug logging
+        print("=" * 50)
+        print("TOGGLE FOLLOW SELLER DEBUG")
+        print(f"Request user: {request.user}")
+        print(f"User ID: {request.user.id}")
+        print(f"Username: {request.user.username}")
+        print(f"Is authenticated: {request.user.is_authenticated}")
+        print(f"Has buyer_profile attr: {hasattr(request.user, 'buyer_profile')}")
+        
+        # Check all attributes of the user
+        print(f"All user attributes: {dir(request.user)}")
+        
+        # Check if buyer_profile exists and try to access it
+        if hasattr(request.user, 'buyer_profile'):
+            try:
+                buyer_profile = request.user.buyer_profile
+                print(f"Buyer profile exists: {buyer_profile}")
+                print(f"Buyer name: {buyer_profile.name}")
+                print(f"Buyer ID: {buyer_profile.id}")
+            except Exception as e:
+                print(f"Error accessing buyer_profile: {e}")
         else:
-            SellerFollow.objects.create(buyer=buyer, seller=seller)
-            seller.followers += 1
-            seller.save(update_fields=['followers'])
-            following = True
+            print("No buyer_profile attribute found")
+            
+            # Check if there's a reverse relation from Buyer to User
+            from .models import Buyer
+            try:
+                buyer = Buyer.objects.get(user=request.user)
+                print(f"Found buyer via direct query: {buyer}")
+                print("The user has a buyer profile but the reverse relation might not be set up correctly")
+            except Buyer.DoesNotExist:
+                print("No buyer profile found in database for this user")
+            except Exception as e:
+                print(f"Error querying buyer: {e}")
+        
+        # Check if user has seller profile (they shouldn't)
+        print(f"Has seller_profile: {hasattr(request.user, 'seller_profile')}")
+        
+        # Check if user has both (shouldn't)
+        if hasattr(request.user, 'buyer_profile') and hasattr(request.user, 'seller_profile'):
+            print("WARNING: User has both buyer and seller profiles!")
+        
+        print("=" * 50)
+        
+        # Check if user has buyer profile
+        if not hasattr(request.user, 'buyer_profile'):
+            # Try to find the buyer profile directly as a fallback
+            from .models import Buyer
+            try:
+                buyer = Buyer.objects.get(user=request.user)
+                print(f"Found buyer via direct query, attaching to user")
+                # Attach it to the user for this request
+                request.user.buyer_profile = buyer
+            except Buyer.DoesNotExist:
+                return Response({
+                    'error': 'Only buyers can follow sellers. No buyer profile found for this user.'
+                }, status=status.HTTP_403_FORBIDDEN)
+        
+        # Get the seller
+        try:
+            seller = Seller.objects.get(id=seller_id)
+        except Seller.DoesNotExist:
+            return Response({
+                'error': 'Seller not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Don't allow following yourself
+        if seller.user == request.user:
+            return Response({
+                'error': 'You cannot follow yourself'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        buyer = request.user.buyer_profile
+        print(f"Buyer: {buyer.name} (ID: {buyer.id})")
+        print(f"Seller: {seller.name} (ID: {seller.id})")
+        
+        # Check if follow relationship exists
+        follow = SellerFollow.objects.filter(buyer=buyer, seller=seller).first()
+        print(f"Existing follow: {follow}")
+        
+        with transaction.atomic():
+            if follow:
+                # Unfollow
+                follow.delete()
+                seller.followers = max(0, seller.followers - 1)
+                seller.save(update_fields=['followers'])
+                following = False
+                message = 'Unfollowed seller'
+                print("Unfollowed")
+            else:
+                # Follow
+                SellerFollow.objects.create(buyer=buyer, seller=seller)
+                seller.followers += 1
+                seller.save(update_fields=['followers'])
+                following = True
+                message = 'Followed seller'
+                print("Followed")
+                
+                # CREATE NOTIFICATION FOR THE SELLER
+                try:
+                    from .models import SimpleNotification
+                    
+                    # Notification for SELLER
+                    SimpleNotification.objects.create(
+                        recipient=seller.user,
+                        sender_name=buyer.name,
+                        message=f"{buyer.name} started following you",
+                        type='follow'
+                    )
+                    
+                    # Notification for BUYER (confirmation)
+                    SimpleNotification.objects.create(
+                        recipient=request.user,  # The buyer
+                        sender_name=seller.name,
+                        message=f"You are now following {seller.name}",
+                        type='follow_confirmation'
+                    )
+                    
+                    print(f"✓ Notifications created for seller and buyer")
+                except Exception as e:
+                    print(f"⚠️ Could not create notifications: {e}")
+        
+        return Response({
+            'success': True,
+            'following': following,
+            'followers_count': seller.followers,
+            'message': message
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        print(f"Error in toggle_follow_seller: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return Response({
+            'error': 'An unexpected error occurred',
+            'detail': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_notifications(request):
+    try:
+        # Check if Notification model exists and table exists
+        from django.db import connection
+        from .models import Notification
+        
+        # Check if table exists
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='trendsync_notification';")
+            table_exists = cursor.fetchone()
+        
+        if not table_exists:
+            # Return empty notifications if table doesn't exist
+            return Response({
+                'status': 'success',
+                'data': [],
+                'unread_count': 0,
+                'message': 'Notifications table not created yet'
+            })
+        
+        # Get notifications for the user
+        notifications = Notification.objects.filter(recipient=request.user).order_by('-created_at')
+        serializer = NotificationSerializer(notifications, many=True)
+        
+        # Count unread
+        unread_count = notifications.filter(read=False).count()
+        
+        return Response({
+            'status': 'success',
+            'data': serializer.data,
+            'unread_count': unread_count
+        })
+        
+    except Exception as e:
+        print(f"Error in get_notifications: {e}")
+        return Response({
+            'status': 'success',
+            'data': [],
+            'unread_count': 0
+        })
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def mark_notification_read(request, notification_id):
+    try:
+        notification = Notification.objects.get(id=notification_id, recipient=request.user)
+        notification.read = True
+        notification.save()
+        return Response({'status': 'success'})
+    except Notification.DoesNotExist:
+        return Response({'status': 'error', 'message': 'Notification not found'}, status=404)
 
-    return Response({
-        'following': following,
-        'followers_count': seller.followers
-    })
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def mark_all_notifications_read(request):
+    Notification.objects.filter(recipient=request.user, read=False).update(read=True)
+    return Response({'status': 'success'})
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_notification(request, notification_id):
+    try:
+        notification = Notification.objects.get(id=notification_id, recipient=request.user)
+        notification.delete()
+        return Response({'status': 'success'})
+    except Notification.DoesNotExist:
+        return Response({'status': 'error', 'message': 'Notification not found'}, status=404)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def clear_all_notifications(request):
+    Notification.objects.filter(recipient=request.user).delete()
+    return Response({'status': 'success'})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_simple_notifications(request):
+    try:
+        from .models import SimpleNotification
+        
+        notifications = SimpleNotification.objects.filter(recipient=request.user).order_by('-created_at')
+        unread_count = notifications.filter(read=False).count()
+        
+        data = []
+        for note in notifications:
+            # Set title based on type
+            if note.type == 'follow':
+                title = 'New Follower'
+            elif note.type == 'follow_confirmation':
+                title = 'Follow Confirmation'
+            else:
+                title = 'Notification'
+            
+            data.append({
+                'id': note.id,
+                'notification_type': note.type,
+                'title': title,
+                'message': note.message,
+                'read': note.read,
+                'created_at': note.created_at.isoformat(),
+                'data': {
+                    'sender_name': note.sender_name
+                }
+            })
+        
+        return Response({
+            'status': 'success',
+            'data': data,
+            'unread_count': unread_count
+        })
+        
+    except Exception as e:
+        print(f"Error in get_simple_notifications: {e}")
+        return Response({
+            'status': 'success',
+            'data': [],
+            'unread_count': 0
+        })
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def mark_simple_notification_read(request, notification_id):
+    try:
+        from .models import SimpleNotification
+        note = SimpleNotification.objects.get(id=notification_id, recipient=request.user)
+        note.read = True
+        note.save()
+        return Response({'status': 'success'})
+    except:
+        return Response({'status': 'error'}, status=404)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_simple_notification(request, notification_id):
+    try:
+        from .models import SimpleNotification
+        SimpleNotification.objects.get(id=notification_id, recipient=request.user).delete()
+        return Response({'status': 'success'})
+    except:
+        return Response({'status': 'error'}, status=404)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def clear_simple_notifications(request):
+    from .models import SimpleNotification
+    SimpleNotification.objects.filter(recipient=request.user).delete()
+    return Response({'status': 'success'})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def mark_all_simple_notifications_read(request):
+    from .models import SimpleNotification
+    SimpleNotification.objects.filter(recipient=request.user, read=False).update(read=True)
+    return Response({'status': 'success'})

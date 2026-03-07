@@ -113,23 +113,23 @@ const App = () => {
   const BuyerRoute = ({ children }) => {
     if (!isAuthenticated) return <Navigate to="/login" />;
     
-    const storedRole = localStorage.getItem('userRole');
     const storedUserStr = localStorage.getItem('user');
+    let isSellerUser = false;
     
     if (storedUserStr) {
       try {
         const storedUser = JSON.parse(storedUserStr);
-        if (storedUser.is_seller && userRole === 'buyer') {
-          handleLogout();
-          return <Navigate to="/login" />;
-        }
+        isSellerUser = storedUser.is_seller === true;
       } catch (error) {
         console.error('Error parsing user data:', error);
       }
     }
-    
-    if (userRole !== 'buyer' || storedRole !== 'buyer') {
-      if (userRole === 'seller' || storedRole === 'seller') return <Navigate to="/seller/login" />;
+
+    if (isSellerUser || userRole === 'seller') {
+      return <Navigate to="/seller/login" />;
+    }
+
+    if (userRole !== 'buyer') {
       return <Navigate to="/login" />;
     }
     
@@ -138,7 +138,27 @@ const App = () => {
 
   const SellerRoute = ({ children }) => {
     if (!isAuthenticated) return <Navigate to="/seller/login" />;
-    if (userRole !== 'seller') return <Navigate to="/" />;
+    
+    // Check if user is buyer
+    const storedUserStr = localStorage.getItem('user');
+    let isBuyerUser = false;
+    
+    if (storedUserStr) {
+      try {
+        const storedUser = JSON.parse(storedUserStr);
+        isBuyerUser = !storedUser.is_seller;
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
+    }
+    
+    // If user is a buyer but trying to access seller route, redirect to home
+    if (isBuyerUser || userRole === 'buyer') {
+      return <Navigate to="/" />;
+    }
+    
+    if (userRole !== 'seller') return <Navigate to="/seller/login" />;
+    
     return children;
   };
 

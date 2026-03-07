@@ -9,6 +9,7 @@ from .models import (
     ProductQuestion, QuestionOption, ProductImage, SellerFollow
 )
 
+from .models import Notification
 User = get_user_model()
 
 
@@ -553,3 +554,9 @@ class RefundSerializer(serializers.Serializer):
 
 class CancelOrderSerializer(serializers.Serializer):
     order_id = serializers.IntegerField()
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ['id', 'notification_type', 'title', 'message', 'data', 'read', 'created_at']
