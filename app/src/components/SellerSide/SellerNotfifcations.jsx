@@ -1,5 +1,5 @@
 import { Card, CardContent } from '../BuyerSide/card';
-import { Bell, CheckCircle, ShoppingCart, Star, Users, TrendingUp, DollarSign, Package, MessageSquare, AlertCircle, X } from 'lucide-react';
+import { Bell, CheckCircle, ShoppingCart, Star, Users, User, TrendingUp, DollarSign, Package, MessageSquare, AlertCircle, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import { useNavigate } from 'react-router-dom';
@@ -30,6 +30,8 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
         return { icon: CheckCircle, color: 'text-gray-500' };
       case 'policy':
         return { icon: AlertCircle, color: 'text-red-500' };
+      case 'profile_update':
+        return { icon: User, color: 'text-teal-500' }; // Added for seller profile updates
       default:
         return { icon: Bell, color: 'text-gray-500' };
     }
@@ -64,15 +66,31 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
       const result = await api.getSimpleNotifications();
       
       if (result.data && result.data.status === 'success') {
-        const formattedNotifications = result.data.data.map(notif => ({
-          id: notif.id,
-          type: notif.notification_type,
-          title: notif.title,
-          message: notif.message,
-          time: formatTime(notif.created_at),
-          read: notif.read,
-          data: notif.data
-        }));
+        const formattedNotifications = result.data.data.map(notif => {
+          // Set appropriate title based on type
+          let title = notif.title;
+          if (!title) {
+            if (notif.notification_type === 'profile_update') {
+              title = 'Profile Update';
+            } else if (notif.notification_type === 'follow') {
+              title = 'New Follower';
+            } else if (notif.notification_type === 'order') {
+              title = 'Order Update';
+            } else {
+              title = 'Notification';
+            }
+          }
+          
+          return {
+            id: notif.id,
+            type: notif.notification_type,
+            title: title,
+            message: notif.message,
+            time: formatTime(notif.created_at),
+            read: notif.read,
+            data: notif.data
+          };
+        });
         
         setNotifications(formattedNotifications);
       }
@@ -82,7 +100,6 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
       setLoading(false);
     }
   };
-
   // Effect for fetching notifications on mount and polling
   useEffect(() => {
     fetchNotifications();
@@ -90,7 +107,7 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
     // Poll for new notifications every 30 seconds
     const interval = setInterval(fetchNotifications, 30000);
     return () => clearInterval(interval);
-  }, []); // ✅ Empty dependency array - runs once on mount
+  }, []); 
 
   // Separate effect for updating parent about unread count
   useEffect(() => {
@@ -98,7 +115,7 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
       const unreadCount = notifications.filter(notif => !notif.read).length;
       setHasUnreadNotifications(unreadCount > 0);
     }
-  }, [notifications, setHasUnreadNotifications]); // ✅ Only runs when notifications change
+  }, [notifications, setHasUnreadNotifications]); 
 
   const markAsRead = async (id) => {
     try {

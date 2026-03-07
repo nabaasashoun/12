@@ -63,6 +63,35 @@ def create_profile_notification(user, field_name):
     )
     print(f"✓ Profile update notification created for {user.username}: {display_name}")
 
+def create_seller_profile_notification(user, field_name):
+    """
+    Create a simple notification when a seller updates their profile
+    Uses SimpleNotification model
+    """
+    from .models import SimpleNotification
+    
+    field_display_names = {
+        'name': 'business name',
+        'email': 'email address',
+        'password': 'password',
+        'contact': 'phone number',
+        'location': 'location',
+        'about': 'business description',
+        'nin_number': 'NIN number',
+        'profile': 'profile information'
+    }
+    
+    display_name = field_display_names.get(field_name, field_name)
+    
+    # Create notification for the seller
+    SimpleNotification.objects.create(
+        recipient=user,
+        sender_name='System',
+        message=f'You have successfully edited your {display_name}',
+        type='profile_update'
+    )
+    print(f"✓ Seller profile update notification created for {user.username}: {display_name}")
+
 def get_cart(request):
     if request.user.is_authenticated and hasattr(request.user, 'buyer_profile'):
         buyer = request.user.buyer_profile
@@ -702,6 +731,33 @@ class SellerProfileView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return self.request.user.seller_profile
     
+    def perform_update(self, serializer):
+        # Track what fields are being updated
+        old_data = self.get_object()
+        updated_fields = []
+        
+        # Check which fields changed
+        if 'name' in serializer.validated_data and serializer.validated_data['name'] != old_data.name:
+            updated_fields.append('name')
+        if 'location' in serializer.validated_data and serializer.validated_data['location'] != old_data.location:
+            updated_fields.append('location')
+        if 'contact' in serializer.validated_data and serializer.validated_data['contact'] != old_data.contact:
+            updated_fields.append('contact')
+        if 'about' in serializer.validated_data and serializer.validated_data['about'] != old_data.about:
+            updated_fields.append('about')
+        if 'nin_number' in serializer.validated_data and serializer.validated_data['nin_number'] != old_data.nin_number:
+            updated_fields.append('nin_number')
+        
+        # Save the updated profile
+        serializer.save()
+        
+        # Create notification based on what was updated
+        if updated_fields:
+            if len(updated_fields) > 1:
+                create_seller_profile_notification(self.request.user, 'profile')
+            else:
+                create_seller_profile_notification(self.request.user, updated_fields[0])
+
 class SellerProductListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated, IsSeller]
     serializer_class = SellerProductSerializer
@@ -1603,6 +1659,78 @@ def buyer_profile_detail(request):
             
     except Exception as e:
         print(f"ERROR updating buyer profile: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return Response({
+            'error': 'Failed to update profile',
+            'detail': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated, IsSeller])
+def update_seller_profile(request):
+    """
+    Update seller profile
+    """
+    try:
+        seller = request.user.seller_profile
+        print("========== SELLER PROFILE UPDATE ==========")
+        print(f"Updating seller profile for: {request.user.username}")
+        print(f"Received data: {request.data}")
+        
+        # Track what fields are being updated
+        updated_fields = []
+        old_data = {
+            'name': seller.name,
+            'location': seller.location,
+            'contact': seller.contact,
+            'about': seller.about,
+            'nin_number': seller.nin_number
+        }
+        
+        # Update fields if provided
+        if 'name' in request.data and request.data['name'] != seller.name:
+            seller.name = request.data['name']
+            updated_fields.append('name')
+            
+        if 'location' in request.data and request.data['location'] != seller.location:
+            seller.location = request.data['location']
+            updated_fields.append('location')
+            
+        if 'contact' in request.data and request.data['contact'] != seller.contact:
+            seller.contact = request.data['contact']
+            updated_fields.append('contact')
+            
+        if 'about' in request.data and request.data['about'] != seller.about:
+            seller.about = request.data['about']
+            updated_fields.append('about')
+            
+        if 'nin_number' in request.data and request.data['nin_number'] != seller.nin_number:
+            seller.nin_number = request.data['nin_number']
+            updated_fields.append('nin_number')
+        
+        seller.save()
+        print(f"Seller profile saved. Updated fields: {updated_fields}")
+        
+        # Create notification for profile update
+        if updated_fields:
+            if len(updated_fields) > 1:
+                create_seller_profile_notification(request.user, 'profile')
+            else:
+                create_seller_profile_notification(request.user, updated_fields[0])
+            print(f"✓ Created notification for updated fields: {updated_fields}")
+        
+        print("========== UPDATE COMPLETE ==========")
+        
+        return Response({
+            'success': True,
+            'message': 'Profile updated successfully',
+            'updated_fields': updated_fields
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        print(f"ERROR updating seller profile: {str(e)}")
         import traceback
         traceback.print_exc()
         return Response({
