@@ -44,7 +44,7 @@ urlpatterns = [
     path('wishlist/remove/<int:product_id>/', views.remove_from_wishlist, name='remove-from-wishlist'),
     path('wishlist/toggle/<int:product_id>/', views.toggle_wishlist, name='toggle-wishlist'),
 
-    path('buyer/profile/', views.get_buyer_profile, name='get-buyer-profile'),
+    
     path('orders/count/', views.get_order_count, name='order-count'),
     path('orders/create-from-cart/', views.create_order_from_cart, name='create-order-from-cart'),
     
@@ -72,5 +72,11 @@ urlpatterns = [
     path('simple-notifications/read-all/', views.mark_all_simple_notifications_read, name='simple-notifications-read-all'),
     path('simple-notifications/<int:notification_id>/delete/', views.delete_simple_notification, name='simple-notification-delete'),
     path('simple-notifications/clear-all/', views.clear_simple_notifications, name='simple-notifications-clear'),
+
+    path('buyer/profile/', views.buyer_profile_detail, name='buyer-profile-detail'),
+
+    path('change-email/', views.change_email, name='change-email'),
+    path('change-password/', views.change_password, name='change-password'),
 ]
+
 

@@ -7,6 +7,10 @@ export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState([]);
   const [cartCount, setCartCount] = useState(0);
 
+  const getToken = () => {
+    return localStorage.getItem('accessToken') || localStorage.getItem('access');
+  };
+
   const isUserSeller = () => {
     const userStr = localStorage.getItem('user');
     if (!userStr) return false;
@@ -28,7 +32,7 @@ export function CartProvider({ children }) {
       return;
     }
 
-    const token = localStorage.getItem('accessToken');
+    const token = getToken();
     console.log("[CartContext] Fetching cart — token exists?", !!token);
 
     if (!token) {
@@ -108,7 +112,7 @@ export function CartProvider({ children }) {
     window.addEventListener('authStateChanged', handleAuthChange);
     
     const handleStorageChange = (e) => {
-      if (e.key === 'accessToken' || e.key === 'user') {
+      if (e.key === 'accessToken' || e.key === 'access' || e.key === 'user') {
         console.log("[CartContext] Storage changed, refreshing cart");
         fetchCartData();
       }
@@ -128,9 +132,9 @@ export function CartProvider({ children }) {
     fetchCartData();
   };
 
-  const addToCart = async (productId, quantity = 1) => {
+  const addToCart = async (productId, quantity = 1, answers = {}) => {
     try {
-      const result = await api.addToCart(productId, quantity);
+      const result = await api.addToCart(productId, quantity, answers);
       if (!result.error) {
         fetchCartData();
         return true;
@@ -156,6 +160,35 @@ export function CartProvider({ children }) {
     }
   };
 
+  const updateCartItem = async (productId, quantity, answers = null) => {
+    try {
+      const result = await api.updateCartItem(productId, quantity, answers);
+      if (!result.error) {
+        fetchCartData();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("[CartContext] Error updating cart item:", error);
+      return false;
+    }
+  };
+
+  const clearCart = async () => {
+    try {
+      const result = await api.clearCart();
+      if (!result.error) {
+        setCartItems([]);
+        setCartCount(0);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("[CartContext] Error clearing cart:", error);
+      return false;
+    }
+  };
+
   return (
     <CartContext.Provider value={{ 
       cartCount, 
@@ -163,6 +196,8 @@ export function CartProvider({ children }) {
       refreshCartCount,
       addToCart,
       removeFromCart,
+      updateCartItem,
+      clearCart,
       fetchCartData
     }}>
       {children}

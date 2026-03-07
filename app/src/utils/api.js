@@ -2,11 +2,13 @@ const API_BASE_URL = 'http://localhost:8000/api';
 
 class Api {
   getToken() {
-    return localStorage.getItem('accessToken');
+    // Try both possible token keys
+    return localStorage.getItem('accessToken') || localStorage.getItem('access');
   }
 
   getRefreshToken() {
-    return localStorage.getItem('refreshToken');
+    // Try both possible refresh token keys
+    return localStorage.getItem('refreshToken') || localStorage.getItem('refresh');
   }
 
   getHeaders(includeAuth = true) {
@@ -29,6 +31,8 @@ class Api {
     const headers = options.headers || this.getHeaders(!options.public);
     
     try {
+      console.log(`API Request: ${options.method || 'GET'} ${url}`);
+      
       const response = await fetch(url, {
         ...options,
         headers: {
@@ -46,16 +50,23 @@ class Api {
       }
       
       if (!response.ok) {
+        console.log(`API Error ${response.status}:`, data);
+        
         if (response.status === 401) {
+          console.log('401 Unauthorized, attempting token refresh...');
           const refreshed = await this.refreshToken();
           if (refreshed) {
+            console.log('Token refreshed, retrying request...');
             return this.request(endpoint, options);
           } else {
+            console.log('Token refresh failed, clearing auth data...');
             localStorage.removeItem('accessToken');
+            localStorage.removeItem('access');
             localStorage.removeItem('refreshToken');
+            localStorage.removeItem('refresh');
             localStorage.removeItem('user');
             localStorage.removeItem('userRole');
-            window.location.href = '/login';
+            window.dispatchEvent(new Event('authStateChanged'));
           }
         }
         return { error: true, status: response.status, data };
@@ -73,6 +84,7 @@ class Api {
     if (!refreshToken) return false;
 
     try {
+      console.log('Attempting token refresh...');
       const response = await fetch(`${API_BASE_URL}/token/refresh/`, {
         method: 'POST',
         headers: {
@@ -83,8 +95,17 @@ class Api {
 
       if (response.ok) {
         const data = await response.json();
+        console.log('Token refresh successful');
+        // Store new access token in both possible locations
         localStorage.setItem('accessToken', data.access);
+        localStorage.setItem('access', data.access);
+        if (data.refresh) {
+          localStorage.setItem('refreshToken', data.refresh);
+          localStorage.setItem('refresh', data.refresh);
+        }
         return true;
+      } else {
+        console.log('Token refresh failed with status:', response.status);
       }
     } catch (error) {
       console.error('Token refresh error:', error);
@@ -93,11 +114,29 @@ class Api {
   }
 
   async login(username, password) {
-    return this.request('/login/', {
+    const response = await this.request('/login/', {
       method: 'POST',
       body: JSON.stringify({ username, password }),
       public: true,
     });
+    
+    // If login successful, store tokens in both locations for consistency
+    if (!response.error && response.data) {
+      if (response.data.access) {
+        localStorage.setItem('accessToken', response.data.access);
+        localStorage.setItem('access', response.data.access);
+      }
+      if (response.data.refresh) {
+        localStorage.setItem('refreshToken', response.data.refresh);
+        localStorage.setItem('refresh', response.data.refresh);
+      }
+      if (response.data.user) {
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        localStorage.setItem('userRole', response.data.user.is_seller ? 'seller' : 'buyer');
+      }
+    }
+    
+    return response;
   }
 
   async register(userData, isSeller = false) {
@@ -111,7 +150,9 @@ class Api {
 
   async logout() {
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('access');
     localStorage.removeItem('refreshToken');
+    localStorage.removeItem('refresh');
     localStorage.removeItem('user');
     localStorage.removeItem('userRole');
     return { success: true };
@@ -141,24 +182,33 @@ class Api {
         productData[key].forEach(image => {
           formData.append('images', image);
         });
+      } else if (key === 'questions_input' && typeof productData[key] === 'object') {
+        formData.append(key, JSON.stringify(productData[key]));
       } else if (productData[key] !== null && productData[key] !== undefined) {
         formData.append(key, productData[key]);
       }
     });
 
-    return fetch(`${API_BASE_URL}/products/`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.getToken()}`,
-      },
-      body: formData,
-    }).then(async response => {
+    const token = this.getToken();
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/products/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+      
       const data = await response.json();
       if (!response.ok) {
         return { error: true, status: response.status, data };
       }
       return { data, status: response.status };
-    });
+    } catch (error) {
+      console.error('Create product error:', error);
+      return { error: true, message: error.message };
+    }
   }
 
   async updateProduct(productId, productData) {
@@ -186,6 +236,10 @@ class Api {
     return this.request(`/products/${productId}/like/`, {
       method: 'POST',
     });
+  }
+
+  async checkProductLike(productId) {
+    return this.request(`/products/${productId}/check-like/`);
   }
 
   async getProductComments(productId) {
@@ -227,6 +281,7 @@ class Api {
       method: 'POST',
     });
   }
+  
   async addToWishlist(productId) {
     return this.request('/wishlist/add/', {
       method: 'POST',
@@ -240,7 +295,6 @@ class Api {
     });
   }
 
-    // Add to cart
   async addToCart(productId, quantity = 1, answers = {}) {
     return this.request('/cart/add/', {
       method: 'POST',
@@ -252,14 +306,12 @@ class Api {
     });
   }
 
-  // Remove from cart
   async removeFromCart(productId) {
     return this.request(`/cart/remove/${productId}/`, {
       method: 'DELETE',
     });
   }
 
-  // Update cart item
   async updateCartItem(productId, quantity, answers = null) {
     const body = {};
     if (quantity !== undefined) body.quantity = quantity;
@@ -271,15 +323,19 @@ class Api {
     });
   }
 
-  // Get cart items
   async getCart() {
     return this.request('/cart/items/');
   }
 
-  // Clear cart
   async clearCart() {
     return this.request('/cart/clear/', {
       method: 'DELETE',
+    });
+  }
+
+  async mergeCart() {
+    return this.request('/cart/merge/', {
+      method: 'POST',
     });
   }
 
@@ -288,11 +344,11 @@ class Api {
   }
 
   async getCurrentSeller() {
-    return this.request('/sellers/me/');
+    return this.request('/seller/profile/');
   }
 
   async updateSellerProfile(sellerData) {
-    return this.request('/sellers/me/', {
+    return this.request('/seller/profile/', {
       method: 'PUT',
       body: JSON.stringify(sellerData),
     });
@@ -349,7 +405,6 @@ class Api {
     });
   }
 
-  // Order methods
   async getOrders() {
     return this.request('/orders/');
   }
@@ -377,18 +432,19 @@ class Api {
     });
   }
 
-  // Payment methods
   async initiatePayment(orderId) {
     return this.request('/payments/initiate/', {
       method: 'POST',
-      body: JSON.stringify({ 
-        order_id: orderId 
-      }),
+      body: JSON.stringify({ order_id: orderId }),
     });
   }
 
   async verifyPayment(reference) {
     return this.request(`/payments/verify/${reference}/`);
+  }
+
+  async getOrderStatus(orderId) {
+    return this.request(`/payments/status/${orderId}/`);
   }
 
   async getNotifications() {
@@ -453,7 +509,6 @@ class Api {
     });
   }
 
-  // Simple Notifications
   async getSimpleNotifications() {
     return this.request('/simple-notifications/');
   }
@@ -481,29 +536,77 @@ class Api {
       method: 'DELETE',
     });
   }
-  // Buyer profile methods
+
   async getBuyerProfile() {
     return this.request('/buyer/profile/');
   }
 
-  async updateBuyerProfile(buyerData) {
-    return this.request('/buyers/me/', {
-      method: 'PUT',
-      body: JSON.stringify(buyerData),
-    });
-  }
-
-  // Order count method
   async getOrderCount() {
     return this.request('/orders/count/');
   }
 
-  // Search products method
   async searchProducts(query, category = 'all') {
     const params = new URLSearchParams();
     if (query) params.append('search', query);
     if (category && category !== 'all') params.append('category', category);
     return this.request(`/products/?${params.toString()}`);
+  }
+
+  async changeEmail(newEmail, password) {
+    return this.request('/change-email/', {
+      method: 'POST',
+      body: JSON.stringify({ new_email: newEmail, password }),
+    });
+  }
+
+  async changePassword(currentPassword, newPassword) {
+    return this.request('/change-password/', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        current_password: currentPassword, 
+        new_password: newPassword 
+      }),
+    });
+  }
+
+  async changeEmail(newEmail, password) {
+    return this.request('/change-email/', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        new_email: newEmail, 
+        password: password 
+      }),
+    });
+  }
+
+  async changePassword(currentPassword, newPassword) {
+    return this.request('/change-password/', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        current_password: currentPassword, 
+        new_password: newPassword 
+      }),
+    });
+  }
+
+  async updateBuyerProfile(profileData) {
+    console.log('========== API: UPDATE BUYER PROFILE ==========');
+    console.log('Sending profile data:', profileData);
+    
+    try {
+      const response = await this.request('/buyer/profile/', {
+        method: 'PUT',
+        body: JSON.stringify(profileData),
+      });
+      
+      console.log('API Response:', response);
+      console.log('========== API UPDATE COMPLETE ==========');
+      
+      return response;
+    } catch (error) {
+      console.error('API Error in updateBuyerProfile:', error);
+      return { error: true, message: error.message };
+    }
   }
 }
 

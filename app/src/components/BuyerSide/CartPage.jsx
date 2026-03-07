@@ -268,7 +268,7 @@ const CartPage = () => {
     try {
       const result = await api.removeFromCart(productId);
       if (result.error) {
-        setNotification({ type: 'error', message: 'Failed to remove item. Please try again.' });
+        
         setTimeout(() => setNotification(null), 3000);
         return;
       }
@@ -284,10 +284,10 @@ const CartPage = () => {
       setQuestionAnswers(updatedAnswers);
       localStorage.setItem('cartQuestionAnswers', JSON.stringify(updatedAnswers));
       triggerCartUpdate();
-      setNotification({ type: 'success', message: 'Item removed from cart!' });
+     
       setTimeout(() => setNotification(null), 2000);
     } catch (err) {
-      setNotification({ type: 'error', message: 'Network error. Please check your connection.' });
+     
       setTimeout(() => setNotification(null), 3000);
     }
   };
@@ -353,7 +353,7 @@ const CartPage = () => {
       const answers = questionAnswers[productId] || {};
       await saveAnswersToBackend(productId, answers);
       setOpenQuestionModal(null);
-      setNotification({ type: 'success', message: 'Answers saved successfully!' });
+      
       setTimeout(() => setNotification(null), 3000);
     } catch (error) {
       console.error('Error saving answers:', error);

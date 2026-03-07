@@ -36,13 +36,31 @@ const App = () => {
   const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Helper function to get token from any possible key
+  const getToken = () => {
+    return localStorage.getItem('accessToken') || localStorage.getItem('access');
+  };
+
+  // Helper function to clear all auth data
+  const clearAuthData = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('access');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('refresh');
+    localStorage.removeItem('user');
+    localStorage.removeItem('userRole');
+  };
+
   useEffect(() => {
     const validateToken = async () => {
-      const token = localStorage.getItem('accessToken');
+      const token = getToken();
       const storedRole = localStorage.getItem('userRole');
       const storedUser = localStorage.getItem('user');
 
+      console.log('Token validation - token exists:', !!token);
+
       if (!token) {
+        console.log('No token found, user not authenticated');
         setIsAuthenticated(false);
         setUserRole(null);
         setLoading(false);
@@ -51,57 +69,119 @@ const App = () => {
 
       try {
         const response = await fetch('/api/verify-token/', {
-          headers: { 'Authorization': `Bearer ${token}` },
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
         });
+
+        console.log('Verify token response status:', response.status);
 
         if (response.ok) {
           const data = await response.json();
+          console.log('Verify token response data:', data);
+          
           const user = data.user || (storedUser ? JSON.parse(storedUser) : null);
 
           if (user) {
+            // Check for role mismatch
             if (user.is_seller && storedRole === 'buyer') {
               console.warn('User role mismatch. Logging out.');
-              localStorage.removeItem('accessToken');
-              localStorage.removeItem('refreshToken');
-              localStorage.removeItem('user');
-              localStorage.removeItem('userRole');
+              clearAuthData();
               setIsAuthenticated(false);
               setUserRole(null);
               setLoading(false);
               return;
             }
 
-            localStorage.setItem('user', JSON.stringify(user));
-            setUserRole(user.is_seller ? 'seller' : 'buyer');
+            // Store user data if not already stored
+            if (!storedUser) {
+              localStorage.setItem('user', JSON.stringify(user));
+            }
+            
+            const role = user.is_seller ? 'seller' : 'buyer';
+            setUserRole(role);
+            localStorage.setItem('userRole', role);
             setIsAuthenticated(true);
           } else {
+            // If no user data but token is valid, use stored role
             setIsAuthenticated(true);
             setUserRole(storedRole || 'buyer');
           }
+        } else if (response.status === 401) {
+          // Token expired or invalid
+          console.log('Token invalid, attempting refresh...');
+          const refreshed = await refreshToken();
+          if (refreshed) {
+            // Retry validation with new token
+            validateToken();
+            return;
+          } else {
+            clearAuthData();
+            setIsAuthenticated(false);
+            setUserRole(null);
+          }
         } else {
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          localStorage.removeItem('user');
-          localStorage.removeItem('userRole');
+          console.log('Token validation failed with status:', response.status);
+          clearAuthData();
           setIsAuthenticated(false);
           setUserRole(null);
         }
       } catch (error) {
         console.error('Token validation error:', error);
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
-        localStorage.removeItem('userRole');
-        setIsAuthenticated(false);
-        setUserRole(null);
+        // Don't clear auth data on network errors - assume token might still be valid
+        if (storedUser) {
+          try {
+            const user = JSON.parse(storedUser);
+            setUserRole(user.is_seller ? 'seller' : 'buyer');
+            setIsAuthenticated(true);
+          } catch {
+            clearAuthData();
+            setIsAuthenticated(false);
+            setUserRole(null);
+          }
+        } else {
+          clearAuthData();
+          setIsAuthenticated(false);
+          setUserRole(null);
+        }
       } finally {
         setLoading(false);
       }
     };
-        
+    
+    const refreshToken = async () => {
+      const refresh = localStorage.getItem('refreshToken') || localStorage.getItem('refresh');
+      if (!refresh) return false;
+
+      try {
+        const response = await fetch('/api/token/refresh/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ refresh: refresh }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          // Store new access token in both possible locations
+          localStorage.setItem('accessToken', data.access);
+          localStorage.setItem('access', data.access);
+          if (data.refresh) {
+            localStorage.setItem('refreshToken', data.refresh);
+            localStorage.setItem('refresh', data.refresh);
+          }
+          return true;
+        }
+      } catch (error) {
+        console.error('Token refresh error:', error);
+      }
+      return false;
+    };
+    
     validateToken();
   }, []);
-    
 
   if (loading) {
     return (
@@ -140,7 +220,6 @@ const App = () => {
   const SellerRoute = ({ children }) => {
     if (!isAuthenticated) return <Navigate to="/seller/login" />;
     
-    // Check if user is buyer
     const storedUserStr = localStorage.getItem('user');
     let isBuyerUser = false;
     
@@ -153,7 +232,6 @@ const App = () => {
       }
     }
     
-    // If user is a buyer but trying to access seller route, redirect to home
     if (isBuyerUser || userRole === 'buyer') {
       return <Navigate to="/" />;
     }
@@ -164,10 +242,18 @@ const App = () => {
   };
 
   const handleLogout = () => {
+    // Clear all possible token keys
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('access');
     localStorage.removeItem('refreshToken');
-    localStorage.removeItem('userRole');
+    localStorage.removeItem('refresh');
     localStorage.removeItem('user');
+    localStorage.removeItem('userRole');
+    
+    // Dispatch events
+    window.dispatchEvent(new Event('authStateChanged'));
+    window.dispatchEvent(new Event('storage'));
+    
     setIsAuthenticated(false);
     setUserRole(null);
   };

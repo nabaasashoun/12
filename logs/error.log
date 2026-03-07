@@ -13071,3 +13071,16 @@ Traceback (most recent call last):
     )
 django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
 ERROR 2026-03-07 08:49:09,348 log 16248 17256 "GET /api/liked-products/ HTTP/1.1" 500 109993
+ERROR 2026-03-07 17:21:52,701 views 25300 8708 Pesapal submit error for order 16: Pesapal error: Unknown error
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 845, in initiate_payment
+    pesapal_response = pesapal_utils.submit_order_request(
+        merchant_reference=str(order.id),
+    ...<5 lines>...
+        billing_address=billing_address
+    )
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\pesapal_utils.py", line 98, in submit_order_request
+    raise Exception(f"Pesapal error: {error_msg}")
+Exception: Pesapal error: Unknown error
+ERROR 2026-03-07 17:21:52,710 log 25300 8708 Internal Server Error: /api/payments/initiate/
+ERROR 2026-03-07 17:21:52,712 log 25300 8708 "POST /api/payments/initiate/ HTTP/1.1" 500 55

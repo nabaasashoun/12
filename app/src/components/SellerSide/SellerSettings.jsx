@@ -171,7 +171,7 @@ const SellerSettings = () => {
 
   return (
     <div className="p-3 sm:p-4 md:p-6 max-w-4xl mx-auto">
-      <div className="mb-6 sm:mb-8">
+      <div className="mb-3 sm:mb-8">
         <p className="text-[20px] sm:text-[20px] font-bold mb-2 text-black">Settings</p>
         <p className="text-sm sm:text-base text-gray-600">Manage your account settings and preferences</p>
       </div>

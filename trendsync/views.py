@@ -31,6 +31,9 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Notification
 from .serializers import NotificationSerializer
 import logging
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 logger = logging.getLogger('pesapal')
 
 
@@ -1401,3 +1404,154 @@ def mark_all_simple_notifications_read(request):
     from .models import SimpleNotification
     SimpleNotification.objects.filter(recipient=request.user, read=False).update(read=True)
     return Response({'status': 'success'})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_email(request):
+    """
+    Change user's email address
+    Requires: new_email, password for verification
+    """
+    new_email = request.data.get('new_email')
+    password = request.data.get('password')
+    
+    if not new_email or not password:
+        return Response({
+            'error': 'New email and password are required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Verify password
+    user = authenticate(username=request.user.username, password=password)
+    if not user:
+        return Response({
+            'error': 'Current password is incorrect'
+        }, status=status.HTTP_401_UNAUTHORIZED)
+    
+    # Check if email is already taken
+    if User.objects.filter(email=new_email).exclude(id=request.user.id).exists():
+        return Response({
+            'error': 'This email is already in use'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Update email
+    request.user.email = new_email
+    request.user.save()
+    
+    return Response({
+        'success': True,
+        'message': 'Email updated successfully',
+        'email': new_email
+    }, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    """
+    Change user's password
+    Requires: current_password, new_password
+    """
+    current_password = request.data.get('current_password')
+    new_password = request.data.get('new_password')
+    
+    if not current_password or not new_password:
+        return Response({
+            'error': 'Current password and new password are required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Verify current password
+    user = authenticate(username=request.user.username, password=current_password)
+    if not user:
+        return Response({
+            'error': 'Current password is incorrect'
+        }, status=status.HTTP_401_UNAUTHORIZED)
+    
+    # Validate new password strength
+    try:
+        validate_password(new_password, user=request.user)
+    except ValidationError as e:
+        return Response({
+            'error': e.messages[0]
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Set new password
+    request.user.set_password(new_password)
+    request.user.save()
+    
+    # Keep user logged in
+    update_session_auth_hash(request, request.user)
+    
+    return Response({
+        'success': True,
+        'message': 'Password updated successfully'
+    }, status=status.HTTP_200_OK)
+
+
+@api_view(['GET', 'PUT'])
+@permission_classes([IsAuthenticated])
+def buyer_profile_detail(request):
+    """
+    Get or update the buyer profile for the authenticated user
+    """
+    try:
+        # Get or create buyer profile
+        buyer, created = Buyer.objects.get_or_create(
+            user=request.user,
+            defaults={
+                'name': request.user.username,
+                'location': '',
+                'contact': ''
+            }
+        )
+        
+        if request.method == 'GET':
+            return Response({
+                'name': buyer.name,
+                'contact': buyer.contact,
+                'location': buyer.location,
+                'dob': buyer.dob,
+                'profile_photo': buyer.profile_photo.url if buyer.profile_photo else None
+            }, status=status.HTTP_200_OK)
+            
+        elif request.method == 'PUT':
+            print("========== BUYER PROFILE UPDATE ==========")
+            print(f"Updating profile for user: {request.user.username}")
+            print(f"Received data: {request.data}")
+            
+            # Update fields if provided
+            if 'name' in request.data:
+                buyer.name = request.data['name']
+                print(f"Updated name to: {buyer.name}")
+            if 'contact' in request.data:
+                buyer.contact = request.data['contact']
+                print(f"Updated contact to: {buyer.contact}")
+            if 'location' in request.data:
+                buyer.location = request.data['location']
+                print(f"Updated location to: {buyer.location}")
+            if 'dob' in request.data:
+                buyer.dob = request.data['dob']
+                print(f"Updated dob to: {buyer.dob}")
+                
+            buyer.save()
+            print("Profile saved successfully")
+            print("========== UPDATE COMPLETE ==========")
+            
+            return Response({
+                'success': True,
+                'message': 'Profile updated successfully',
+                'data': {
+                    'name': buyer.name,
+                    'contact': buyer.contact,
+                    'location': buyer.location,
+                    'dob': buyer.dob,
+                }
+            }, status=status.HTTP_200_OK)
+            
+    except Exception as e:
+        print(f"ERROR updating buyer profile: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return Response({
+            'error': 'Failed to update profile',
+            'detail': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

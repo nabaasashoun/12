@@ -203,7 +203,7 @@ const Product = () => {
 
   const saveAnswers = () => {
     localStorage.setItem('cartQuestionAnswers', JSON.stringify(questionAnswers));
-    setCartMessage('Answers saved successfully!');
+    
     setTimeout(() => setCartMessage(''), 3000);
   };
 
