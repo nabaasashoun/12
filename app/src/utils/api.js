@@ -662,6 +662,40 @@ class Api {
       return { error: true, message: error.message };
     }
   }
+
+  async updateSellerTrustRating(data) {
+    return this.request('/sellers/rate/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+  async getOrders() {
+    return this.request('/orders/');
+  }
+
+  async getOrderDetail(orderId) {
+    return this.request(`/orders/${orderId}/`);
+  }
+
+  async rateSeller(ratingData) {
+    console.log('========== API: RATE SELLER ==========');
+    console.log('Sending rating data:', ratingData);
+    
+    try {
+      const response = await this.request('/sellers/rate/', {
+        method: 'POST',
+        body: JSON.stringify(ratingData),
+      });
+      
+      console.log('Rate seller response:', response);
+      console.log('========== API RATE COMPLETE ==========');
+      
+      return response;
+    } catch (error) {
+      console.error('Error in rateSeller:', error);
+      return { error: true, message: error.message };
+    }
+  }
 }
 
 const api = new Api();

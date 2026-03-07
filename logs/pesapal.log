@@ -26612,3 +26612,728 @@ INFO 2026-03-07 23:45:38,661 autoreload 6960 25812 C:\Users\Wor Joshi\Documents\
 INFO 2026-03-07 23:45:39,749 autoreload 28092 5084 Watching for file changes with StatReloader
 INFO 2026-03-07 23:47:05,383 autoreload 28092 5084 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
 INFO 2026-03-07 23:47:06,550 autoreload 25404 28200 Watching for file changes with StatReloader
+INFO 2026-03-07 23:50:53,436 log 25404 16348 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-07 23:50:53,436 log 25404 25996 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:51:05,221 log 25404 25996 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:51:17,222 log 25404 25996 "GET /api/buyer/profile/ HTTP/1.1" 200 106
+INFO 2026-03-07 23:51:17,244 log 25404 25996 "GET /api/buyer/profile/ HTTP/1.1" 200 106
+INFO 2026-03-07 23:51:17,245 log 25404 16348 "GET /api/verify-token/ HTTP/1.1" 200 59
+INFO 2026-03-07 23:51:17,277 log 25404 16348 "GET /api/verify-token/ HTTP/1.1" 200 59
+INFO 2026-03-07 23:51:41,590 log 25404 908 "GET /admin/trendsync/seller/ HTTP/1.1" 200 17923
+INFO 2026-03-07 23:51:42,579 log 25404 908 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-03-07 23:51:53,761 log 25404 16348 "POST /api/login/ HTTP/1.1" 200 584
+INFO 2026-03-07 23:51:54,465 log 25404 14992 "GET /api/seller/products/ HTTP/1.1" 200 2
+INFO 2026-03-07 23:51:54,490 log 25404 1220 "GET /api/seller/products/ HTTP/1.1" 200 2
+INFO 2026-03-07 23:52:24,188 log 25404 16348 "GET /api/seller/profile/ HTTP/1.1" 200 436
+INFO 2026-03-07 23:52:24,481 log 25404 16348 "GET /api/seller/profile/ HTTP/1.1" 200 436
+INFO 2026-03-07 23:52:32,624 log 25404 16348 "PUT /api/seller/profile/ HTTP/1.1" 200 116
+INFO 2026-03-07 23:52:34,352 log 25404 16348 "GET /api/simple-notifications/ HTTP/1.1" 200 264
+INFO 2026-03-07 23:52:34,359 log 25404 16348 "GET /api/simple-notifications/ HTTP/1.1" 200 264
+INFO 2026-03-07 23:52:49,194 log 25404 9448 "GET /api/seller/products/ HTTP/1.1" 200 2
+INFO 2026-03-07 23:52:49,205 log 25404 28024 "GET /api/seller/products/ HTTP/1.1" 200 2
+INFO 2026-03-07 23:52:50,593 log 25404 16348 "GET /api/simple-notifications/ HTTP/1.1" 200 264
+INFO 2026-03-07 23:52:50,915 log 25404 16348 "GET /api/simple-notifications/ HTTP/1.1" 200 264
+INFO 2026-03-07 23:53:13,633 log 25404 16972 "GET /api/seller/products/ HTTP/1.1" 200 2
+INFO 2026-03-07 23:53:13,656 log 25404 17992 "GET /api/seller/products/ HTTP/1.1" 200 2
+INFO 2026-03-07 23:53:17,002 log 25404 16348 "GET /api/seller/profile/ HTTP/1.1" 200 436
+INFO 2026-03-07 23:53:17,011 log 25404 16348 "GET /api/seller/profile/ HTTP/1.1" 200 436
+INFO 2026-03-07 23:53:32,547 log 25404 14300 "OPTIONS /api/change-email/ HTTP/1.1" 200 0
+INFO 2026-03-07 23:53:35,218 log 25404 14300 "POST /api/change-email/ HTTP/1.1" 200 80
+INFO 2026-03-07 23:53:36,931 log 25404 14300 "GET /api/simple-notifications/ HTTP/1.1" 200 487
+INFO 2026-03-07 23:53:36,940 log 25404 14300 "GET /api/simple-notifications/ HTTP/1.1" 200 487
+INFO 2026-03-07 23:53:43,225 log 25404 14300 "OPTIONS /api/simple-notifications/59/delete/ HTTP/1.1" 200 0
+INFO 2026-03-07 23:53:44,176 log 25404 14300 "DELETE /api/simple-notifications/59/delete/ HTTP/1.1" 200 20
+INFO 2026-03-07 23:53:44,885 log 25404 14300 "OPTIONS /api/simple-notifications/58/delete/ HTTP/1.1" 200 0
+INFO 2026-03-07 23:53:45,679 log 25404 14300 "DELETE /api/simple-notifications/58/delete/ HTTP/1.1" 200 20
+INFO 2026-03-07 23:54:06,952 log 25404 14300 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:54:37,549 log 25404 17964 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:55:07,238 log 25404 17964 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:55:37,241 log 25404 17964 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:56:07,231 log 25404 17964 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:56:37,252 log 25404 17964 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:57:07,231 log 25404 17964 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:57:46,236 log 25404 17964 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:58:46,229 log 25404 17964 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:59:46,233 log 25404 17964 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:00:46,231 log 25404 17964 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:09:56,363 log 25404 5436 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:10:07,592 log 25404 5436 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:10:37,412 log 25404 5436 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:11:46,225 log 25404 5436 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:12:01,308 log 25404 23928 "GET /api/verify-token/ HTTP/1.1" 200 61
+INFO 2026-03-08 00:12:01,323 log 25404 16312 "GET /api/verify-token/ HTTP/1.1" 200 61
+INFO 2026-03-08 00:12:01,658 log 25404 5436 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:12:02,039 log 25404 5436 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+ERROR 2026-03-08 00:12:06,793 log 25404 5436 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 397, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 00:12:07,614 log 25404 5436 "GET /api/liked-products/ HTTP/1.1" 500 110034
+ERROR 2026-03-08 00:12:08,504 log 25404 256 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 397, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 00:12:08,516 log 25404 256 "GET /api/liked-products/ HTTP/1.1" 500 110034
+ERROR 2026-03-08 00:12:08,823 log 25404 5436 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 179, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 00:12:08,836 log 25404 5436 "GET /api/wishlist/ HTTP/1.1" 500 106475
+ERROR 2026-03-08 00:12:09,119 log 25404 256 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 179, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 00:12:09,133 log 25404 256 "GET /api/wishlist/ HTTP/1.1" 500 106475
+INFO 2026-03-08 00:12:10,435 log 25404 18040 "GET /api/verify-token/ HTTP/1.1" 200 61
+INFO 2026-03-08 00:12:12,564 log 25404 28624 "GET /api/verify-token/ HTTP/1.1" 200 61
+INFO 2026-03-08 00:12:12,733 log 25404 256 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+ERROR 2026-03-08 00:12:12,776 log 25404 5436 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 397, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 00:12:12,791 log 25404 5436 "GET /api/liked-products/ HTTP/1.1" 500 110034
+INFO 2026-03-08 00:12:13,097 log 25404 256 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+ERROR 2026-03-08 00:12:13,121 log 25404 5436 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 397, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 00:12:13,156 log 25404 5436 "GET /api/liked-products/ HTTP/1.1" 500 110034
+ERROR 2026-03-08 00:12:13,685 log 25404 18352 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 179, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 00:12:13,699 log 25404 18352 "GET /api/wishlist/ HTTP/1.1" 500 106475
+ERROR 2026-03-08 00:12:14,142 log 25404 5436 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 179, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 00:12:14,153 log 25404 5436 "GET /api/wishlist/ HTTP/1.1" 500 106475
+INFO 2026-03-08 00:12:22,427 log 25404 24384 "GET /api/verify-token/ HTTP/1.1" 200 61
+INFO 2026-03-08 00:12:22,704 log 25404 24428 "GET /api/verify-token/ HTTP/1.1" 200 61
+INFO 2026-03-08 00:12:24,688 autoreload 25404 28200 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-08 00:12:43,056 autoreload 29240 7276 Watching for file changes with StatReloader
+INFO 2026-03-08 00:12:58,017 autoreload 29240 7276 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-08 00:12:59,131 autoreload 1280 8704 Watching for file changes with StatReloader
+INFO 2026-03-08 00:13:05,311 autoreload 1280 8704 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-08 00:13:06,544 autoreload 9020 11808 Watching for file changes with StatReloader
+INFO 2026-03-08 00:13:44,023 autoreload 9020 11808 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\models.py changed, reloading.
+INFO 2026-03-08 00:13:45,466 autoreload 15536 9464 Watching for file changes with StatReloader
+INFO 2026-03-08 00:14:04,307 autoreload 15536 9464 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\urls.py changed, reloading.
+INFO 2026-03-08 00:14:06,831 autoreload 20600 27352 Watching for file changes with StatReloader
+INFO 2026-03-08 00:14:08,557 autoreload 20600 27352 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\urls.py changed, reloading.
+INFO 2026-03-08 00:14:09,700 autoreload 21956 19780 Watching for file changes with StatReloader
+INFO 2026-03-08 00:14:12,477 autoreload 21956 19780 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\urls.py changed, reloading.
+INFO 2026-03-08 00:14:13,611 autoreload 21740 4712 Watching for file changes with StatReloader
+INFO 2026-03-08 00:14:15,326 autoreload 21740 4712 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\urls.py changed, reloading.
+INFO 2026-03-08 00:14:16,166 autoreload 23588 22500 Watching for file changes with StatReloader
+WARNING 2026-03-08 00:14:42,708 log 23588 11280 Unauthorized: /api/login/
+WARNING 2026-03-08 00:14:42,715 log 23588 11280 "POST /api/login/ HTTP/1.1" 401 31
+WARNING 2026-03-08 00:15:01,739 log 23588 11280 Unauthorized: /api/login/
+WARNING 2026-03-08 00:15:01,741 log 23588 11280 "POST /api/login/ HTTP/1.1" 401 31
+INFO 2026-03-08 00:15:06,251 log 23588 13320 "GET /admin/trendsync/seller/ HTTP/1.1" 200 17922
+INFO 2026-03-08 00:15:13,321 log 23588 13320 "GET /admin/trendsync/buyer/ HTTP/1.1" 200 16815
+INFO 2026-03-08 00:15:13,381 log 23588 13320 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+WARNING 2026-03-08 00:15:33,780 log 23588 11280 Unauthorized: /api/login/
+WARNING 2026-03-08 00:15:33,782 log 23588 11280 "POST /api/login/ HTTP/1.1" 401 31
+WARNING 2026-03-08 00:15:41,298 log 23588 11280 Unauthorized: /api/login/
+WARNING 2026-03-08 00:15:41,300 log 23588 11280 "POST /api/login/ HTTP/1.1" 401 31
+WARNING 2026-03-08 00:15:48,090 log 23588 11280 Unauthorized: /api/login/
+WARNING 2026-03-08 00:15:48,092 log 23588 11280 "POST /api/login/ HTTP/1.1" 401 31
+INFO 2026-03-08 00:16:45,078 log 23588 12888 "POST /api/register/buyer/ HTTP/1.1" 201 55
+INFO 2026-03-08 00:17:14,067 log 23588 11280 "POST /api/login/ HTTP/1.1" 200 582
+INFO 2026-03-08 00:17:15,045 log 23588 11280 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:17:15,072 log 23588 11280 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:17:15,186 log 23588 15472 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-08 00:17:15,186 log 23588 11940 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-08 00:17:15,316 log 23588 26744 "GET /api/products/ HTTP/1.1" 200 763
+INFO 2026-03-08 00:17:15,325 log 23588 15472 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-08 00:17:15,327 log 23588 11940 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-08 00:17:15,351 log 23588 11280 "GET /api/products/ HTTP/1.1" 200 763
+INFO 2026-03-08 00:17:21,109 log 23588 11280 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:17:21,117 log 23588 11280 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:17:44,229 log 23588 11280 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:17:51,247 log 23588 11280 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:18:01,274 log 23588 26092 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:18:01,285 log 23588 25196 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:18:01,995 log 23588 11940 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:18:02,052 log 23588 11280 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-08 00:18:02,079 log 23588 11940 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:18:02,091 log 23588 15472 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:18:02,780 log 23588 11940 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:18:02,789 log 23588 15472 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-08 00:18:02,793 log 23588 11280 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:18:02,936 log 23588 26744 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:18:02,933 log 23588 11940 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:18:02,983 log 23588 26744 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:18:22,548 log 23588 8220 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:18:22,559 log 23588 26744 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-08 00:18:22,565 log 23588 17004 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:18:22,574 log 23588 26744 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-08 00:18:22,654 log 23588 11940 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:18:22,654 log 23588 26744 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:18:22,669 log 23588 26744 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:18:22,670 log 23588 11940 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:18:22,680 log 23588 26744 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:18:22,696 log 23588 26744 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:18:22,696 log 23588 11940 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:18:22,710 log 23588 11940 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:18:44,773 log 23588 7476 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:18:44,784 log 23588 11940 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-08 00:18:44,792 log 23588 20308 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:18:44,806 log 23588 11940 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-08 00:18:44,895 log 23588 11940 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:18:44,898 log 23588 26744 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:18:44,908 log 23588 11280 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:18:44,913 log 23588 11940 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:18:44,919 log 23588 11280 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:18:44,932 log 23588 11940 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:18:44,932 log 23588 11280 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:18:44,945 log 23588 11940 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:19:10,488 log 23588 11940 "DELETE /api/simple-notifications/clear-all/ HTTP/1.1" 200 20
+INFO 2026-03-08 00:19:10,496 log 23588 11940 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:19:12,147 log 23588 11940 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-08 00:19:12,148 log 23588 26744 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-08 00:19:12,158 log 23588 11940 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-08 00:19:12,165 log 23588 26744 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-08 00:19:12,171 log 23588 11280 "GET /api/products/ HTTP/1.1" 200 763
+INFO 2026-03-08 00:19:12,325 log 23588 11280 "GET /api/products/ HTTP/1.1" 200 763
+INFO 2026-03-08 00:19:14,894 log 23588 11280 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:19:18,848 log 23588 11280 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:19:18,856 log 23588 11280 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:19:18,861 log 23588 26744 "GET /api/buyer/profile/ HTTP/1.1" 200 105
+INFO 2026-03-08 00:19:18,905 log 23588 11940 "OPTIONS /api/orders/count/ HTTP/1.1" 200 0
+INFO 2026-03-08 00:19:18,905 log 23588 26744 "GET /api/buyer/profile/ HTTP/1.1" 200 105
+INFO 2026-03-08 00:19:18,917 log 23588 11280 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:19:19,028 log 23588 11280 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-08 00:19:19,033 log 23588 26744 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:19:19,037 log 23588 11940 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-08 00:19:20,550 log 23588 11940 "OPTIONS /api/orders/ HTTP/1.1" 200 0
+WARNING 2026-03-08 00:19:20,605 log 23588 11940 Not Found: /api/orders/
+WARNING 2026-03-08 00:19:20,607 log 23588 11940 "GET /api/orders/ HTTP/1.1" 404 28089
+WARNING 2026-03-08 00:19:25,502 log 23588 11940 Not Found: /api/orders/
+WARNING 2026-03-08 00:19:25,505 log 23588 11940 "GET /api/orders/ HTTP/1.1" 404 28089
+WARNING 2026-03-08 00:19:26,821 log 23588 11940 Not Found: /api/orders/
+WARNING 2026-03-08 00:19:26,823 log 23588 11940 "GET /api/orders/ HTTP/1.1" 404 28089
+INFO 2026-03-08 00:19:27,650 log 23588 11940 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-08 00:19:27,654 log 23588 11280 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-08 00:19:27,670 log 23588 11940 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-08 00:19:27,673 log 23588 11280 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-08 00:19:27,681 log 23588 26744 "GET /api/products/ HTTP/1.1" 200 763
+INFO 2026-03-08 00:19:27,711 log 23588 26744 "GET /api/products/ HTTP/1.1" 200 763
+INFO 2026-03-08 00:19:28,964 log 23588 26744 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:19:28,972 log 23588 26744 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:19:28,974 log 23588 11280 "GET /api/buyer/profile/ HTTP/1.1" 200 105
+INFO 2026-03-08 00:19:28,985 log 23588 11280 "GET /api/buyer/profile/ HTTP/1.1" 200 105
+INFO 2026-03-08 00:19:28,990 log 23588 26744 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:19:28,997 log 23588 11940 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-08 00:19:29,057 log 23588 11940 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:19:29,057 log 23588 26744 "GET /api/orders/count/ HTTP/1.1" 200 11
+WARNING 2026-03-08 00:19:31,111 log 23588 26744 Not Found: /api/orders/
+WARNING 2026-03-08 00:19:31,113 log 23588 26744 "GET /api/orders/ HTTP/1.1" 404 28089
+INFO 2026-03-08 00:19:38,508 log 23588 26744 "GET /api/wishlist/ HTTP/1.1" 200 2
+WARNING 2026-03-08 00:19:39,526 log 23588 26744 Not Found: /api/orders/
+WARNING 2026-03-08 00:19:39,528 log 23588 26744 "GET /api/orders/ HTTP/1.1" 404 28089
+INFO 2026-03-08 00:19:44,884 log 23588 26744 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:20:11,338 log 23588 26744 "POST /api/login/ HTTP/1.1" 200 582
+INFO 2026-03-08 00:20:11,396 log 23588 26744 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:20:11,407 log 23588 26744 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:20:11,459 log 23588 11280 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-08 00:20:11,462 log 23588 26744 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-08 00:20:11,471 log 23588 11940 "GET /api/products/ HTTP/1.1" 200 763
+INFO 2026-03-08 00:20:11,476 log 23588 15472 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-08 00:20:11,477 log 23588 26744 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-08 00:20:11,493 log 23588 11940 "GET /api/products/ HTTP/1.1" 200 763
+INFO 2026-03-08 00:20:13,304 log 23588 11940 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:20:13,311 log 23588 11940 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:20:13,315 log 23588 26744 "GET /api/buyer/profile/ HTTP/1.1" 200 105
+INFO 2026-03-08 00:20:13,334 log 23588 26744 "GET /api/buyer/profile/ HTTP/1.1" 200 105
+INFO 2026-03-08 00:20:13,337 log 23588 11940 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:20:13,336 log 23588 15472 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-08 00:20:13,401 log 23588 11940 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:20:13,401 log 23588 15472 "GET /api/orders/count/ HTTP/1.1" 200 11
+WARNING 2026-03-08 00:20:14,319 log 23588 15472 Not Found: /api/orders/
+WARNING 2026-03-08 00:20:14,322 log 23588 15472 "GET /api/orders/ HTTP/1.1" 404 28089
+INFO 2026-03-08 00:20:42,226 log 23588 15472 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:20:47,141 autoreload 23588 22500 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\urls.py changed, reloading.
+INFO 2026-03-08 00:21:13,312 autoreload 27984 6496 Watching for file changes with StatReloader
+INFO 2026-03-08 00:24:30,962 autoreload 27984 6496 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-08 00:24:32,712 autoreload 16228 21316 Watching for file changes with StatReloader
+INFO 2026-03-08 00:34:14,189 autoreload 16228 21316 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-08 00:34:16,382 autoreload 28364 1008 Watching for file changes with StatReloader
+INFO 2026-03-08 00:35:28,346 autoreload 28364 1008 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-08 00:35:31,504 autoreload 26276 27788 Watching for file changes with StatReloader
+INFO 2026-03-08 00:35:37,458 autoreload 26276 27788 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-08 00:35:40,520 autoreload 15956 20624 Watching for file changes with StatReloader
+INFO 2026-03-08 00:35:57,418 autoreload 15956 20624 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-08 00:35:58,201 autoreload 24136 24200 Watching for file changes with StatReloader
+INFO 2026-03-08 00:36:36,382 autoreload 23744 25572 Watching for file changes with StatReloader
+INFO 2026-03-08 00:36:58,650 log 23744 23092 "POST /api/login/ HTTP/1.1" 200 582
+INFO 2026-03-08 00:36:59,561 log 23744 12332 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-08 00:36:59,586 log 23744 23092 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:36:59,685 log 23744 12108 "GET /api/products/ HTTP/1.1" 200 763
+INFO 2026-03-08 00:36:59,685 log 23744 12332 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-08 00:36:59,694 log 23744 3728 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-08 00:36:59,696 log 23744 23092 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:36:59,761 log 23744 12332 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-08 00:36:59,770 log 23744 12108 "GET /api/products/ HTTP/1.1" 200 763
+INFO 2026-03-08 00:37:09,906 log 23744 12108 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:37:09,916 log 23744 12108 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:37:29,040 log 23744 27768 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:37:40,245 log 23744 2668 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:37:40,425 log 23744 2668 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:37:40,495 log 23744 2668 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:37:40,499 log 23744 15348 "GET /api/buyer/profile/ HTTP/1.1" 200 105
+INFO 2026-03-08 00:37:40,508 log 23744 15348 "GET /api/buyer/profile/ HTTP/1.1" 200 105
+INFO 2026-03-08 00:37:40,567 log 23744 2668 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:37:40,575 log 23744 15348 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-08 00:37:40,585 log 23744 2668 "GET /api/orders/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:37:40,595 log 23744 15348 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:37:40,600 log 23744 2668 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-08 00:37:40,606 log 23744 15348 "GET /api/orders/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:37:42,917 log 23744 15348 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:37:44,044 log 23744 15348 "GET /api/orders/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:37:58,707 log 23744 15348 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:38:29,535 log 23744 17464 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:38:59,535 log 23744 1284 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:39:29,242 log 23744 1284 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:39:59,242 log 23744 1284 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:40:46,230 log 23744 1284 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:41:46,237 log 23744 1284 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:50:56,388 log 23744 21208 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:50:58,695 log 23744 21208 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:51:15,818 log 23744 21208 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-08 00:51:15,838 log 23744 21208 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-08 00:51:15,898 log 23744 5180 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:51:15,906 log 23744 12520 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:51:15,973 log 23744 21208 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:51:15,976 log 23744 10896 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:51:16,118 log 23744 10896 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:51:16,115 log 23744 21208 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:51:16,207 log 23744 21208 "GET /api/buyer/profile/ HTTP/1.1" 200 105
+INFO 2026-03-08 00:51:16,383 log 23744 10896 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:51:16,389 log 23744 21208 "GET /api/buyer/profile/ HTTP/1.1" 200 105
+INFO 2026-03-08 00:51:16,690 log 23744 10896 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:51:16,735 log 23744 21208 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:51:16,696 log 23744 17568 "GET /api/orders/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:51:16,766 log 23744 21208 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:51:16,766 log 23744 10896 "GET /api/orders/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:51:16,775 log 23744 21208 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:51:16,786 log 23744 21208 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:51:16,786 log 23744 17568 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-08 00:51:16,858 log 23744 21208 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-08 00:51:18,281 log 23744 21208 "GET /api/orders/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:51:18,442 log 23744 21208 "GET /api/orders/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:51:23,101 log 23744 21208 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-08 00:51:23,179 log 23744 21208 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-08 00:51:23,206 log 23744 10896 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-08 00:51:23,217 log 23744 17568 "GET /api/products/ HTTP/1.1" 200 763
+INFO 2026-03-08 00:51:23,220 log 23744 21208 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-08 00:51:23,236 log 23744 10896 "GET /api/products/ HTTP/1.1" 200 763
+INFO 2026-03-08 00:51:23,573 log 23744 17616 "GET /media/products/0a967922e19eb7d22aae18f1c2b98afe.jpg HTTP/1.1" 304 0
+INFO 2026-03-08 00:51:27,572 log 23744 26652 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:51:27,579 log 23744 26652 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:51:27,587 log 23744 26652 "GET /api/buyer/profile/ HTTP/1.1" 200 105
+INFO 2026-03-08 00:51:27,596 log 23744 26652 "GET /api/buyer/profile/ HTTP/1.1" 200 105
+INFO 2026-03-08 00:51:27,607 log 23744 26652 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:51:27,615 log 23744 26652 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-08 00:51:27,623 log 23744 26652 "GET /api/orders/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:51:27,638 log 23744 26652 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:51:27,649 log 23744 26652 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-08 00:51:27,659 log 23744 26652 "GET /api/orders/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:51:28,805 log 23744 26652 "GET /api/orders/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:51:38,847 log 23744 26652 "OPTIONS /api/sellers/rate/ HTTP/1.1" 200 0
+WARNING 2026-03-08 00:51:38,901 log 23744 26652 Method Not Allowed: /api/sellers/rate/
+WARNING 2026-03-08 00:51:38,903 log 23744 26652 "POST /api/sellers/rate/ HTTP/1.1" 405 41
+INFO 2026-03-08 00:51:46,002 log 23744 26652 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+WARNING 2026-03-08 00:51:46,621 log 23744 26652 Method Not Allowed: /api/sellers/rate/
+WARNING 2026-03-08 00:51:46,623 log 23744 26652 "POST /api/sellers/rate/ HTTP/1.1" 405 41
+WARNING 2026-03-08 00:51:47,775 log 23744 26652 Method Not Allowed: /api/sellers/rate/
+WARNING 2026-03-08 00:51:47,778 log 23744 26652 "POST /api/sellers/rate/ HTTP/1.1" 405 41
+INFO 2026-03-08 00:52:16,545 log 23744 19996 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:52:46,221 log 23744 19996 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:53:16,225 log 23744 19996 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:53:20,996 autoreload 23744 25572 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-08 00:53:53,309 autoreload 16596 21576 Watching for file changes with StatReloader
+INFO 2026-03-08 00:54:16,173 log 16596 20228 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:54:16,173 log 16596 29164 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:54:16,173 log 16596 27576 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-08 00:54:16,188 log 16596 27576 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-08 00:54:16,225 log 16596 27576 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:54:16,229 log 16596 9876 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:54:16,239 log 16596 9876 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:54:16,239 log 16596 27576 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:54:16,255 log 16596 27576 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:54:16,256 log 16596 9876 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:54:16,362 log 16596 9876 "GET /api/buyer/profile/ HTTP/1.1" 200 105
+INFO 2026-03-08 00:54:16,364 log 16596 27576 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:54:16,416 log 16596 9876 "GET /api/buyer/profile/ HTTP/1.1" 200 105
+INFO 2026-03-08 00:54:16,438 log 16596 27576 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:54:16,450 log 16596 9876 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-08 00:54:16,450 log 16596 27576 "GET /api/orders/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:54:16,465 log 16596 9876 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:54:16,469 log 16596 27576 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-08 00:54:16,474 log 16596 9876 "GET /api/orders/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:54:16,512 log 16596 27576 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:54:18,110 log 16596 27576 "GET /api/orders/ HTTP/1.1" 200 2
+WARNING 2026-03-08 00:54:22,724 log 16596 27576 Method Not Allowed: /api/sellers/rate/
+WARNING 2026-03-08 00:54:22,727 log 16596 27576 "POST /api/sellers/rate/ HTTP/1.1" 405 41
+INFO 2026-03-08 00:54:47,233 log 16596 27576 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:55:17,232 log 16596 27576 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:55:47,225 log 16596 27576 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:56:17,231 log 16596 27576 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:56:47,240 log 16596 27576 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:57:17,226 log 16596 27576 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:57:37,113 autoreload 16596 21576 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-08 00:57:40,552 autoreload 9820 28516 Watching for file changes with StatReloader
+INFO 2026-03-08 00:57:42,510 autoreload 9820 28516 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-08 00:57:43,250 autoreload 15472 25784 Watching for file changes with StatReloader
+INFO 2026-03-08 00:57:49,466 autoreload 15472 25784 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-08 00:57:50,159 autoreload 4140 18404 Watching for file changes with StatReloader
+INFO 2026-03-08 00:57:52,294 autoreload 4140 18404 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-08 00:57:53,206 autoreload 1588 23592 Watching for file changes with StatReloader
+INFO 2026-03-08 00:58:00,941 autoreload 1588 23592 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-08 00:58:01,998 autoreload 28708 11712 Watching for file changes with StatReloader
+INFO 2026-03-08 00:58:11,554 autoreload 28708 11712 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-08 00:58:12,229 autoreload 7388 6884 Watching for file changes with StatReloader
+INFO 2026-03-08 00:58:40,048 autoreload 7388 6884 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-08 00:58:40,831 autoreload 12236 23876 Watching for file changes with StatReloader
+INFO 2026-03-08 00:58:45,586 log 12236 21160 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+WARNING 2026-03-08 00:58:57,829 log 12236 21160 Method Not Allowed: /api/sellers/rate/
+WARNING 2026-03-08 00:58:57,832 log 12236 21160 "POST /api/sellers/rate/ HTTP/1.1" 405 41
+INFO 2026-03-08 00:59:02,595 log 12236 19640 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:59:02,612 log 12236 6372 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:59:02,616 log 12236 21160 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-08 00:59:02,635 log 12236 21160 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-08 00:59:02,762 log 12236 21160 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:59:02,762 log 12236 24952 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:59:02,775 log 12236 24952 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 00:59:02,777 log 12236 21160 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:59:02,791 log 12236 24952 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 00:59:02,791 log 12236 21160 "GET /api/buyer/profile/ HTTP/1.1" 200 105
+INFO 2026-03-08 00:59:02,810 log 12236 24952 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:59:02,812 log 12236 21160 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:59:02,824 log 12236 24952 "GET /api/buyer/profile/ HTTP/1.1" 200 105
+INFO 2026-03-08 00:59:02,826 log 12236 21160 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-08 00:59:02,842 log 12236 24952 "GET /api/orders/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:59:02,846 log 12236 21160 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:59:02,888 log 12236 21160 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:59:02,888 log 12236 24952 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-08 00:59:02,901 log 12236 24952 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:59:02,903 log 12236 21160 "GET /api/orders/ HTTP/1.1" 200 2
+INFO 2026-03-08 00:59:04,207 log 12236 21160 "GET /api/orders/ HTTP/1.1" 200 2
+WARNING 2026-03-08 00:59:08,491 log 12236 21160 Method Not Allowed: /api/sellers/rate/
+WARNING 2026-03-08 00:59:08,494 log 12236 21160 "POST /api/sellers/rate/ HTTP/1.1" 405 41
+INFO 2026-03-08 00:59:33,244 log 12236 21160 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 01:00:03,238 log 12236 21160 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 01:00:33,223 log 12236 21160 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 01:00:46,392 autoreload 12236 23876 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\urls.py changed, reloading.
+INFO 2026-03-08 01:00:47,198 autoreload 8972 9936 Watching for file changes with StatReloader
+INFO 2026-03-08 01:00:55,561 autoreload 8972 9936 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\urls.py changed, reloading.
+INFO 2026-03-08 01:00:58,961 autoreload 20580 26384 Watching for file changes with StatReloader
+INFO 2026-03-08 01:01:02,669 autoreload 20580 26384 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\urls.py changed, reloading.
+INFO 2026-03-08 01:01:03,729 autoreload 6016 20456 Watching for file changes with StatReloader
+INFO 2026-03-08 01:01:05,009 log 6016 12580 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 01:01:06,611 autoreload 6016 20456 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\urls.py changed, reloading.
+INFO 2026-03-08 01:01:08,030 autoreload 10256 9876 Watching for file changes with StatReloader
+INFO 2026-03-08 01:01:09,889 autoreload 10256 9876 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\urls.py changed, reloading.
+INFO 2026-03-08 01:01:10,697 autoreload 23748 20528 Watching for file changes with StatReloader
+INFO 2026-03-08 01:01:12,565 autoreload 23748 20528 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\urls.py changed, reloading.
+INFO 2026-03-08 01:01:13,747 autoreload 8924 17964 Watching for file changes with StatReloader
+WARNING 2026-03-08 01:01:23,332 log 8924 8468 Bad Request: /api/sellers/rate/
+WARNING 2026-03-08 01:01:23,339 log 8924 8468 "POST /api/sellers/rate/ HTTP/1.1" 400 49
+INFO 2026-03-08 01:01:27,662 log 8924 17724 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 01:01:27,681 log 8924 21384 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 01:01:27,686 log 8924 8468 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-08 01:01:27,726 log 8924 8468 "GET /api/cart/items/ HTTP/1.1" 200 77
+INFO 2026-03-08 01:01:27,875 log 8924 8468 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 01:01:27,878 log 8924 512 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 01:01:27,924 log 8924 512 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 01:01:27,925 log 8924 8468 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-08 01:01:27,942 log 8924 8468 "GET /api/buyer/profile/ HTTP/1.1" 200 105
+INFO 2026-03-08 01:01:27,943 log 8924 512 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 01:01:27,997 log 8924 8468 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-08 01:01:28,008 log 8924 512 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 01:01:28,017 log 8924 8468 "GET /api/buyer/profile/ HTTP/1.1" 200 105
+INFO 2026-03-08 01:01:28,026 log 8924 512 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-08 01:01:28,044 log 8924 8468 "GET /api/orders/ HTTP/1.1" 200 2
+INFO 2026-03-08 01:01:28,049 log 8924 512 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 01:01:28,072 log 8924 8468 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-08 01:01:28,087 log 8924 8468 "GET /api/orders/ HTTP/1.1" 200 2
+INFO 2026-03-08 01:01:28,090 log 8924 512 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 01:01:28,110 log 8924 512 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 01:01:29,170 log 8924 512 "GET /api/orders/ HTTP/1.1" 200 2
+WARNING 2026-03-08 01:01:34,722 log 8924 512 Bad Request: /api/sellers/rate/
+WARNING 2026-03-08 01:01:34,723 log 8924 512 "POST /api/sellers/rate/ HTTP/1.1" 400 49
+WARNING 2026-03-08 01:01:37,571 log 8924 512 Bad Request: /api/sellers/rate/
+WARNING 2026-03-08 01:01:37,572 log 8924 512 "POST /api/sellers/rate/ HTTP/1.1" 400 49
+INFO 2026-03-08 01:01:58,243 log 8924 512 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 01:02:28,252 log 8924 512 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 01:02:58,237 log 8924 512 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 01:03:28,228 log 8924 512 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 01:03:31,802 autoreload 8924 17964 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-08 01:03:32,670 autoreload 29208 15572 Watching for file changes with StatReloader
+INFO 2026-03-08 01:03:34,440 autoreload 29208 15572 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-08 01:03:35,409 autoreload 28208 8824 Watching for file changes with StatReloader
+INFO 2026-03-08 01:03:58,588 log 28208 8180 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 01:08:59,921 autoreload 10672 11372 Watching for file changes with StatReloader
+INFO 2026-03-08 01:09:04,755 log 10672 9328 "POST /api/login/ HTTP/1.1" 200 582
+INFO 2026-03-08 01:09:04,818 log 10672 9328 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 01:09:04,831 log 10672 9328 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 01:09:04,884 log 10672 9328 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-08 01:09:04,895 log 10672 9328 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-08 01:09:04,900 log 10672 26888 "GET /api/products/ HTTP/1.1" 200 763
+INFO 2026-03-08 01:09:04,910 log 10672 9328 "GET /api/categories/ HTTP/1.1" 200 132
+INFO 2026-03-08 01:09:04,915 log 10672 26888 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-08 01:09:04,928 log 10672 9328 "GET /api/products/ HTTP/1.1" 200 763
+INFO 2026-03-08 01:09:07,804 log 10672 9328 "GET /api/buyer/profile/ HTTP/1.1" 200 105
+INFO 2026-03-08 01:09:07,816 log 10672 9328 "GET /api/buyer/profile/ HTTP/1.1" 200 105
+INFO 2026-03-08 01:09:07,818 log 10672 26888 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 01:09:07,825 log 10672 26888 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 01:09:10,240 log 10672 26888 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 01:09:10,247 log 10672 26888 "GET /api/verify-token/ HTTP/1.1" 200 60
+INFO 2026-03-08 01:09:10,251 log 10672 9328 "GET /api/buyer/profile/ HTTP/1.1" 200 105
+INFO 2026-03-08 01:09:10,266 log 10672 9328 "GET /api/buyer/profile/ HTTP/1.1" 200 105
+INFO 2026-03-08 01:09:10,271 log 10672 8836 "GET /api/orders/ HTTP/1.1" 200 2
+INFO 2026-03-08 01:09:10,288 log 10672 26888 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 01:09:10,301 log 10672 21356 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-08 01:09:10,337 log 10672 21356 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-08 01:09:10,336 log 10672 8836 "GET /api/orders/ HTTP/1.1" 200 2
+INFO 2026-03-08 01:09:10,336 log 10672 26888 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-08 01:09:11,915 log 10672 8836 "GET /api/orders/ HTTP/1.1" 200 2
+ERROR 2026-03-08 01:09:17,735 log 10672 8836 Internal Server Error: /api/sellers/rate/
+ERROR 2026-03-08 01:09:17,736 log 10672 8836 "POST /api/sellers/rate/ HTTP/1.1" 500 84
+INFO 2026-03-08 01:09:35,238 log 10672 8836 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 01:09:42,199 log 10672 27560 "GET /admin/trendsync/buyer/ HTTP/1.1" 200 17208
+INFO 2026-03-08 01:09:42,894 log 10672 27560 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-03-08 01:10:05,229 log 10672 8836 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 01:10:24,279 autoreload 1116 28444 Watching for file changes with StatReloader
+INFO 2026-03-08 01:10:35,631 log 1116 27040 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-08 01:17:39,949 autoreload 14140 16560 Watching for file changes with StatReloader

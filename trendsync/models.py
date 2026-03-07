@@ -369,3 +369,20 @@ class SimpleNotification(models.Model):
     
     def __str__(self):
         return f"Notification for {self.recipient.username}: {self.message}"
+
+class SellerRating(models.Model):
+    buyer = models.ForeignKey(Buyer, on_delete=models.CASCADE, related_name='seller_ratings')
+    seller = models.ForeignKey(Seller, on_delete=models.CASCADE, related_name='ratings')
+    rating = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    comment = models.TextField(blank=True)
+    order_id = models.IntegerField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ('buyer', 'seller')  # One rating per buyer per seller
+    
+    def __str__(self):
+        return f"{self.buyer.name} rated {self.seller.name}: {self.rating}/5"

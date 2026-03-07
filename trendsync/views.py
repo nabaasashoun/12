@@ -15,6 +15,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from django.db.models import Q
 import traceback
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from .permissions import IsSeller, IsBuyer, IsOwner
 from rest_framework import filters
@@ -1737,3 +1738,194 @@ def update_seller_profile(request):
             'error': 'Failed to update profile',
             'detail': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])  
+@permission_classes([IsAuthenticated, IsBuyer])
+def rate_seller(request):
+    """
+    Simple rating system - stores rating as a notification
+    """
+    print("=" * 50)
+    print("RATE SELLER VIEW HIT!")
+    print(f"Request data: {request.data}")
+    print("=" * 50)
+    
+    try:
+        seller_id = request.data.get('seller_id')
+        rating = request.data.get('rating')  # 1-5
+        comment = request.data.get('comment', '')
+        order_id = request.data.get('order_id')
+        
+        if not seller_id or not rating:
+            return Response({
+                'error': 'Seller ID and rating are required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Get the seller
+        try:
+            seller = Seller.objects.get(id=seller_id)
+        except Seller.DoesNotExist:
+            return Response({
+                'error': 'Seller not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Get the buyer
+        try:
+            buyer = request.user.buyer_profile
+        except:
+            return Response({
+                'error': 'Buyer profile not found'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        # Create a notification for the rating (using SimpleNotification)
+        from .models import SimpleNotification
+        
+        # Notification for the seller
+        SimpleNotification.objects.create(
+            recipient=seller.user,
+            sender_name=buyer.name,
+            message=f"{buyer.name} rated your service {rating}/5. {comment}",
+            type='review'
+        )
+        
+        # Optional: Create a confirmation notification for the buyer
+        SimpleNotification.objects.create(
+            recipient=request.user,
+            sender_name='System',
+            message=f"You rated {seller.name} {rating}/5. Thank you for your feedback!",
+            type='review_confirmation'
+        )
+        
+        # Update seller's trust rating (simple average)
+        # Get all review notifications for this seller
+        all_reviews = SimpleNotification.objects.filter(
+            recipient=seller.user,
+            type='review'
+        )
+        
+        # Extract ratings from messages (this is a bit hacky but simple)
+        ratings = []
+        for review in all_reviews:
+            # Look for pattern like "rated your service X/5"
+            import re
+            match = re.search(r'rated your service (\d+)/5', review.message)
+            if match:
+                ratings.append(int(match.group(1)))
+        
+        # Add current rating
+        ratings.append(int(rating))
+        
+        # Calculate average
+        if ratings:
+            avg_rating = sum(ratings) / len(ratings)
+            trust_percentage = round(avg_rating * 20, 2)  # Convert to percentage
+        else:
+            trust_percentage = 0
+        
+        # Update seller's trust field
+        seller.trust = trust_percentage
+        seller.save()
+        
+        print(f"Seller trust updated to: {trust_percentage}% based on {len(ratings)} ratings")
+        
+        return Response({
+            'success': True,
+            'message': 'Rating submitted successfully',
+            'seller_trust': trust_percentage,
+            'ratings_count': len(ratings)
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        print(f"Error in rate_seller: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return Response({
+            'error': 'Failed to submit rating',
+            'detail': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_orders(request):
+    """
+    Get all orders for the authenticated buyer
+    """
+    try:
+        if hasattr(request.user, 'buyer_profile'):
+            buyer = request.user.buyer_profile
+            orders = Order.objects.filter(buyer=buyer).order_by('-order_date')
+            
+            orders_data = []
+            for order in orders:
+                # Get the first product from order items to display
+                first_item = order.items.first()
+                product_name = first_item.product.name if first_item else 'Product'
+                seller_name = first_item.product.seller.name if first_item and first_item.product else 'Seller'
+                seller_id = first_item.product.seller.id if first_item and first_item.product else None
+                
+                orders_data.append({
+                    'id': order.id,
+                    'order_date': order.order_date,
+                    'total_amount': order.total_amount,
+                    'status': order.status,
+                    'items_count': order.items.count(),
+                    'product_name': product_name,
+                    'seller_name': seller_name,
+                    'seller_id': seller_id,
+                    'has_rated': False,  # You can implement this later
+                })
+            
+            return Response(orders_data, status=status.HTTP_200_OK)
+        else:
+            return Response([], status=status.HTTP_200_OK)
+    except Exception as e:
+        print(f"Error fetching orders: {e}")
+        return Response([], status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_order_detail(request, order_id):
+    """
+    Get details of a specific order
+    """
+    try:
+        if hasattr(request.user, 'buyer_profile'):
+            buyer = request.user.buyer_profile
+            order = Order.objects.get(id=order_id, buyer=buyer)
+            
+            items = []
+            for item in order.items.all():
+                items.append({
+                    'id': item.id,
+                    'product_id': item.product.id,
+                    'product_name': item.product.name,
+                    'quantity': item.quantity,
+                    'unit_price': item.unit_price,
+                    'subtotal': item.subtotal,
+                    'product_photo': item.product.product_photo.url if item.product.product_photo else None
+                })
+            
+            order_data = {
+                'id': order.id,
+                'order_date': order.order_date,
+                'total_amount': order.total_amount,
+                'status': order.status,
+                'payment_method': order.payment_method,
+                'delivery_address': {
+                    'recipient_name': order.delivery_address.recipient_name if order.delivery_address else None,
+                    'phone': order.delivery_address.phone if order.delivery_address else None,
+                    'street': order.delivery_address.street if order.delivery_address else None,
+                    'city': order.delivery_address.city if order.delivery_address else None,
+                } if order.delivery_address else None,
+                'items': items,
+                'tracking_number': order.tracking_number,
+                'delivery_status': order.delivery_status,
+            }
+            
+            return Response(order_data, status=status.HTTP_200_OK)
+    except Order.DoesNotExist:
+        return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        print(f"Error fetching order detail: {e}")
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

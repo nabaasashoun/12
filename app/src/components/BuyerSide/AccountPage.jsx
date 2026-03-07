@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from './card';
-import { User, Mail, Phone, MapPin, Edit, Heart, ShoppingCart, Bookmark, MessageSquare, Star, MoreHorizontal, Plus } from 'lucide-react';
+import { 
+  User, Mail, Phone, MapPin, Edit, Heart, ShoppingCart, Bookmark, 
+  MessageSquare, Star, MoreHorizontal, Plus, Award, ThumbsUp, X,
+  Package, Truck, Clock, CheckCircle, AlertCircle
+} from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import { useCart } from '../../utils/CartContext';
@@ -34,6 +38,16 @@ const AccountPage = () => {
   const [bookmarkCount, setBookmarkCount] = useState(0);
   const [orderCount, setOrderCount] = useState(0);
   const navigate = useNavigate();
+
+  // Rating modal state
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [trustRating, setTrustRating] = useState(5);
+  const [ratingComment, setRatingComment] = useState('');
+  const [submittingRating, setSubmittingRating] = useState(false);
+  const [ratingSuccess, setRatingSuccess] = useState(false);
+  const [ratingError, setRatingError] = useState('');
+  const [updatedTrustScore, setUpdatedTrustScore] = useState(null);
 
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [animatingLike, setAnimatingLike] = useState(null);
@@ -88,7 +102,81 @@ const AccountPage = () => {
     { label: 'Cancel', action: closeDropdown },
   ];
 
-  // ==================== DATA FETCHING FUNCTIONS ====================
+  // ==================== RATING FUNCTIONS ====================
+
+  const openRatingModal = (order) => {
+    setSelectedOrder(order);
+    setTrustRating(5);
+    setRatingComment('');
+    setRatingError('');
+    setRatingSuccess(false);
+    setUpdatedTrustScore(null);
+    setShowRatingModal(true);
+  };
+
+  const closeRatingModal = () => {
+    setShowRatingModal(false);
+    setSelectedOrder(null);
+    setUpdatedTrustScore(null);
+  };
+
+  const submitTrustRating = async () => {
+    if (!selectedOrder || !selectedOrder.seller_id) {
+      setRatingError('Seller information not available');
+      return;
+    }
+
+    setSubmittingRating(true);
+    setRatingError('');
+
+    try {
+      // Prepare rating data
+      const ratingData = {
+        seller_id: selectedOrder.seller_id,
+        rating: trustRating,
+        comment: ratingComment,
+        order_id: selectedOrder.id
+      };
+
+      console.log('Submitting rating to backend:', ratingData);
+
+      // Call the API
+      const response = await api.rateSeller(ratingData);
+      
+      console.log('Rating submission response:', response);
+
+      if (!response.error && response.data?.success) {
+        setRatingSuccess(true);
+        
+        // Update the order in local state to show it's been rated
+        setOrders(prev => prev.map(order => 
+          order.id === selectedOrder.id 
+            ? { 
+                ...order, 
+                has_rated: true, 
+                trustRating: trustRating,
+                sellerTrust: response.data.seller_trust 
+              }
+            : order
+        ));
+
+        // Auto close after 2 seconds
+        setTimeout(() => {
+          closeRatingModal();
+        }, 2000);
+      } else {
+        // Handle error response
+        const errorMsg = response.data?.error || response.data?.message || 'Failed to submit rating';
+        setRatingError(errorMsg);
+        setSubmittingRating(false);
+      }
+
+    } catch (error) {
+      console.error('Error submitting rating:', error);
+      setRatingError('Network error. Please try again.');
+      setSubmittingRating(false);
+    }
+  };
 
   const fetchUserData = async () => {
     const token = localStorage.getItem('accessToken');
@@ -124,6 +212,7 @@ const AccountPage = () => {
 
             fetchBookmarkCount();
             fetchOrderCount();
+            fetchOrders(); // Fetch orders immediately
           } else {
             setUserData({
               name: userInfo.username || 'User',
@@ -138,6 +227,7 @@ const AccountPage = () => {
               wishlist: 0,
               isSeller: userInfo.is_seller || false,
             });
+            fetchOrders(); // Fetch orders immediately
           }
         } catch (error) {
           console.error('Error fetching buyer details:', error);
@@ -154,6 +244,7 @@ const AccountPage = () => {
             wishlist: 0,
             isSeller: userInfo.is_seller || false,
           });
+          fetchOrders(); // Fetch orders immediately
         }
       }
     } catch (error) {
@@ -270,9 +361,8 @@ const AccountPage = () => {
       if (response.data && Array.isArray(response.data)) {
         const rawProducts = response.data;
 
-        // ── Same mapping logic as fetchBookmarkedProducts ──
         const processed = rawProducts
-          .filter(product => isLiked(product.id))     // keep your existing safety filter
+          .filter(product => isLiked(product.id))
           .map(product => ({
             id: product.id,
             sellerName: product.seller_name 
@@ -290,13 +380,13 @@ const AccountPage = () => {
             ratingCount: product.rating_number || 0,
             commentCount: product.comment_count || 0,
             like_count: product.like_count || 0,
-            sellerId: product.seller,                    // ← important!
-            is_bookmarked: isBookmarked(product.id),     // use context instead of static true
-            is_liked: true                               // since it's the liked tab
+            sellerId: product.seller,
+            is_bookmarked: isBookmarked(product.id),
+            is_liked: true
           }));
 
         setLikedProducts(processed);
-        console.log(`[Liked] Processed ${processed.length} products (filtered from ${rawProducts.length})`);
+        console.log(`[Liked] Processed ${processed.length} products`);
       }
     } catch (err) {
       console.error("Failed to load liked products:", err);
@@ -304,30 +394,135 @@ const AccountPage = () => {
       setContentLoading(prev => ({ ...prev, liked: false }));
     }
   };
-
   const fetchOrders = async () => {
     setContentLoading(prev => ({ ...prev, orders: true }));
     try {
+      // Try to fetch real orders from API
       const result = await api.request('/orders/');
-      if (result.data && Array.isArray(result.data)) {
-        const successfulOrders = result.data.filter(order => {
-          const status = order.status?.toLowerCase() || '';
-          return ['paid', 'completed', 'delivered', 'shipped'].includes(status);
-        });
-        setOrders(successfulOrders.slice(0, 5));
+      console.log('Orders API response:', result);
+      
+      if (!result.error && result.data && Array.isArray(result.data) && result.data.length > 0) {
+        // Use real orders from backend
+        const processedOrders = result.data.map(order => ({
+          id: order.id,
+          order_date: order.order_date || new Date().toISOString(),
+          total_amount: order.total_amount || 0,
+          status: order.status || 'pending',
+          items_count: order.items_count || 1,
+          seller_id: order.seller_id || 1,
+          seller_name: order.seller_name || 'Timo', // Updated to match your seller
+          product_name: order.product_name || 'Sample Product',
+          has_rated: order.has_rated || false,
+          trustRating: order.trustRating || null
+        }));
+        setOrders(processedOrders);
+        setOrderCount(processedOrders.length);
       } else {
-        setOrders([]);
+        // Use enhanced test orders with correct seller_id (1) and name 'Timo'
+        const testOrders = [
+          {
+            id: 1001,
+            order_date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+            total_amount: 45000,
+            status: 'delivered',
+            items_count: 3,
+            seller_id: 1,  // This matches your existing seller
+            seller_name: 'Timo', // Updated to match your seller
+            product_name: 'Wireless Headphones',
+            has_rated: false,
+            status_badge: 'delivered'
+          },
+          {
+            id: 1002,
+            order_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+            total_amount: 32500,
+            status: 'delivered',
+            items_count: 2,
+            seller_id: 1,  // Using same seller for testing
+            seller_name: 'Timo',
+            product_name: 'Leather Wallet',
+            has_rated: true,
+            trustRating: 4,
+            status_badge: 'delivered'
+          },
+          {
+            id: 1003,
+            order_date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+            total_amount: 89000,
+            status: 'shipped',
+            items_count: 1,
+            seller_id: 1,
+            seller_name: 'Timo',
+            product_name: 'Smart Watch',
+            has_rated: false,
+            status_badge: 'shipped'
+          },
+          {
+            id: 1004,
+            order_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+            total_amount: 12500,
+            status: 'processing',
+            items_count: 2,
+            seller_id: 1,
+            seller_name: 'Timo',
+            product_name: 'Decorative Pillows',
+            has_rated: false,
+            status_badge: 'processing'
+          },
+          {
+            id: 1005,
+            order_date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+            total_amount: 67500,
+            status: 'delivered',
+            items_count: 4,
+            seller_id: 1,
+            seller_name: 'Timo',
+            product_name: 'Running Shoes',
+            has_rated: false,
+            status_badge: 'delivered'
+          }
+        ];
+        setOrders(testOrders);
+        setOrderCount(testOrders.length);
       }
     } catch (error) {
       console.error('Error fetching orders:', error);
-      setOrders([]);
+      // Fallback to test orders
+      const testOrders = [
+        {
+          id: 1001,
+          order_date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+          total_amount: 45000,
+          status: 'delivered',
+          items_count: 3,
+          seller_id: 1,
+          seller_name: 'Timo',
+          product_name: 'Wireless Headphones',
+          has_rated: false,
+          status_badge: 'delivered'
+        },
+        {
+          id: 1002,
+          order_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+          total_amount: 32500,
+          status: 'delivered',
+          items_count: 2,
+          seller_id: 1,
+          seller_name: 'Timo',
+          product_name: 'Leather Wallet',
+          has_rated: true,
+          trustRating: 4,
+          status_badge: 'delivered'
+        }
+      ];
+      setOrders(testOrders);
+      setOrderCount(testOrders.length);
     } finally {
       setContentLoading(prev => ({ ...prev, orders: false }));
     }
   };
 
-  // ==================== EVENT HANDLERS ====================
-
+  
   // Listen for like toggles from other components
   useEffect(() => {
     const handleLikeToggle = (event) => {
@@ -335,15 +530,12 @@ const AccountPage = () => {
       console.log('🔄 [AccountPage] likeToggled event received:', { productId, liked });
       
       if (activeTab === 'liked') {
-        // If we're on the liked tab and a product is unliked, remove it immediately
         if (!liked) {
           setLikedProducts(prev => prev.filter(p => p.id !== productId));
         } else {
-          // If liked, refresh to make sure we have the full data
           fetchLikedProducts();
         }
       } else {
-        // When unliked from other tabs, remove from likedProducts if present
         if (!liked) {
           setLikedProducts(prev => prev.filter(p => p.id !== productId));
         }
@@ -364,26 +556,18 @@ const AccountPage = () => {
       return;
     }
     
-    console.log('❤️ [AccountPage] Before toggle - isLiked from context:', isLiked(productId));
-    
     setAnimatingLike(productId);
     setTimeout(() => setAnimatingLike(null), 600);
     
     const result = await toggleLike(productId);
     
-    console.log('❤️ [AccountPage] After toggle - result:', result);
-    
-    // On liked tab → if unliked, remove immediately without waiting for refresh
     if (activeTab === 'liked') {
       if (!result.liked) {
-        // Immediately remove from UI
         setLikedProducts(prev => prev.filter(p => p.id !== productId));
       } else {
-        // If liked, refresh to get full data
         await fetchLikedProducts();
       }
     } else {
-      // On other tabs, if we're unliking a product, remove it from likedProducts if it exists
       if (!result.liked) {
         setLikedProducts(prev => prev.filter(p => p.id !== productId));
       }
@@ -403,7 +587,6 @@ const AccountPage = () => {
     const result = await toggleBookmark(productId);
     
     if (activeTab === 'liked') {
-      // Update bookmark status in existing list
       setLikedProducts(prev =>
         prev.map(product =>
           product.id === productId
@@ -412,7 +595,6 @@ const AccountPage = () => {
         )
       );
     } else if (activeTab === 'Bookmarks') {
-      // If on bookmarks tab, refresh the list
       fetchBookmarkedProducts();
       fetchBookmarkCount();
     }
@@ -466,13 +648,36 @@ const AccountPage = () => {
 
   const getStatusBadgeClass = (status) => {
     const s = status?.toLowerCase() || '';
-    if (['completed', 'delivered', 'shipped'].includes(s)) {
+    if (s === 'delivered') {
       return 'bg-green-100 text-green-800';
     }
-    if (s === 'paid') {
+    if (s === 'shipped') {
       return 'bg-blue-100 text-blue-800';
     }
+    if (s === 'processing') {
+      return 'bg-yellow-100 text-yellow-800';
+    }
+    if (s === 'cancelled') {
+      return 'bg-red-100 text-red-800';
+    }
     return 'bg-gray-100 text-gray-800';
+  };
+
+  const getStatusIcon = (status) => {
+    const s = status?.toLowerCase() || '';
+    if (s === 'delivered') {
+      return <CheckCircle className="w-3 h-3" />;
+    }
+    if (s === 'shipped') {
+      return <Truck className="w-3 h-3" />;
+    }
+    if (s === 'processing') {
+      return <Clock className="w-3 h-3" />;
+    }
+    if (s === 'cancelled') {
+      return <AlertCircle className="w-3 h-3" />;
+    }
+    return <Package className="w-3 h-3" />;
   };
 
   // ==================== RENDER ====================
@@ -572,10 +777,10 @@ const AccountPage = () => {
                   <span className="text-black">{userData.address}</span>
                 </div>
               </div>
-              <button className="mt-4 flex items-center text-blue-600 hover:text-blue-700">
+              <Link to="/settings" className="mt-4 flex items-center text-blue-600 hover:text-blue-700">
                 <Edit className="w-4 h-4 mr-1" />
                 Edit Profile
-              </button>
+              </Link>
             </CardContent>
           </Card>
 
@@ -583,10 +788,10 @@ const AccountPage = () => {
             <CardContent className="p-6">
               <h2 className="text-lg font-semibold mb-4 text-black">Account Security</h2>
               <div className="space-y-4">
-                <button className="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                <Link to="/settings" className="block w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                   <h3 className="font-medium text-black">Change Password</h3>
                   <p className="text-sm text-gray-600">Update your account password</p>
-                </button>
+                </Link>
                 <button className="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                   <h3 className="font-medium text-black">Two-Factor Authentication</h3>
                   <p className="text-sm text-gray-600">Add an extra layer of security</p>
@@ -601,10 +806,19 @@ const AccountPage = () => {
         </div>
       )}
 
-      {/* Orders Tab */}
+      {/* Orders Tab with Rating Button */}
       {activeTab === 'orders' && (
         <div>
-          <h2 className="text-lg font-semibold mb-6 text-black">Order History</h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-lg font-semibold text-black">Order History</h2>
+            <button
+              onClick={fetchOrders}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+            >
+              Refresh Orders
+            </button>
+          </div>
+          
           <Card>
             <CardContent className="p-6">
               {contentLoading.orders ? (
@@ -618,33 +832,112 @@ const AccountPage = () => {
                 <div className="space-y-4">
                   {orders.map((order) => (
                     <div key={order.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <h3 className="font-medium text-black">Order #{order.id}</h3>
+                      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2 flex-wrap">
+                            <h3 className="font-medium text-black">Order #{order.id}</h3>
+                            <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded ${getStatusBadgeClass(order.status_badge || order.status)}`}>
+                              {getStatusIcon(order.status_badge || order.status)}
+                              {(order.status_badge || order.status || 'Processing').charAt(0).toUpperCase() + 
+                               (order.status_badge || order.status || 'Processing').slice(1)}
+                            </span>
+                          </div>
                           <p className="text-sm text-gray-600">
-                            {new Date(order.created_at || order.date).toLocaleDateString()}
+                            {new Date(order.order_date).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
                           </p>
+                          <div className="mt-2 space-y-1">
+                            <p className="text-sm text-gray-700">
+                              <span className="font-medium">Product:</span> {order.product_name || 'Sample Product'}
+                            </p>
+                            <p className="text-sm text-gray-700">
+                              <span className="font-medium">Seller:</span> {order.seller_name || 'Sample Seller'}
+                            </p>
+                            <p className="text-sm text-gray-700">
+                              <span className="font-medium">Items:</span> {order.items_count || 1}
+                            </p>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-black">{formatCurrency(order.total_amount || order.total)}</p>
-                          <span className={`text-sm px-2 py-1 rounded ${getStatusBadgeClass(order.status)}`}>
-                            {order.status || 'Processing'}
-                          </span>
+                        
+                        <div className="flex flex-col items-end gap-2">
+                          <p className="font-semibold text-black text-lg">{formatCurrency(order.total_amount || 0)}</p>
+                          
+                          {/* Rating Button - Always visible for testing */}
+                          <button
+                            onClick={() => openRatingModal(order)}
+                            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg transition-colors text-xs ${
+                              order.has_rated 
+                                ? 'bg-green-100 text-green-700 cursor-not-allowed' 
+                                : 'bg-yellow-500 text-white hover:bg-yellow-600'
+                            }`}
+                            disabled={order.has_rated}
+                          >
+                            <Award className="w-3 h-3" />
+                            {order.has_rated ? `Rated ${order.trustRating}/5` : 'Rate Seller Trust'}
+                          </button>
+                          
+                          {/* View Details Link */}
+                          <Link 
+                            to={`/orders/${order.id}`}
+                            className="text-xs text-blue-600 hover:text-blue-800 mt-1"
+                          >
+                            View Details →
+                          </Link>
                         </div>
-                      </div>
-                      <div className="mt-2 text-sm text-gray-600">
-                        {order.items_count || 0} items
                       </div>
                     </div>
                   ))}
+                  
+                  {/* Test Mode Instructions */}
+                  <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="flex items-start gap-3">
+                      <div className="bg-blue-500 rounded-full p-1">
+                        <Award className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-blue-800 font-medium mb-1">Rating System Test</p>
+                        <p className="text-xs text-blue-700">
+                          Click the yellow "Rate Seller Trust" button to submit a rating. This will:
+                        </p>
+                        <ul className="text-xs text-blue-700 list-disc ml-4 mt-1">
+                          <li>Send your rating (1-5 stars) to the backend</li>
+                          <li>Update the seller's trust percentage (average × 20)</li>
+                          <li>Create a notification for the seller</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <ShoppingCart className={`w-12 h-12 mx-auto mb-4 animate-bounce-forever text-gray-400`} />
+                  <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-gray-400" />
                   <p className="text-gray-600 mb-4">No orders yet</p>
                   <Link to="/products" className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                     Start Shopping
                   </Link>
+                  
+                  {/* Even when no orders, show a demo order for testing */}
+                  <div className="mt-8 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <p className="text-sm text-yellow-800 font-medium mb-2">Demo Mode</p>
+                    <p className="text-xs text-yellow-700 mb-3">
+                      Click the button below to test the rating system with a sample order.
+                    </p>
+                    <button
+                      onClick={() => openRatingModal({
+                        id: 9999,
+                        seller_id: 1,  
+                        seller_name: 'Timo',
+                        product_name: 'Sample Product'
+                      })}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors text-sm"
+                    >
+                      <Award className="w-4 h-4" />
+                      Test Rating Modal
+                    </button>
+                  </div>
                 </div>
               )}
             </CardContent>
@@ -675,7 +968,6 @@ const AccountPage = () => {
                     <CardContent className="p-0 flex flex-col">
                       <div className="p-0 sm:p-3 flex flex-col border-b border-gray-100">
                         <div className="flex justify-between items-center">
-                          {/* FIXED: Only render seller link if sellerId exists */}
                           {post.sellerId ? (
                             <Link
                               to={`/seller/${post.sellerId}`}
@@ -859,14 +1151,7 @@ const AccountPage = () => {
                 const currentIndex = currentImageIndex[post.id] || 0;
                 const totalImages = post.images.length;
                 const truncatedDescription = post.content?.length > 40 ? post.content.substring(0, 40) + '...' : post.content || '';
-                  <div className="bg-yellow-100 p-2 text-xs mb-2 border border-yellow-300 rounded">
-                    DEBUG Liked product:
-                    <br />id: {post.id}
-                    <br />sellerName: "{post.sellerName || 'MISSING'}"
-                    <br />sellerId: {post.sellerId || 'MISSING'}
-                    <br />authorAvatar: "{post.authorAvatar || 'MISSING'}"
-                    <br />images: {post.images?.length || 0}
-                  </div>
+                
                 return (
                   <Card key={post.id} variant="elevated" className="overflow-hidden flex flex-col relative">
                     <CardContent className="p-0 flex flex-col">
@@ -903,7 +1188,7 @@ const AccountPage = () => {
                         </div>
                       </div>
 
-                      {/* Image Carousel – identical to Bookmarks */}
+                      {/* Image Carousel */}
                       <div
                         className="relative aspect-square w-full bg-gray-200 flex-1"
                         onTouchStart={(e) => {
@@ -947,7 +1232,7 @@ const AccountPage = () => {
                         </Link>
                       </div>
 
-                      {/* Actions & info – pixel-perfect match with Bookmarks */}
+                      {/* Actions & info */}
                       <div className="p-1 sm:p-3 flex flex-col mt-0">
                         <div className="flex flex-col">
                           <div className="flex justify-between items-center mb-0">
@@ -1035,6 +1320,122 @@ const AccountPage = () => {
               </Link>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Rating Modal */}
+      {showRatingModal && selectedOrder && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeRatingModal}>
+          <div className="bg-white rounded-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-black">Rate Your Experience</h3>
+              <button onClick={closeRatingModal} className="p-1 hover:bg-gray-100 rounded-full">
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            {ratingSuccess ? (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <ThumbsUp className="w-8 h-8 text-green-600" />
+                </div>
+                <h4 className="text-lg font-semibold text-black mb-2">Thank You!</h4>
+                <p className="text-gray-600">Your rating has been submitted successfully.</p>
+                {updatedTrustScore && (
+                  <p className="text-sm text-green-600 mt-2 font-medium">
+                    Seller trust score updated to {updatedTrustScore.toFixed(1)}%
+                  </p>
+                )}
+              </div>
+            ) : (
+              <>
+                <div className="mb-6">
+                  <div className="bg-gray-50 p-3 rounded-lg mb-4">
+                    <p className="text-sm text-gray-700">
+                      <span className="font-medium">Order:</span> #{selectedOrder.id}
+                    </p>
+                    <p className="text-sm text-gray-700">
+                      <span className="font-medium">Product:</span> {selectedOrder.product_name || 'Sample Product'}
+                    </p>
+                    <p className="text-sm text-gray-700">
+                      <span className="font-medium">Seller:</span> {selectedOrder.seller_name || 'Sample Seller'}
+                    </p>
+                  </div>
+                  
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    How would you rate your experience with this seller?
+                  </label>
+                  
+                  {/* Star Rating */}
+                  <div className="flex justify-center gap-2 mb-4">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        onClick={() => setTrustRating(star)}
+                        className="focus:outline-none transform hover:scale-110 transition-transform"
+                      >
+                        <Star
+                          className={`w-8 h-8 transition-all ${
+                            star <= trustRating 
+                              ? 'text-yellow-500 fill-yellow-500' 
+                              : 'text-gray-300 hover:text-yellow-400'
+                          }`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                  
+                  <div className="text-center mb-4">
+                    <span className="text-sm font-medium text-gray-700">
+                      {trustRating === 1 && 'Poor'}
+                      {trustRating === 2 && 'Fair'}
+                      {trustRating === 3 && 'Good'}
+                      {trustRating === 4 && 'Very Good'}
+                      {trustRating === 5 && 'Excellent'}
+                    </span>
+                  </div>
+                  
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Additional Comments (Optional)
+                  </label>
+                  <textarea
+                    value={ratingComment}
+                    onChange={(e) => setRatingComment(e.target.value)}
+                    rows="3"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-black"
+                    placeholder="Share your experience with this seller..."
+                  />
+                  
+                  {ratingError && (
+                    <p className="mt-2 text-sm text-red-600">{ratingError}</p>
+                  )}
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={closeRatingModal}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={submitTrustRating}
+                    disabled={submittingRating}
+                    className="flex-1 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors disabled:bg-yellow-300 flex items-center justify-center gap-2"
+                  >
+                    {submittingRating ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Submitting...
+                      </>
+                    ) : (
+                      'Submit Rating'
+                    )}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
 

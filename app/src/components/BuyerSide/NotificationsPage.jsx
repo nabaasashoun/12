@@ -1,5 +1,20 @@
 import { Card, CardContent } from './card';
-import { Bell, CheckCircle, ShoppingCart, Star, Users, Gift, X, User, Settings, UserPlus } from 'lucide-react';
+import { 
+  Bell, 
+  CheckCircle, 
+  ShoppingCart, 
+  Star, 
+  Users, 
+  Gift, 
+  X, 
+  UserPlus,
+  User,
+  CreditCard,
+  Package,
+  Truck,
+  Clock,
+  AlertCircle
+} from 'lucide-react';
 import { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import { useNavigate } from 'react-router-dom';
@@ -7,7 +22,42 @@ import { useNavigate } from 'react-router-dom';
 const NotificationsPage = ({ setHasUnreadNotifications }) => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showDummy, setShowDummy] = useState(true); // Toggle for dummy notifications
   const navigate = useNavigate();
+
+  // Dummy static notifications for buyer
+  const dummyNotifications = [
+    {
+      id: 'dummy-1',
+      type: 'order_confirmed',
+      title: 'Order Confirmed',
+      message: 'Your order #ORD-2024-001 has been confirmed and is being processed.',
+      time: '2 hours ago',
+      read: false,
+      data: { order_id: 1001 }
+    },
+    {
+      id: 'dummy-2',
+      type: 'payment_successful',
+      title: 'Payment Successful',
+      message: 'Payment of UGX 45,000 for order #ORD-2024-001 was successful.',
+      time: '2 hours ago',
+      read: false,
+      data: { order_id: 1001, amount: 45000 }
+    },
+
+    {
+      id: 'dummy-4',
+      type: 'order_delivered',
+      title: 'Order Delivered',
+      message: 'Your order #ORD-2024-003 has been delivered. Please rate your purchase.',
+      time: '1 day ago',
+      read: true,
+      data: { order_id: 1003 }
+    },
+
+
+  ];
 
   // Icon mapping based on notification type
   const getIconForType = (type) => {
@@ -18,18 +68,31 @@ const NotificationsPage = ({ setHasUnreadNotifications }) => {
         return { icon: CheckCircle, color: 'text-green-500' }; 
       case 'order':
         return { icon: ShoppingCart, color: 'text-green-500' };
+      case 'order_confirmed':
+        return { icon: CheckCircle, color: 'text-green-600' };
+      case 'payment_successful':
+        return { icon: CreditCard, color: 'text-emerald-500' };
+      case 'order_shipped':
+        return { icon: Truck, color: 'text-purple-500' };
+      case 'order_delivered':
+        return { icon: Package, color: 'text-blue-600' };
+      case 'deal_alert':
+        return { icon: Gift, color: 'text-orange-500' };
+      case 'price_drop':
+        return { icon: Star, color: 'text-yellow-500' };
       case 'review':
         return { icon: Star, color: 'text-yellow-500' };
       case 'promotion':
         return { icon: Gift, color: 'text-purple-500' };
       case 'profile_update':
-        return { icon: User, color: 'text-indigo-500' }; 
+        return { icon: User, color: 'text-indigo-500' };
       case 'system':
         return { icon: CheckCircle, color: 'text-gray-500' };
       default:
         return { icon: Bell, color: 'text-gray-500' };
     }
   };
+
   // Format time
   const formatTime = (timestamp) => {
     const date = new Date(timestamp);
@@ -65,7 +128,8 @@ const NotificationsPage = ({ setHasUnreadNotifications }) => {
         console.log('4. Notifications data array:', result.data.data);
         console.log('5. Unread count:', result.data.unread_count);
         
-        const formattedNotifications = result.data.data.map(notif => {
+        // Format real notifications from backend
+        const realNotifications = result.data.data.map(notif => {
           console.log('6. Processing notification:', notif);
           
           // Set appropriate title based on type
@@ -93,11 +157,26 @@ const NotificationsPage = ({ setHasUnreadNotifications }) => {
           };
         });
         
-        console.log('7. Formatted notifications:', formattedNotifications);
-        setNotifications(formattedNotifications);
+        console.log('7. Real notifications:', realNotifications);
+        
+        // Combine real notifications with dummy notifications
+        // Only show dummy notifications that haven't been marked as read
+        const unreadDummy = dummyNotifications.filter(d => !d.read);
+        const readDummy = dummyNotifications.filter(d => d.read);
+        
+        // Combine all notifications - real ones first, then unread dummies, then read dummies
+        const allNotifications = [
+          ...realNotifications,
+          ...unreadDummy,
+          ...readDummy
+        ];
+        
+        setNotifications(allNotifications);
       }
     } catch (error) {
       console.error('9. Error fetching notifications:', error);
+      // If error, still show dummy notifications
+      setNotifications(dummyNotifications);
     } finally {
       setLoading(false);
       console.log('10. Loading set to false');
@@ -123,7 +202,11 @@ const NotificationsPage = ({ setHasUnreadNotifications }) => {
 
   const markAsRead = async (id) => {
     try {
-      await api.markSimpleNotificationRead(id);
+      // Only try to mark real notifications as read in backend
+      if (!id.toString().startsWith('dummy-')) {
+        await api.markSimpleNotificationRead(id);
+      }
+      
       setNotifications(prev =>
         prev.map(notif =>
           notif.id === id ? { ...notif, read: true } : notif
@@ -139,7 +222,11 @@ const NotificationsPage = ({ setHasUnreadNotifications }) => {
   const deleteNotification = async (id, e) => {
     e.stopPropagation();
     try {
-      await api.deleteSimpleNotification(id);
+      // Only try to delete real notifications from backend
+      if (!id.toString().startsWith('dummy-')) {
+        await api.deleteSimpleNotification(id);
+      }
+      
       setNotifications(prev => prev.filter(notif => notif.id !== id));
       // Dispatch event to update bottom nav
       window.dispatchEvent(new CustomEvent('notificationRead'));
@@ -148,10 +235,12 @@ const NotificationsPage = ({ setHasUnreadNotifications }) => {
     }
   };
 
-
   const clearAllNotifications = async () => {
     try {
+      // Clear real notifications from backend
       await api.clearAllSimpleNotifications();
+      
+      // Clear dummy notifications as well
       setNotifications([]);
       // Dispatch event to update bottom nav
       window.dispatchEvent(new CustomEvent('notificationsRead'));
@@ -160,10 +249,12 @@ const NotificationsPage = ({ setHasUnreadNotifications }) => {
     }
   };
 
-
   const markAllRead = async () => {
     try {
+      // Mark all real notifications as read in backend
       await api.markAllSimpleNotificationsRead();
+      
+      // Mark all notifications as read in state (including dummy)
       setNotifications(prev => prev.map(notif => ({ ...notif, read: true })));
       // Dispatch event to update bottom nav
       window.dispatchEvent(new CustomEvent('notificationsRead'));
@@ -183,8 +274,20 @@ const NotificationsPage = ({ setHasUnreadNotifications }) => {
       navigate(`/seller/${notification.data.seller_id}`);
     } else if (notification.type === 'order' && notification.data?.order_id) {
       navigate(`/orders/${notification.data.order_id}`);
+    } else if (notification.type === 'order_confirmed' && notification.data?.order_id) {
+      navigate(`/orders/${notification.data.order_id}`);
+    } else if (notification.type === 'payment_successful' && notification.data?.order_id) {
+      navigate(`/orders/${notification.data.order_id}`);
+    } else if (notification.type === 'order_shipped' && notification.data?.order_id) {
+      navigate(`/orders/${notification.data.order_id}`);
+    } else if (notification.type === 'order_delivered' && notification.data?.order_id) {
+      navigate(`/orders/${notification.data.order_id}`);
     } else if (notification.type === 'review' && notification.data?.product_id) {
       navigate(`/product/${notification.data.product_id}`);
+    } else if (notification.type === 'price_drop' && notification.data?.product_id) {
+      navigate(`/product/${notification.data.product_id}`);
+    } else if (notification.type === 'profile_update') {
+      navigate('/account');
     }
   };
 
@@ -259,6 +362,19 @@ const NotificationsPage = ({ setHasUnreadNotifications }) => {
                           <h3 className="font-semibold text-black">{notification.title}</h3>
                           <p className="text-black mt-1">{notification.message}</p>
                           <p className="text-sm text-gray-500 mt-2">{notification.time}</p>
+                          
+                          {/* Show additional info for specific notification types */}
+                          {notification.type === 'order_confirmed' && notification.data?.order_id && (
+                            <span className="inline-block mt-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                              Order #{notification.data.order_id}
+                            </span>
+                          )}
+                          
+                          {notification.type === 'payment_successful' && notification.data?.amount && (
+                            <span className="inline-block mt-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                              UGX {notification.data.amount.toLocaleString()}
+                            </span>
+                          )}
                         </div>
                         <button
                           onClick={(e) => deleteNotification(notification.id, e)}
@@ -286,7 +402,7 @@ const NotificationsPage = ({ setHasUnreadNotifications }) => {
       {notifications.length > 0 && (
         <div className="mt-8 p-4 bg-blue-50 rounded-xl border border-blue-100">
           <h3 className="font-medium text-black mb-2">Quick Actions</h3>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button
               onClick={markAllRead}
               className="px-3 py-1 bg-blue-600 text-white rounded-full text-sm hover:bg-blue-700 transition-colors"
@@ -294,8 +410,14 @@ const NotificationsPage = ({ setHasUnreadNotifications }) => {
               Mark All Read
             </button>
             <button
-              onClick={() => navigate('/settings/notifications')}
+              onClick={() => navigate('/orders')}
               className="px-3 py-1 border border-blue-600 text-blue-600 rounded-full text-sm hover:bg-blue-600 hover:text-white transition-colors"
+            >
+              View Orders
+            </button>
+            <button
+              onClick={() => navigate('/settings/notifications')}
+              className="px-3 py-1 border border-gray-600 text-gray-600 rounded-full text-sm hover:bg-gray-600 hover:text-white transition-colors"
             >
               Settings
             </button>
