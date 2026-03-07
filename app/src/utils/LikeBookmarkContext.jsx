@@ -84,13 +84,11 @@ export const LikeBookmarkProvider = ({ children }) => {
         const serverLiked = result.data.liked !== undefined ? result.data.liked : newState;
         const newLikeCount = result.data.like_count || 0;
         
-        // If server response doesn't match our optimistic update, correct it
-        if (serverLiked !== newState) {
-          setLikedPosts(prev => ({
-            ...prev,
-            [productId]: serverLiked
-          }));
-        }
+        // ALWAYS update with the server response to ensure consistency
+        setLikedPosts(prev => ({
+          ...prev,
+          [productId]: serverLiked
+        }));
         
         // Dispatch event for other components
         window.dispatchEvent(new CustomEvent('likeToggled', {
@@ -146,13 +144,11 @@ export const LikeBookmarkProvider = ({ children }) => {
       if (result.data && !result.error) {
         const isNowBookmarked = result.data.action === 'added';
         
-        // If server response doesn't match our optimistic update, correct it
-        if (isNowBookmarked !== newState) {
-          setFavoritedPosts(prev => ({
-            ...prev,
-            [productId]: isNowBookmarked
-          }));
-        }
+        // ALWAYS update with the server response
+        setFavoritedPosts(prev => ({
+          ...prev,
+          [productId]: isNowBookmarked
+        }));
         
         // Dispatch event for other components
         window.dispatchEvent(new CustomEvent('bookmarkToggled', {

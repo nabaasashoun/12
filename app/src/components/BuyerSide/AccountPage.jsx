@@ -88,104 +88,7 @@ const AccountPage = () => {
     { label: 'Cancel', action: closeDropdown },
   ];
 
-  // Listen for like toggles from other components
-  useEffect(() => {
-    const handleLikeToggle = (event) => {
-      const { productId, liked } = event.detail;
-      
-      // If we're on the liked tab, refresh the list
-      if (activeTab === 'liked') {
-        fetchLikedProducts();
-      } else {
-        // Otherwise, just update the local likedProducts list if the product exists
-        setLikedProducts(prev => 
-          liked 
-            ? prev // If liked, we don't add here because we don't have the full product data
-            : prev.filter(p => p.id !== productId) // If unliked, remove from list
-        );
-      }
-    };
-
-    window.addEventListener('likeToggled', handleLikeToggle);
-    
-    return () => {
-      window.removeEventListener('likeToggled', handleLikeToggle);
-    };
-  }, [activeTab]);
-
-  const handleToggleLike = async (productId) => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-    
-    setAnimatingLike(productId);
-    setTimeout(() => setAnimatingLike(null), 600);
-    
-    const result = await toggleLike(productId);
-    
-    // If we're on the liked tab and we unliked, remove from the list
-    if (activeTab === 'liked' && result && result.success && !result.liked) {
-      setLikedProducts(prev => prev.filter(p => p.id !== productId));
-    } else if (activeTab === 'liked' && result && result.success && result.liked) {
-      // If we liked a product while on the liked tab, refresh the list
-      fetchLikedProducts();
-    }
-  };
-
-  const handleToggleFavorite = async (productId) => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-    
-    setAnimatingFavorite(productId);
-    setTimeout(() => setAnimatingFavorite(null), 500);
-    
-    const result = await toggleBookmark(productId);
-    
-    if (activeTab === 'liked') {
-      // If on liked tab, just update the bookmark status in the existing list
-      setLikedProducts(prev =>
-        prev.map(product =>
-          product.id === productId
-            ? { ...product, is_bookmarked: result.bookmarked }
-            : product
-        )
-      );
-    } else if (activeTab === 'Bookmarks') {
-      // If on bookmarks tab, refresh the list
-      fetchBookmarkedProducts();
-    }
-  };
-
-  const toggleCart = async (postId) => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-    if (cartPosts[postId]) {
-      await removeFromCart(postId);
-    } else {
-      await addToCart(postId, 1);
-    }
-  };
-
-  const handleRemoveBookmark = async (productId) => {
-    try {
-      const result = await api.removeFromWishlist(productId);
-      if (!result.error) {
-        setBookmarkedProducts(prev => prev.filter(item => item.id !== productId));
-        setBookmarkCount(prev => prev - 1);
-        await toggleBookmark(productId);
-      }
-    } catch (error) {
-      console.error('Error removing bookmark:', error);
-    }
-  };
+  // ==================== DATA FETCHING FUNCTIONS ====================
 
   const fetchUserData = async () => {
     const token = localStorage.getItem('accessToken');
@@ -359,37 +262,24 @@ const AccountPage = () => {
     }
   };
 
+  // FIXED: Only show products that are actually liked according to context
   const fetchLikedProducts = async () => {
-    setContentLoading(prev => ({ ...prev, liked: true }));
     try {
-      const result = await api.getLikedProducts();
-      let products = [];
-
-      if (result.data && Array.isArray(result.data)) {
-        products = result.data.map(product => ({
-          id: product.id,
-          sellerName: product.seller_name ? `${product.seller_name}'s store` : 'Seller\'s store',
-          sellerUsername: product.seller?.user?.username || 'seller',
-          authorAvatar: (product.seller_name || 'S').charAt(0),
-          price: formatCurrency(product.unit_price || 0),
-          images: product.images && product.images.length > 0
-            ? product.images.map(img => getFullImageUrl(img))
-            : (product.product_photo ? [getFullImageUrl(product.product_photo)] : ['/sample1.jpg']),
-          product: product.name || 'Product',
-          content: product.description || 'No description available',
-          rating: Math.floor(product.rating_magnitude) || 0,
-          ratingCount: product.rating_number || 0,
-          commentCount: product.comment_count || 0,
-          like_count: product.like_count || 0,
-          sellerId: product.seller,
-          is_liked: true,
-          is_bookmarked: isBookmarked(product.id)
-        }));
+      setContentLoading(prev => ({ ...prev, liked: true }));
+      
+      const response = await api.getLikedProducts();
+      if (response.data && Array.isArray(response.data)) {
+        // Get all products from API
+        const products = response.data;
+        
+        // Filter to ONLY include products that are currently liked according to context
+        const currentlyLikedProducts = products.filter(product => isLiked(product.id));
+        
+        setLikedProducts(currentlyLikedProducts);
+        console.log('📋 [AccountPage] Fetched liked products:', currentlyLikedProducts.length, 'out of', products.length);
       }
-
-      setLikedProducts(products);
-    } catch (error) {
-      console.error('Error fetching liked products:', error);
+    } catch (err) {
+      console.error("Failed to load liked products:", err);
     } finally {
       setContentLoading(prev => ({ ...prev, liked: false }));
     }
@@ -416,6 +306,115 @@ const AccountPage = () => {
     }
   };
 
+  // ==================== EVENT HANDLERS ====================
+
+  // Listen for like toggles from other components
+  useEffect(() => {
+    const handleLikeToggle = (event) => {
+      const { productId, liked } = event.detail;
+      console.log('🔄 [AccountPage] likeToggled event received:', { productId, liked });
+      
+      if (activeTab === 'liked') {
+        console.log('📋 [AccountPage] On liked tab, refreshing list');
+        fetchLikedProducts();
+      } else {
+        // When unliked from other tabs, remove from likedProducts if present
+        if (!liked) {
+          setLikedProducts(prev => prev.filter(p => p.id !== productId));
+        }
+      }
+    };
+
+    window.addEventListener('likeToggled', handleLikeToggle);
+    
+    return () => {
+      window.removeEventListener('likeToggled', handleLikeToggle);
+    };
+  }, [activeTab]);
+
+  const handleToggleLike = async (productId) => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    
+    console.log('❤️ [AccountPage] Before toggle - isLiked from context:', isLiked(productId));
+    
+    setAnimatingLike(productId);
+    setTimeout(() => setAnimatingLike(null), 600);
+    
+    const result = await toggleLike(productId);
+    
+    console.log('❤️ [AccountPage] After toggle - result:', result);
+    
+    // On liked tab → refresh the full list after any like/unlike
+    if (activeTab === 'liked') {
+      console.log('📋 [AccountPage] On liked tab → refreshing full list after toggle');
+      await fetchLikedProducts();
+    } else {
+      // On other tabs, if we're unliking a product, remove it from likedProducts if it exists
+      if (!result.liked) {
+        setLikedProducts(prev => prev.filter(p => p.id !== productId));
+      }
+    }
+  };
+
+  const handleToggleFavorite = async (productId) => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    
+    setAnimatingFavorite(productId);
+    setTimeout(() => setAnimatingFavorite(null), 500);
+    
+    const result = await toggleBookmark(productId);
+    
+    if (activeTab === 'liked') {
+      // Update bookmark status in existing list
+      setLikedProducts(prev =>
+        prev.map(product =>
+          product.id === productId
+            ? { ...product, is_bookmarked: result.bookmarked }
+            : product
+        )
+      );
+    } else if (activeTab === 'Bookmarks') {
+      // If on bookmarks tab, refresh the list
+      fetchBookmarkedProducts();
+      fetchBookmarkCount();
+    }
+  };
+
+  const toggleCart = async (postId) => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    
+    if (cartPosts[postId]) {
+      await removeFromCart(postId);
+    } else {
+      await addToCart(postId, 1);
+    }
+  };
+
+  const handleRemoveBookmark = async (productId) => {
+    try {
+      const result = await api.removeFromWishlist(productId);
+      if (!result.error) {
+        setBookmarkedProducts(prev => prev.filter(item => item.id !== productId));
+        setBookmarkCount(prev => prev - 1);
+        await toggleBookmark(productId);
+      }
+    } catch (error) {
+      console.error('Error removing bookmark:', error);
+    }
+  };
+
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     if (tab === 'Bookmarks') {
@@ -427,9 +426,26 @@ const AccountPage = () => {
     }
   };
 
+  // ==================== INITIAL LOAD ====================
+
   useEffect(() => {
     fetchUserData();
   }, []);
+
+  // ==================== RENDER HELPERS ====================
+
+  const getStatusBadgeClass = (status) => {
+    const s = status?.toLowerCase() || '';
+    if (['completed', 'delivered', 'shipped'].includes(s)) {
+      return 'bg-green-100 text-green-800';
+    }
+    if (s === 'paid') {
+      return 'bg-blue-100 text-blue-800';
+    }
+    return 'bg-gray-100 text-gray-800';
+  };
+
+  // ==================== RENDER ====================
 
   if (loading) {
     return (
@@ -453,23 +469,13 @@ const AccountPage = () => {
     );
   }
 
-  const getStatusBadgeClass = (status) => {
-    const s = status?.toLowerCase() || '';
-    if (['completed', 'delivered', 'shipped'].includes(s)) {
-      return 'bg-green-100 text-green-800';
-    }
-    if (s === 'paid') {
-      return 'bg-blue-100 text-blue-800';
-    }
-    return 'bg-gray-100 text-gray-800';
-  };
-
   return (
     <div className="p-6 max-w-6xl mx-auto">
+      {/* Profile Header */}
       <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-6 text-white mb-8">
         <div className="flex items-center">
-          <div className="w-20 h-12 rounded-full bg-white text-blue-500 bg-opacity-20 flex items-center justify-center text-2xl font-bold mr-4">
-            {userData.name.split(' ').map(n => n[0]).join('')}
+          <div className="w-20 h-20 rounded-full bg-white text-blue-500 bg-opacity-20 flex items-center justify-center text-2xl font-bold mr-4">
+            {userData.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
           </div>
           <div>
             <p className="text-[23px] font-bold">{userData.name}</p>
@@ -483,6 +489,7 @@ const AccountPage = () => {
         </div>
       </div>
 
+      {/* Tabs */}
       <div className="flex border-b border-gray-200 mb-6 overflow-x-auto">
         {[
           { key: 'profile', label: 'Profile', icon: User },
@@ -511,6 +518,7 @@ const AccountPage = () => {
         ))}
       </div>
 
+      {/* Profile Tab */}
       {activeTab === 'profile' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card>
@@ -563,6 +571,7 @@ const AccountPage = () => {
         </div>
       )}
 
+      {/* Orders Tab */}
       {activeTab === 'orders' && (
         <div>
           <h2 className="text-lg font-semibold mb-6 text-black">Order History</h2>
@@ -613,6 +622,7 @@ const AccountPage = () => {
         </div>
       )}
 
+      {/* Bookmarks Tab */}
       {activeTab === 'Bookmarks' && (
         <div>
           <h2 className="text-lg font-semibold mb-6 text-black">My Bookmarks ({bookmarkCount})</h2>
@@ -655,6 +665,7 @@ const AccountPage = () => {
                         </div>
                       </div>
 
+                      {/* Image Carousel */}
                       <div
                         className="relative aspect-square w-full bg-gray-200 flex-1"
                         onTouchStart={(e) => {
@@ -698,6 +709,7 @@ const AccountPage = () => {
                         </Link>
                       </div>
 
+                      {/* Product Actions */}
                       <div className="p-1 sm:p-3 flex flex-col mt-0">
                         <div className="flex flex-col">
                           <div className="flex justify-between items-center mb-0">
@@ -705,14 +717,14 @@ const AccountPage = () => {
                               <button
                                 onClick={() => handleToggleLike(post.id)}
                                 className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full ${
-                                  post.is_liked ? 'text-red-500 bg-red-50' : 'text-gray-600 hover:text-red-500'
+                                  isLiked(post.id) ? 'text-red-500 bg-red-50' : 'text-gray-600 hover:text-red-500'
                                 }`}
                                 style={{
                                   transform: animatingLike === post.id ? 'scale(1.3)' : 'scale(1)',
                                   animation: animatingLike === post.id ? 'heartBeat 0.6s ease-in-out' : 'none'
                                 }}
                               >
-                                <Heart className="w-3 h-3 sm:w-4 sm:h-4" fill={post.is_liked ? 'currentColor' : 'none'} />
+                                <Heart className="w-3 h-3 sm:w-4 sm:h-4" fill={isLiked(post.id) ? 'currentColor' : 'none'} />
                               </button>
                               <Link
                                 to={`/product/${post.id}/comments`}
@@ -745,6 +757,8 @@ const AccountPage = () => {
                               <Bookmark className="w-3 h-3 sm:w-4 sm:h-4" fill={post.is_bookmarked ? 'currentColor' : 'none'} />
                             </button>
                           </div>
+                          
+                          {/* Rating */}
                           <div className="flex items-center space-x-1 sm:justify-end">
                             <div className="flex">
                               {[1, 2, 3, 4, 5].map((star) => (
@@ -758,6 +772,8 @@ const AccountPage = () => {
                             <span className="text-xs text-gray-600">({post.ratingCount})</span>
                           </div>
                         </div>
+                        
+                        {/* Product Info */}
                         <Link to={`/product/${post.id}`} className="text-black hover:underline text-xs font-medium truncate mb-1">
                           {post.product}
                         </Link>
@@ -784,6 +800,7 @@ const AccountPage = () => {
         </div>
       )}
 
+      {/* Liked Tab - FIXED: Only shows products that are actually liked */}
       {activeTab === 'liked' && (
         <div>
           <h2 className="text-lg font-semibold mb-6 text-black">Liked Products ({likedProducts.length})</h2>
@@ -799,7 +816,7 @@ const AccountPage = () => {
               {likedProducts.map((post) => {
                 const currentIndex = currentImageIndex[post.id] || 0;
                 const totalImages = post.images.length;
-                const truncatedDescription = post.content.length > 40 ? post.content.substring(0, 40) + '...' : post.content;
+                const truncatedDescription = post.content?.length > 40 ? post.content.substring(0, 40) + '...' : post.content || '';
 
                 return (
                   <Card key={post.id} variant="elevated" className="overflow-hidden flex flex-col relative">
@@ -826,6 +843,7 @@ const AccountPage = () => {
                         </div>
                       </div>
 
+                      {/* Image Carousel */}
                       <div
                         className="relative aspect-square w-full bg-gray-200 flex-1"
                         onTouchStart={(e) => {
@@ -869,6 +887,7 @@ const AccountPage = () => {
                         </Link>
                       </div>
 
+                      {/* Product Actions */}
                       <div className="p-1 sm:p-3 flex flex-col mt-0">
                         <div className="flex flex-col">
                           <div className="flex justify-between items-center mb-0">
@@ -876,14 +895,14 @@ const AccountPage = () => {
                               <button
                                 onClick={() => handleToggleLike(post.id)}
                                 className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full ${
-                                  post.is_liked ? 'text-red-500 bg-red-50' : 'text-gray-600 hover:text-red-500'
+                                  isLiked(post.id) ? 'text-red-500 bg-red-50' : 'text-gray-600 hover:text-red-500'
                                 }`}
                                 style={{
                                   transform: animatingLike === post.id ? 'scale(1.3)' : 'scale(1)',
                                   animation: animatingLike === post.id ? 'heartBeat 0.6s ease-in-out' : 'none'
                                 }}
                               >
-                                <Heart className="w-3 h-3 sm:w-4 sm:h-4" fill={post.is_liked ? 'currentColor' : 'none'} />
+                                <Heart className="w-3 h-3 sm:w-4 sm:h-4" fill={isLiked(post.id) ? 'currentColor' : 'none'} />
                               </button>
                               <Link
                                 to={`/product/${post.id}/comments`}
@@ -906,16 +925,18 @@ const AccountPage = () => {
                             <button
                               onClick={() => handleToggleFavorite(post.id)}
                               className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full ${
-                                post.is_bookmarked ? 'text-blue-500 bg-blue-50' : 'text-gray-600 hover:text-blue-500'
+                                isBookmarked(post.id) ? 'text-blue-500 bg-blue-50' : 'text-gray-600 hover:text-blue-500'
                               }`}
                               style={{
                                 transform: animatingFavorite === post.id ? 'scale(1.2)' : 'scale(1)',
                                 animation: animatingFavorite === post.id ? 'bookmarkPop 0.5s ease-out' : 'none'
                               }}
                             >
-                              <Bookmark className="w-3 h-3 sm:w-4 sm:h-4" fill={post.is_bookmarked ? 'currentColor' : 'none'} />
+                              <Bookmark className="w-3 h-3 sm:w-4 sm:h-4" fill={isBookmarked(post.id) ? 'currentColor' : 'none'} />
                             </button>
                           </div>
+                          
+                          {/* Rating */}
                           <div className="flex items-center space-x-1 sm:justify-end">
                             <div className="flex">
                               {[1, 2, 3, 4, 5].map((star) => (
@@ -929,6 +950,8 @@ const AccountPage = () => {
                             <span className="text-xs text-gray-600">({post.ratingCount})</span>
                           </div>
                         </div>
+                        
+                        {/* Product Info */}
                         <Link to={`/product/${post.id}`} className="text-black hover:underline text-xs font-medium truncate mb-1">
                           {post.product}
                         </Link>
@@ -955,10 +978,11 @@ const AccountPage = () => {
         </div>
       )}
 
+      {/* Dropdown Modal */}
       {dropdownOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeDropdown}>
-          <div className="bg-white rounded-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="p-4 border border-gray-200 text-center">
+          <div className="bg-white rounded-xl max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
+            <div className="p-4 border-b border-gray-200 text-center">
               <h3 className="font-semibold text-lg text-black">Post Options</h3>
             </div>
             <div className="divide-y divide-gray-100">
@@ -976,6 +1000,7 @@ const AccountPage = () => {
         </div>
       )}
 
+      {/* Styles */}
       <style>{`
         @keyframes bounceUpDownForever {
           0%, 100% { transform: translateY(0); }
