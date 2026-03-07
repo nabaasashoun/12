@@ -560,3 +560,8 @@ class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = ['id', 'notification_type', 'title', 'message', 'data', 'read', 'created_at']
+
+class SellerProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Seller
+        fields = ['name', 'location', 'contact', 'about', 'nin_number']

@@ -665,12 +665,17 @@ def get_seller_profile(request):
 
 class SellerProfileView(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated, IsSeller]
-    serializer_class = SellerProfileSerializer
+    
+    def get_serializer_class(self):
+        if self.request.method in ['PUT', 'PATCH']:
+            from .serializers import SellerProfileUpdateSerializer
+            return SellerProfileUpdateSerializer
+        from .serializers import SellerProfileSerializer
+        return SellerProfileSerializer
 
     def get_object(self):
         return self.request.user.seller_profile
-
-
+    
 class SellerProductListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated, IsSeller]
     serializer_class = SellerProductSerializer

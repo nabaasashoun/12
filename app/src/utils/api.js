@@ -569,26 +569,6 @@ class Api {
     });
   }
 
-  async changeEmail(newEmail, password) {
-    return this.request('/change-email/', {
-      method: 'POST',
-      body: JSON.stringify({ 
-        new_email: newEmail, 
-        password: password 
-      }),
-    });
-  }
-
-  async changePassword(currentPassword, newPassword) {
-    return this.request('/change-password/', {
-      method: 'POST',
-      body: JSON.stringify({ 
-        current_password: currentPassword, 
-        new_password: newPassword 
-      }),
-    });
-  }
-
   async updateBuyerProfile(profileData) {
     console.log('========== API: UPDATE BUYER PROFILE ==========');
     console.log('Sending profile data:', profileData);
@@ -605,6 +585,80 @@ class Api {
       return response;
     } catch (error) {
       console.error('API Error in updateBuyerProfile:', error);
+      return { error: true, message: error.message };
+    }
+  }
+
+  // Get seller profile
+  async getSellerProfile() {
+    try {
+      const token = this.getToken();
+      const response = await fetch(`${API_BASE_URL}/seller/profile/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        return { error: true, status: response.status, data: errorData };
+      }
+      
+      const data = await response.json();
+      return { error: false, data };
+    } catch (error) {
+      console.error('Error in getSellerProfile:', error);
+      return { error: true, message: error.message };
+    }
+  }
+
+  // Update seller profile
+  async updateSellerProfile(profileData) {
+    console.log('========== SELLER PROFILE UPDATE ==========');
+    console.log('Sending profile data:', profileData);
+    
+    try {
+      const token = this.getToken();
+      console.log('Token present:', !!token);
+      
+      // Log the exact payload being sent
+      const payload = JSON.stringify(profileData);
+      console.log('Payload:', payload);
+      
+      const response = await fetch(`${API_BASE_URL}/seller/profile/`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: payload
+      });
+      
+      console.log('Response status:', response.status);
+      
+      // Try to get the response body
+      const responseText = await response.text();
+      console.log('Response text:', responseText);
+      
+      let responseData;
+      try {
+        responseData = JSON.parse(responseText);
+      } catch (e) {
+        responseData = { error: 'Invalid JSON response', raw: responseText };
+      }
+      
+      if (!response.ok) {
+        console.error('Error response data:', responseData);
+        return { error: true, status: response.status, data: responseData };
+      }
+      
+      console.log('Success response:', responseData);
+      console.log('========== UPDATE COMPLETE ==========');
+      
+      return { error: false, data: responseData };
+    } catch (error) {
+      console.error('Error in updateSellerProfile:', error);
       return { error: true, message: error.message };
     }
   }

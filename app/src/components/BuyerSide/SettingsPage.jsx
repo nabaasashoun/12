@@ -466,10 +466,7 @@ const SettingsPage = () => {
           location: profileForm.location || 'Not set',
           bio: profileForm.location || 'No location set'
         }));
-        
-        // Show success message 
-        alert('Profile updated successfully!');
-        
+                
         console.log('6. Local state updated');
       } else {
         console.log('5. Profile update FAILED:', response);
