@@ -6,8 +6,9 @@ import {
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import api  from '../../utils/api';
+import api from '../../utils/api';
 import { useCart } from '../../utils/CartContext';
+import { useLikeBookmark } from '../../utils/LikeBookmarkContext';
 import Loader from '../UISkeleton/Loader';
 import { usePageLoading } from '../../utils/PageLoadingContext';
 import Header from './Header';
@@ -160,25 +161,14 @@ const DescriptionTooltip = styled.div`
 const HomePage = () => {
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState({});
-  const [likedPosts, setLikedPosts] = useState(() => {
-    const saved = localStorage.getItem('likedPosts');
-    return saved ? JSON.parse(saved) : {};
-  });
-  const [favoritedPosts, setFavoritedPosts] = useState(() => {
-    const saved = localStorage.getItem('favoritedPosts');
-    return saved ? JSON.parse(saved) : {};
-  });
-
-  const likedPostsRef = useRef(likedPosts);
-  const favoritedPostsRef = useRef(favoritedPosts);
-
-  useEffect(() => {
-    likedPostsRef.current = likedPosts;
-  }, [likedPosts]);
-
-  useEffect(() => {
-    favoritedPostsRef.current = favoritedPosts;
-  }, [favoritedPosts]);
+  const { 
+    isLiked, 
+    isBookmarked, 
+    toggleLike, 
+    toggleBookmark,
+    loading: contextLoading,
+    initialFetchDone
+  } = useLikeBookmark();
 
   const [animatingLike, setAnimatingLike] = useState(null);
   const [animatingFavorite, setAnimatingFavorite] = useState(null);
@@ -197,14 +187,6 @@ const HomePage = () => {
     if (item.product?.id) acc[item.product.id] = true;
     return acc;
   }, {});
-
-  useEffect(() => {
-    localStorage.setItem('likedPosts', JSON.stringify(likedPosts));
-  }, [likedPosts]);
-
-  useEffect(() => {
-    localStorage.setItem('favoritedPosts', JSON.stringify(favoritedPosts));
-  }, [favoritedPosts]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -238,46 +220,6 @@ const HomePage = () => {
       }
       const products = productsResult.data || [];
 
-      let wishlistSuccess = false;
-      let wishlistItems = [];
-      try {
-        const wishlistRes = await api.getWishlist();
-        if (wishlistRes.data && wishlistRes.data.status === 'success' && wishlistRes.data.items) {
-          wishlistItems = wishlistRes.data.items;
-          wishlistSuccess = true;
-        }
-      } catch (e) {
-        console.error('Error fetching wishlist:', e);
-      }
-
-      let likedSuccess = false;
-      let likedProductIds = new Set();
-      try {
-        const likedRes = await api.getLikedProducts();
-        if (likedRes.data && Array.isArray(likedRes.data)) {
-          likedRes.data.forEach(p => likedProductIds.add(p.id));
-          likedSuccess = true;
-        }
-      } catch (e) {
-        console.error('Error fetching liked products:', e);
-      }
-
-      const newFavoritedPosts = wishlistSuccess ? {} : { ...favoritedPostsRef.current };
-      if (wishlistSuccess) {
-        wishlistItems.forEach(item => {
-          if (item.product && item.product.id) {
-            newFavoritedPosts[item.product.id] = true;
-          }
-        });
-      }
-
-      const newLikedPosts = likedSuccess ? {} : { ...likedPostsRef.current };
-      if (likedSuccess) {
-        likedProductIds.forEach(id => {
-          newLikedPosts[id] = true;
-        });
-      }
-
       const transformedPosts = products.map(product => {
         const productId = product.id;
         const sellerName = product.seller_name || product.seller?.name || 'Seller';
@@ -298,15 +240,11 @@ const HomePage = () => {
           ratingCount: product.rating_number || 0,
           commentCount: product.comment_count || 0,
           like_count: product.like_count || 0,
-          is_liked: newLikedPosts[productId] || false,
-          sellerId: product.seller,
-          is_bookmarked: newFavoritedPosts[productId] || false
+          sellerId: product.seller
         };
       });
 
       setPosts(transformedPosts);
-      if (wishlistSuccess) setFavoritedPosts(newFavoritedPosts);
-      if (likedSuccess) setLikedPosts(newLikedPosts);
     } catch (error) {
       console.error('Error fetching data:', error);
       setPosts(samplePosts);
@@ -391,79 +329,33 @@ const HomePage = () => {
   };
   const closeDropdown = () => setDropdownOpen(null);
 
-  const toggleLike = async (postId) => {
+  const handleToggleLike = async (postId) => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
       navigate('/login');
       return;
     }
-    const wasLiked = likedPosts[postId];
-    setLikedPosts(prev => ({ ...prev, [postId]: !wasLiked }));
-    setPosts(prev =>
-      prev.map(post =>
-        post.id === postId
-          ? { ...post, is_liked: !wasLiked, like_count: post.like_count + (wasLiked ? -1 : 1) }
-          : post
-      )
-    );
+    
+    console.log('Before toggle - isLiked:', isLiked(postId));
     setAnimatingLike(postId);
     setTimeout(() => setAnimatingLike(null), 600);
-
-    try {
-      const result = await api.toggleLike(postId);
-      if (!result.data || result.error) {
-        throw new Error(result.error || 'Failed to toggle like');
-      }
-      if (result.data.like_count !== undefined) {
-        setPosts(prev =>
-          prev.map(post =>
-            post.id === postId ? { ...post, like_count: result.data.like_count } : post
-          )
-        );
-      }
-    } catch (error) {
-      console.error('Error toggling like:', error);
-      setLikedPosts(prev => ({ ...prev, [postId]: wasLiked }));
-      setPosts(prev =>
-        prev.map(post =>
-          post.id === postId
-            ? { ...post, is_liked: wasLiked, like_count: post.like_count + (wasLiked ? 1 : -1) }
-            : post
-        )
-      );
-    }
+    
+    const result = await toggleLike(postId);
+    console.log('After toggle - result:', result);
+    console.log('After toggle - isLiked:', isLiked(postId));
   };
 
-  const toggleFavorite = async (postId) => {
+  const handleToggleFavorite = async (postId) => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
       navigate('/login');
       return;
     }
-    const wasBookmarked = favoritedPosts[postId];
-    setFavoritedPosts(prev => ({ ...prev, [postId]: !wasBookmarked }));
-    setPosts(prev =>
-      prev.map(post =>
-        post.id === postId ? { ...post, is_bookmarked: !wasBookmarked } : post
-      )
-    );
+    
     setAnimatingFavorite(postId);
     setTimeout(() => setAnimatingFavorite(null), 500);
-
-    try {
-      const result = await api.toggleWishlist(postId);
-      if (!result.data || result.error) {
-        throw new Error(result.error || 'Failed to toggle wishlist');
-      }
-    } catch (error) {
-      console.error('Error toggling bookmark:', error);
-      setFavoritedPosts(prev => ({ ...prev, [postId]: wasBookmarked }));
-      setPosts(prev =>
-        prev.map(post =>
-          post.id === postId ? { ...post, is_bookmarked: wasBookmarked } : post
-        )
-      );
-    }
+    
+    await toggleBookmark(postId);
   };
 
   const toggleCart = async (postId) => {
@@ -516,7 +408,8 @@ const HomePage = () => {
     }
   };
 
-  if (isLoading) {
+  // Show loader while context is loading initial data
+  if (contextLoading || !initialFetchDone || isLoading) {
     return (
       <div className="p-3 sm:p-4 md:p-6 max-w-4xl mx-auto min-h-screen flex items-center justify-center">
         <Loader />
@@ -680,16 +573,16 @@ const HomePage = () => {
                     <div className="flex justify-between items-center mb-0">
                       <div className="flex space-x-1 sm:space-x-2">
                         <button
-                          onClick={() => toggleLike(post.id)}
+                          onClick={() => handleToggleLike(post.id)}
                           className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full ${
-                            likedPosts[post.id] ? 'text-red-500 bg-red-50' : 'text-gray-600 hover:text-red-500'
+                            isLiked(post.id) ? 'text-red-500 bg-red-50' : 'text-gray-600 hover:text-red-500'
                           }`}
                           style={{
                             transform: animatingLike === post.id ? 'scale(1.3)' : 'scale(1)',
                             animation: animatingLike === post.id ? 'heartBeat 0.6s ease-in-out' : 'none'
                           }}
                         >
-                          <Heart className="w-3 h-3 sm:w-4 sm:h-4" fill={likedPosts[post.id] ? 'currentColor' : 'none'} />
+                          <Heart className="w-3 h-3 sm:w-4 sm:h-4" fill={isLiked(post.id) ? 'currentColor' : 'none'} />
                         </button>
                         <Link
                           to={`/product/${post.id}/comments`}
@@ -710,16 +603,16 @@ const HomePage = () => {
                         </button>
                       </div>
                       <button
-                        onClick={() => toggleFavorite(post.id)}
+                        onClick={() => handleToggleFavorite(post.id)}
                         className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full ${
-                          favoritedPosts[post.id] ? 'text-blue-500 bg-blue-50' : 'text-gray-600 hover:text-blue-500'
+                          isBookmarked(post.id) ? 'text-blue-500 bg-blue-50' : 'text-gray-600 hover:text-blue-500'
                         }`}
                         style={{
                           transform: animatingFavorite === post.id ? 'scale(1.2)' : 'scale(1)',
                           animation: animatingFavorite === post.id ? 'bookmarkPop 0.5s ease-out' : 'none'
                         }}
                       >
-                        <Bookmark className="w-3 h-3 sm:w-4 sm:h-4" fill={favoritedPosts[post.id] ? 'currentColor' : 'none'} />
+                        <Bookmark className="w-3 h-3 sm:w-4 sm:h-4" fill={isBookmarked(post.id) ? 'currentColor' : 'none'} />
                       </button>
                     </div>
                     <div className="flex items-center space-x-1 sm:justify-end">

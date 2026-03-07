@@ -340,7 +340,6 @@ class LikedProductsView(generics.ListAPIView):
         liked_product_ids = ProductLike.objects.filter(buyer=buyer).values_list('product_id', flat=True)
         return Product.objects.filter(id__in=liked_product_ids)
 
-
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def toggle_product_like(request, product_id):
@@ -356,7 +355,6 @@ def toggle_product_like(request, product_id):
             product.save()
             return Response({
                 'status': 'unliked',
-                'message': 'Product removed from liked items',
                 'liked': False,
                 'like_count': product.like_count
             }, status=status.HTTP_200_OK)

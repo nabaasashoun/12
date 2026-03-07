@@ -4,8 +4,8 @@ import { MapPin, Plus, Check, MessageCircle, MessageSquare, Heart, Star, Bookmar
 import { Card, CardContent } from './card';
 import api from '../../utils/api';
 import { useCart } from '../../utils/CartContext';
+import { useLikeBookmark } from '../../utils/LikeBookmarkContext';
 import Loader from '../UISkeleton/Loader';
-
 
 const SellerPage = () => {
   const { sellerId } = useParams();
@@ -13,8 +13,6 @@ const SellerPage = () => {
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [sellerMenuOpen, setSellerMenuOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState({});
-  const [likedPosts, setLikedPosts] = useState({});
-  const [favoritedPosts, setFavoritedPosts] = useState({});
   const [isFollowing, setIsFollowing] = useState(false);
   const [showLocationTooltip, setShowLocationTooltip] = useState(false);
   const [animatingLike, setAnimatingLike] = useState(null);
@@ -26,6 +24,8 @@ const SellerPage = () => {
 
   // Cart context
   const { cartItems, addToCart, removeFromCart } = useCart();
+  const { isLiked, isBookmarked, toggleLike, toggleBookmark } = useLikeBookmark();
+  
   const cartPosts = cartItems.reduce((acc, item) => {
     if (item.product?.id) acc[item.product.id] = true;
     return acc;
@@ -36,51 +36,31 @@ const SellerPage = () => {
   };
 
   // Toggle like
-  const toggleLike = async (postId) => {
+  const handleToggleLike = async (postId) => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
       navigate('/login');
       return;
     }
 
-    try {
-      const result = await api.toggleLike(postId);
-      if (result.data) {
-        const newLikedStatus = result.data.liked;
-        setLikedPosts(prev => ({ ...prev, [postId]: newLikedStatus }));
-        setSeller(prev => ({
-          ...prev,
-          products: prev.products.map(p =>
-            p.id === postId ? { ...p, like_count: result.data.like_count } : p
-          )
-        }));
-        setAnimatingLike(postId);
-        setTimeout(() => setAnimatingLike(null), 600);
-      }
-    } catch (error) {
-      console.error('Error toggling like:', error);
-    }
+    setAnimatingLike(postId);
+    setTimeout(() => setAnimatingLike(null), 600);
+    
+    await toggleLike(postId);
   };
 
   // Toggle bookmark
-  const toggleFavorite = async (postId) => {
+  const handleToggleFavorite = async (postId) => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
       navigate('/login');
       return;
     }
 
-    try {
-      const result = await api.toggleWishlist(postId);
-      if (result.data) {
-        const isNowBookmarked = result.data.action === 'added';
-        setFavoritedPosts(prev => ({ ...prev, [postId]: isNowBookmarked }));
-        setAnimatingFavorite(postId);
-        setTimeout(() => setAnimatingFavorite(null), 500);
-      }
-    } catch (error) {
-      console.error('Error toggling bookmark:', error);
-    }
+    setAnimatingFavorite(postId);
+    setTimeout(() => setAnimatingFavorite(null), 500);
+    
+    await toggleBookmark(postId);
   };
 
   // Toggle cart
@@ -105,21 +85,6 @@ const SellerPage = () => {
       return;
     }
 
-    // Check if user is a buyer
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        if (user.is_seller) {
-          setFollowMessage('Sellers cannot follow other sellers. Please use a buyer account.');
-          setTimeout(() => setFollowMessage(''), 3000);
-          return;
-        }
-      } catch (error) {
-        console.error('Error parsing user data:', error);
-      }
-    }
-
     try {
       const result = await api.toggleFollowSeller(sellerId);
       if (result.data) {
@@ -129,15 +94,7 @@ const SellerPage = () => {
           followers: result.data.followers_count
         }));
         
-        if (result.data.following) {
-          setFollowMessage(`You have followed ${seller?.name || 'this seller'}`);
-          
-          // DISPATCH EVENT TO UPDATE NOTIFICATION BADGE
-          // The buyer gets a follow_confirmation notification
-          window.dispatchEvent(new CustomEvent('notificationRead'));
-        } else {
-          setFollowMessage(`You have unfollowed ${seller?.name || 'this seller'}`);
-        }
+       
         
         setTimeout(() => setFollowMessage(''), 3000);
       }
@@ -147,7 +104,7 @@ const SellerPage = () => {
       setTimeout(() => setFollowMessage(''), 3000);
     }
   };
-      
+  
   // Fetch seller data
   useEffect(() => {
     const fetchSellerData = async () => {
@@ -176,34 +133,12 @@ const SellerPage = () => {
           rating: Math.floor(product.rating_magnitude) || 0,
           ratingCount: product.rating_number || 0,
           like_count: product.like_count || 0,
-          is_liked: false,
-          is_bookmarked: false
+          sellerId: sellerId
         }));
 
         setSeller({ ...sellerData, products });
         setIsFollowing(sellerData.is_following || false);
 
-        // Fetch liked and bookmarked statuses
-        const token = localStorage.getItem('accessToken');
-        if (token) {
-          const likedMap = {};
-          const bookmarkedMap = {};
-
-          const likedResult = await api.getLikedProducts();
-          if (likedResult.data && Array.isArray(likedResult.data)) {
-            likedResult.data.forEach(p => { likedMap[p.id] = true; });
-          }
-
-          const wishlistResult = await api.getWishlist();
-          if (wishlistResult.data && wishlistResult.data.status === 'success' && wishlistResult.data.items) {
-            wishlistResult.data.items.forEach(item => {
-              if (item.product && item.product.id) bookmarkedMap[item.product.id] = true;
-            });
-          }
-
-          setLikedPosts(likedMap);
-          setFavoritedPosts(bookmarkedMap);
-        }
       } catch (error) {
         console.error('Error in fetchSellerData:', error);
       } finally {
@@ -213,20 +148,6 @@ const SellerPage = () => {
 
     fetchSellerData();
   }, [sellerId, navigate]);
-
-  // Sync liked/bookmarked status into seller.products
-  useEffect(() => {
-    if (seller) {
-      setSeller(prev => ({
-        ...prev,
-        products: prev.products.map(p => ({
-          ...p,
-          is_liked: likedPosts[p.id] || false,
-          is_bookmarked: favoritedPosts[p.id] || false
-        }))
-      }));
-    }
-  }, [likedPosts, favoritedPosts]);
 
   // Helper functions
   const goToImage = (postId, imageIndex) => {
@@ -251,7 +172,6 @@ const SellerPage = () => {
     { label: 'Unfollow', action: () => {} },
     { label: 'Cancel', action: closeDropdown },
   ];
-
 
   if (loading) {
     return (
@@ -314,6 +234,16 @@ const SellerPage = () => {
               </span>
             </div>
           </div>
+
+          {/* Follow Notification Message - FLOATING STYLE */}
+          {followMessage && (
+            <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 animate-slideDown">
+              <div className="bg-green-600 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2">
+                <Check className="w-5 h-5" />
+                <span className="font-medium">{followMessage}</span>
+              </div>
+            </div>
+          )}
 
           {/* Seller Header - New UI */}
           <div className="flex items-center gap-4 p-4 bg-white rounded-lg mb-4 border border-gray-100" style={{ animation: 'slideUp 0.3s ease-out' }}>
@@ -515,9 +445,9 @@ const SellerPage = () => {
                         <div className="flex space-x-1">
                           {/* Like */}
                           <button
-                            onClick={() => toggleLike(post.id)}
+                            onClick={() => handleToggleLike(post.id)}
                             className={`p-1 rounded-full transition-all ${
-                              likedPosts[post.id]
+                              isLiked(post.id)
                                 ? 'text-red-500 bg-red-50 hover:bg-red-100'
                                 : 'text-gray-600 hover:text-red-500 hover:bg-red-50'
                             } hover:scale-110 active:scale-95`}
@@ -526,7 +456,7 @@ const SellerPage = () => {
                               animation: animatingLike === post.id ? 'heartBeat 0.6s ease-in-out' : 'none'
                             }}
                           >
-                            <Heart className="w-4 h-4" fill={likedPosts[post.id] ? 'currentColor' : 'none'} />
+                            <Heart className="w-4 h-4" fill={isLiked(post.id) ? 'currentColor' : 'none'} />
                           </button>
 
                           <button className="p-1 text-gray-600 hover:text-indigo-500 rounded-full hover:bg-indigo-50 transition-all hover:scale-110 active:scale-95">
@@ -548,9 +478,9 @@ const SellerPage = () => {
 
                         {/* Bookmark */}
                         <button
-                          onClick={() => toggleFavorite(post.id)}
+                          onClick={() => handleToggleFavorite(post.id)}
                           className={`p-1 rounded-full transition-all ${
-                            favoritedPosts[post.id]
+                            isBookmarked(post.id)
                               ? 'text-indigo-500 bg-indigo-50 hover:bg-indigo-100'
                               : 'text-gray-600 hover:text-indigo-500 hover:bg-indigo-50'
                           } hover:scale-110 active:scale-95`}
@@ -559,7 +489,7 @@ const SellerPage = () => {
                             animation: animatingFavorite === post.id ? 'bookmarkPop 0.5s ease-out' : 'none'
                           }}
                         >
-                          <Bookmark className="w-4 h-4" fill={favoritedPosts[post.id] ? 'currentColor' : 'none'} />
+                          <Bookmark className="w-4 h-4" fill={isBookmarked(post.id) ? 'currentColor' : 'none'} />
                         </button>
                       </div>
 

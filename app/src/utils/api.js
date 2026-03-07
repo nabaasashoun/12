@@ -481,6 +481,30 @@ class Api {
       method: 'DELETE',
     });
   }
+  // Buyer profile methods
+  async getBuyerProfile() {
+    return this.request('/buyer/profile/');
+  }
+
+  async updateBuyerProfile(buyerData) {
+    return this.request('/buyers/me/', {
+      method: 'PUT',
+      body: JSON.stringify(buyerData),
+    });
+  }
+
+  // Order count method
+  async getOrderCount() {
+    return this.request('/orders/count/');
+  }
+
+  // Search products method
+  async searchProducts(query, category = 'all') {
+    const params = new URLSearchParams();
+    if (query) params.append('search', query);
+    if (category && category !== 'all') params.append('category', category);
+    return this.request(`/products/?${params.toString()}`);
+  }
 }
 
 const api = new Api();

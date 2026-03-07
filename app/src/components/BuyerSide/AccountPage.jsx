@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from './card';
-import { User, Mail, Phone, MapPin, Edit, Heart, ShoppingCart, Bookmark, Eye, X, Plus, MessageSquare, Star, MoreHorizontal } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Edit, Heart, ShoppingCart, Bookmark, MessageSquare, Star, MoreHorizontal, Plus } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import { useCart } from '../../utils/CartContext';
+import { useLikeBookmark } from '../../utils/LikeBookmarkContext';
 import AnimatedLoader from '../UISkeleton/Loader';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
@@ -34,8 +35,10 @@ const AccountPage = () => {
   const [orderCount, setOrderCount] = useState(0);
   const navigate = useNavigate();
 
+  const [dropdownOpen, setDropdownOpen] = useState(null);
   const [animatingLike, setAnimatingLike] = useState(null);
   const [animatingFavorite, setAnimatingFavorite] = useState(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState({});
 
   const [bookmarkedProducts, setBookmarkedProducts] = useState([]);
   const [likedProducts, setLikedProducts] = useState([]);
@@ -46,9 +49,13 @@ const AccountPage = () => {
     orders: false
   });
 
-  const [likedPosts, setLikedPosts] = useState({});
-  const [favoritedPosts, setFavoritedPosts] = useState({});
-  const [currentImageIndex, setCurrentImageIndex] = useState({});
+  const { 
+    isLiked, 
+    isBookmarked, 
+    toggleLike, 
+    toggleBookmark,
+    likedPosts 
+  } = useLikeBookmark();
 
   const { cartItems, addToCart, removeFromCart } = useCart();
   const cartPosts = cartItems.reduce((acc, item) => {
@@ -60,166 +67,97 @@ const AccountPage = () => {
     return `UGX ${parseFloat(amount).toLocaleString('en-UG')}`;
   };
 
+  const goToImage = (postId, imageIndex) => {
+    setCurrentImageIndex(prev => ({ ...prev, [postId]: imageIndex }));
+  };
+
+  const toggleDropdown = (postId) => {
+    setDropdownOpen(dropdownOpen === postId ? null : postId);
+  };
+
+  const closeDropdown = () => setDropdownOpen(null);
+
+  const dropdownItems = [
+    { label: 'Report', action: () => {} },
+    { label: 'Message Seller', action: () => {} },
+    { label: 'Go to Post', action: () => {} },
+    { label: 'Share to', action: () => {} },
+    { label: 'Copy Link', action: () => {} },
+    { label: 'Remove from Cart', action: () => {} },
+    { label: 'Unfollow', action: () => {} },
+    { label: 'Cancel', action: closeDropdown },
+  ];
+
+  // Listen for like toggles from other components
   useEffect(() => {
     const handleLikeToggle = (event) => {
-      const { productId, liked, likeCount } = event.detail;
-
-      setLikedPosts(prev => ({ ...prev, [productId]: liked }));
-
-      setLikedProducts(prev =>
-        prev.map(product =>
-          product.id === productId
-            ? { ...product, is_liked: liked, like_count: likeCount }
-            : product
-        )
-      );
-
-      setBookmarkedProducts(prev =>
-        prev.map(product =>
-          product.id === productId
-            ? { ...product, is_liked: liked, like_count: likeCount }
-            : product
-        )
-      );
-
-      if (activeTab === 'liked' && !liked) {
-        setLikedProducts(prev => prev.filter(p => p.id !== productId));
-      }
-    };
-
-    const handleBookmarkToggle = (event) => {
-      const { productId, bookmarked } = event.detail;
-
-      setFavoritedPosts(prev => ({ ...prev, [productId]: bookmarked }));
-
-      setBookmarkedProducts(prev =>
-        prev.map(product =>
-          product.id === productId
-            ? { ...product, is_bookmarked: bookmarked }
-            : product
-        )
-      );
-
-      setLikedProducts(prev =>
-        prev.map(product =>
-          product.id === productId
-            ? { ...product, is_bookmarked: bookmarked }
-            : product
-        )
-      );
-
-      if (activeTab === 'Bookmarks' && !bookmarked) {
-        setBookmarkedProducts(prev => prev.filter(p => p.id !== productId));
-        setBookmarkCount(prev => prev - 1);
-      } else if (activeTab === 'Bookmarks' && bookmarked) {
-        setBookmarkCount(prev => prev + 1);
-        if (activeTab === 'Bookmarks') fetchBookmarkedProducts();
+      const { productId, liked } = event.detail;
+      
+      // If we're on the liked tab, refresh the list
+      if (activeTab === 'liked') {
+        fetchLikedProducts();
       } else {
-        setBookmarkCount(prev => bookmarked ? prev + 1 : prev - 1);
+        // Otherwise, just update the local likedProducts list if the product exists
+        setLikedProducts(prev => 
+          liked 
+            ? prev // If liked, we don't add here because we don't have the full product data
+            : prev.filter(p => p.id !== productId) // If unliked, remove from list
+        );
       }
     };
 
     window.addEventListener('likeToggled', handleLikeToggle);
-    window.addEventListener('bookmarkToggled', handleBookmarkToggle);
-
+    
     return () => {
       window.removeEventListener('likeToggled', handleLikeToggle);
-      window.removeEventListener('bookmarkToggled', handleBookmarkToggle);
     };
   }, [activeTab]);
 
-  const toggleLike = async (postId) => {
+  const handleToggleLike = async (productId) => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
       navigate('/login');
       return;
     }
-
-    try {
-      const result = await api.toggleLike(postId);
-      if (result.data) {
-        const newLikedStatus = result.data.liked;
-        const newLikeCount = result.data.like_count;
-
-        setLikedPosts(prev => ({ ...prev, [postId]: newLikedStatus }));
-
-        setLikedProducts(prev =>
-          prev.map(product =>
-            product.id === postId
-              ? { ...product, like_count: newLikeCount, is_liked: newLikedStatus }
-              : product
-          )
-        );
-        setBookmarkedProducts(prev =>
-          prev.map(product =>
-            product.id === postId
-              ? { ...product, like_count: newLikeCount, is_liked: newLikedStatus }
-              : product
-          )
-        );
-
-        setAnimatingLike(postId);
-        setTimeout(() => setAnimatingLike(null), 600);
-
-        window.dispatchEvent(new CustomEvent('likeToggled', {
-          detail: { productId: postId, liked: newLikedStatus, likeCount: newLikeCount }
-        }));
-      }
-    } catch (error) {
-      console.error('Error toggling like:', error);
+    
+    setAnimatingLike(productId);
+    setTimeout(() => setAnimatingLike(null), 600);
+    
+    const result = await toggleLike(productId);
+    
+    // If we're on the liked tab and we unliked, remove from the list
+    if (activeTab === 'liked' && result && result.success && !result.liked) {
+      setLikedProducts(prev => prev.filter(p => p.id !== productId));
+    } else if (activeTab === 'liked' && result && result.success && result.liked) {
+      // If we liked a product while on the liked tab, refresh the list
+      fetchLikedProducts();
     }
   };
 
-  const toggleFavorite = async (productId) => {
+  const handleToggleFavorite = async (productId) => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
       navigate('/login');
       return;
     }
-
-    try {
-      const result = await api.toggleWishlist(productId);
-      if (result.data) {
-        const isNowBookmarked = result.data.action === 'added';
-
-        setFavoritedPosts(prev => ({ ...prev, [productId]: isNowBookmarked }));
-
-        if (activeTab === 'Bookmarks') {
-          if (isNowBookmarked) {
-            fetchBookmarkedProducts();
-          } else {
-            setBookmarkedProducts(prev => prev.filter(p => p.id !== productId));
-            setBookmarkCount(prev => prev - 1);
-          }
-        }
-
-        setLikedProducts(prev =>
-          prev.map(product =>
-            product.id === productId
-              ? { ...product, is_bookmarked: isNowBookmarked }
-              : product
-          )
-        );
-
-        setBookmarkedProducts(prev =>
-          prev.map(product =>
-            product.id === productId
-              ? { ...product, is_bookmarked: isNowBookmarked }
-              : product
-          )
-        );
-
-        setAnimatingFavorite(productId);
-        setTimeout(() => setAnimatingFavorite(null), 500);
-
-        setBookmarkCount(prev => isNowBookmarked ? prev + 1 : prev - 1);
-
-        window.dispatchEvent(new CustomEvent('bookmarkToggled', {
-          detail: { productId, bookmarked: isNowBookmarked }
-        }));
-      }
-    } catch (error) {
-      console.error('Error toggling bookmark:', error);
+    
+    setAnimatingFavorite(productId);
+    setTimeout(() => setAnimatingFavorite(null), 500);
+    
+    const result = await toggleBookmark(productId);
+    
+    if (activeTab === 'liked') {
+      // If on liked tab, just update the bookmark status in the existing list
+      setLikedProducts(prev =>
+        prev.map(product =>
+          product.id === productId
+            ? { ...product, is_bookmarked: result.bookmarked }
+            : product
+        )
+      );
+    } else if (activeTab === 'Bookmarks') {
+      // If on bookmarks tab, refresh the list
+      fetchBookmarkedProducts();
     }
   };
 
@@ -242,11 +180,7 @@ const AccountPage = () => {
       if (!result.error) {
         setBookmarkedProducts(prev => prev.filter(item => item.id !== productId));
         setBookmarkCount(prev => prev - 1);
-        setFavoritedPosts(prev => ({ ...prev, [productId]: false }));
-
-        window.dispatchEvent(new CustomEvent('bookmarkToggled', {
-          detail: { productId, bookmarked: false }
-        }));
+        await toggleBookmark(productId);
       }
     } catch (error) {
       console.error('Error removing bookmark:', error);
@@ -268,15 +202,31 @@ const AccountPage = () => {
 
         try {
           const buyerResult = await api.getBuyerProfile();
-          if (buyerResult.data) {
+          if (buyerResult.data && !buyerResult.error) {
             const buyerDetails = buyerResult.data;
-            let userName = buyerDetails.name || buyerDetails.full_name || buyerDetails.username || userInfo.username || 'User';
-
+            
             setUserData({
-              name: userName,
+              name: buyerDetails.name || userInfo.username || 'User',
               email: userInfo.email || 'No email',
-              phone: buyerDetails.contact || buyerDetails.phone || buyerDetails.mobile || 'Not provided',
-              address: buyerDetails.location || buyerDetails.address || 'Not provided',
+              phone: buyerDetails.contact || 'Not provided',
+              address: buyerDetails.location || 'Not provided',
+              joinDate: new Date(userInfo.date_joined || Date.now()).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long'
+              }),
+              orders: 0,
+              wishlist: 0,
+              isSeller: false,
+            });
+
+            fetchBookmarkCount();
+            fetchOrderCount();
+          } else {
+            setUserData({
+              name: userInfo.username || 'User',
+              email: userInfo.email || 'No email',
+              phone: 'Not provided',
+              address: 'Not provided',
               joinDate: new Date(userInfo.date_joined || Date.now()).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long'
@@ -285,11 +235,6 @@ const AccountPage = () => {
               wishlist: 0,
               isSeller: userInfo.is_seller || false,
             });
-
-            fetchBookmarkCount();
-            fetchOrderCount();
-            fetchBookmarkedProducts();
-            fetchLikedProducts();
           }
         } catch (error) {
           console.error('Error fetching buyer details:', error);
@@ -336,10 +281,11 @@ const AccountPage = () => {
   const fetchOrderCount = async () => {
     try {
       const result = await api.getOrderCount();
-      if (result.data) {
+      if (result.data && !result.error) {
         setOrderCount(result.data.count !== undefined ? result.data.count : 0);
       }
     } catch (error) {
+      console.error('Error fetching order count:', error);
       setOrderCount(0);
     }
   };
@@ -350,44 +296,64 @@ const AccountPage = () => {
       const result = await api.getWishlist();
       let products = [];
 
-      const extractProducts = (data) => {
-        if (Array.isArray(data)) return data;
-        if (data.products && Array.isArray(data.products)) return data.products;
-        if (data.items && Array.isArray(data.items)) {
-          return data.items.map(item => item.product || item);
+      if (result.error) {
+        console.error('Error fetching wishlist:', result.error);
+        setBookmarkedProducts([]);
+        return;
+      }
+
+      if (result.data) {
+        if (result.data.status === 'success' && result.data.items) {
+          products = result.data.items.map(item => {
+            const product = item.product || item;
+            return {
+              id: product.id,
+              sellerName: product.seller_name ? `${product.seller_name}'s store` : 'Seller\'s store',
+              sellerUsername: product.seller?.user?.username || 'seller',
+              authorAvatar: (product.seller_name || 'S').charAt(0),
+              price: formatCurrency(product.unit_price || 0),
+              images: product.images && product.images.length > 0
+                ? product.images.map(img => getFullImageUrl(img))
+                : (product.product_photo ? [getFullImageUrl(product.product_photo)] : ['/sample1.jpg']),
+              product: product.name || 'Product',
+              content: product.description || 'No description available',
+              rating: Math.floor(product.rating_magnitude) || 0,
+              ratingCount: product.rating_number || 0,
+              commentCount: product.comment_count || 0,
+              like_count: product.like_count || 0,
+              sellerId: product.seller,
+              is_bookmarked: true,
+              is_liked: isLiked(product.id)
+            };
+          });
+        } else if (Array.isArray(result.data)) {
+          products = result.data.map(product => ({
+            id: product.id,
+            sellerName: product.seller_name ? `${product.seller_name}'s store` : 'Seller\'s store',
+            sellerUsername: product.seller?.user?.username || 'seller',
+            authorAvatar: (product.seller_name || 'S').charAt(0),
+            price: formatCurrency(product.unit_price || 0),
+            images: product.images && product.images.length > 0
+              ? product.images.map(img => getFullImageUrl(img))
+              : (product.product_photo ? [getFullImageUrl(product.product_photo)] : ['/sample1.jpg']),
+            product: product.name || 'Product',
+            content: product.description || 'No description available',
+            rating: Math.floor(product.rating_magnitude) || 0,
+            ratingCount: product.rating_number || 0,
+            commentCount: product.comment_count || 0,
+            like_count: product.like_count || 0,
+            sellerId: product.seller,
+            is_bookmarked: true,
+            is_liked: isLiked(product.id)
+          }));
         }
-        return [];
-      };
-
-      const rawProducts = extractProducts(result.data);
-
-      products = rawProducts.map(product => {
-        const sellerName = product.seller_name || product.seller?.name || 'Seller';
-
-        return {
-          id: product.id,
-          seller: { id: product.seller, name: sellerName },
-          price: product.unit_price || 0,
-          images: product.images && product.images.length > 0
-            ? product.images.map(img => getFullImageUrl(img))
-            : (product.product_photo ? [getFullImageUrl(product.product_photo)] : ['/sample1.jpg']),
-          name: product.name || 'Product',
-          content: product.description || 'No description available',
-          rating: Math.floor(product.rating_magnitude) || Math.floor(Math.random() * 5) + 1,
-          ratingCount: product.rating_number || Math.floor(Math.random() * 100),
-          like_count: product.like_count || 0,
-          is_liked: product.is_liked || false,
-          is_bookmarked: true
-        };
-      });
+      }
 
       setBookmarkedProducts(products);
-
-      const bookmarkMap = {};
-      products.forEach(p => { bookmarkMap[p.id] = true; });
-      setFavoritedPosts(bookmarkMap);
+      setBookmarkCount(products.length);
     } catch (error) {
       console.error('Error fetching bookmarked products:', error);
+      setBookmarkedProducts([]);
     } finally {
       setContentLoading(prev => ({ ...prev, bookmarks: false }));
     }
@@ -400,31 +366,28 @@ const AccountPage = () => {
       let products = [];
 
       if (result.data && Array.isArray(result.data)) {
-        products = result.data.map(product => {
-          const sellerName = product.seller_name || product.seller?.name || 'Seller';
-
-          return {
-            id: product.id,
-            seller: { id: product.seller, name: sellerName },
-            price: product.unit_price || 0,
-            images: product.images && product.images.length > 0
-              ? product.images.map(img => getFullImageUrl(img))
-              : (product.product_photo ? [getFullImageUrl(product.product_photo)] : ['/sample1.jpg']),
-            name: product.name || 'Product',
-            content: product.description || 'No description available',
-            rating: Math.floor(product.rating_magnitude) || Math.floor(Math.random() * 5) + 1,
-            ratingCount: product.rating_number || Math.floor(Math.random() * 100),
-            like_count: product.like_count || 0,
-            is_liked: true
-          };
-        });
+        products = result.data.map(product => ({
+          id: product.id,
+          sellerName: product.seller_name ? `${product.seller_name}'s store` : 'Seller\'s store',
+          sellerUsername: product.seller?.user?.username || 'seller',
+          authorAvatar: (product.seller_name || 'S').charAt(0),
+          price: formatCurrency(product.unit_price || 0),
+          images: product.images && product.images.length > 0
+            ? product.images.map(img => getFullImageUrl(img))
+            : (product.product_photo ? [getFullImageUrl(product.product_photo)] : ['/sample1.jpg']),
+          product: product.name || 'Product',
+          content: product.description || 'No description available',
+          rating: Math.floor(product.rating_magnitude) || 0,
+          ratingCount: product.rating_number || 0,
+          commentCount: product.comment_count || 0,
+          like_count: product.like_count || 0,
+          sellerId: product.seller,
+          is_liked: true,
+          is_bookmarked: isBookmarked(product.id)
+        }));
       }
 
       setLikedProducts(products);
-
-      const likeMap = {};
-      products.forEach(p => { likeMap[p.id] = true; });
-      setLikedPosts(likeMap);
     } catch (error) {
       console.error('Error fetching liked products:', error);
     } finally {
@@ -455,11 +418,11 @@ const AccountPage = () => {
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    if (tab === 'Bookmarks' && bookmarkedProducts.length === 0) {
+    if (tab === 'Bookmarks') {
       fetchBookmarkedProducts();
-    } else if (tab === 'liked' && likedProducts.length === 0) {
+    } else if (tab === 'liked') {
       fetchLikedProducts();
-    } else if (tab === 'orders' && orders.length === 0) {
+    } else if (tab === 'orders') {
       fetchOrders();
     }
   };
@@ -661,49 +624,153 @@ const AccountPage = () => {
               <p className="mt-4 text-gray-600">Loading bookmarks...</p>
             </div>
           ) : bookmarkedProducts.length > 0 ? (
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
-              {bookmarkedProducts.map((product) => (
-                <Card key={product.id} className="overflow-hidden">
-                  <Link to={`/product/${product.id}`}>
-                    <div className="aspect-square w-full bg-gray-200">
-                      <img 
-                        src={product.images[0]} 
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => e.target.src = '/sample1.jpg'}
-                      />
-                    </div>
-                  </Link>
-                  <CardContent className="p-3">
-                    <div className="flex justify-between items-start mb-1">
-                      <Link to={`/product/${product.id}`} className="font-medium text-sm hover:underline text-black">
-                        {product.name}
-                      </Link>
-                      <button
-                        onClick={() => handleRemoveBookmark(product.id)}
-                        className="text-blue-500 hover:text-blue-600"
-                      >
-                        <Bookmark className="w-4 h-4 fill-current" />
-                      </button>
-                    </div>
-                    <p className="text-xs text-gray-500 mb-2 line-clamp-2">{product.content}</p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-semibold text-green-600">
-                        {formatCurrency(product.price)}
-                      </span>
-                      <div className="flex items-center space-x-1">
-                        <button
-                          onClick={() => toggleLike(product.id)}
-                          className={`p-1 rounded-full ${product.is_liked ? 'text-red-500' : 'text-gray-400'}`}
-                        >
-                          <Heart className="w-3 h-3" fill={product.is_liked ? 'currentColor' : 'none'} />
-                        </button>
-                        <span className="text-xs text-gray-500">{product.like_count}</span>
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+              {bookmarkedProducts.map((post) => {
+                const currentIndex = currentImageIndex[post.id] || 0;
+                const totalImages = post.images.length;
+                const truncatedDescription = post.content.length > 40 ? post.content.substring(0, 40) + '...' : post.content;
+
+                return (
+                  <Card key={post.id} variant="elevated" className="overflow-hidden flex flex-col relative">
+                    <CardContent className="p-0 flex flex-col">
+                      <div className="p-0 sm:p-3 flex flex-col border-b border-gray-100">
+                        <div className="flex justify-between items-center">
+                          <Link
+                            to={`/seller/${post.sellerId}`}
+                            className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+                          >
+                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs">
+                              {post.authorAvatar}
+                            </div>
+                            <span className="font-medium text-black text-xs sm:text-sm truncate">
+                              {post.sellerName}
+                            </span>
+                          </Link>
+                          <button onClick={() => toggleDropdown(post.id)} className="p-1 rounded hover:bg-gray-100">
+                            <MoreHorizontal className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
+                          </button>
+                        </div>
+                        <div className="flex justify-center items-center mt-0.2">
+                          <span className="text-xs text-green-600 mb-1 font-semibold">{post.price}</span>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+
+                      <div
+                        className="relative aspect-square w-full bg-gray-200 flex-1"
+                        onTouchStart={(e) => {
+                          const touchStartX = e.touches[0].clientX;
+                          setCurrentImageIndex((prev) => ({ ...prev, touchStartX }));
+                        }}
+                        onTouchMove={(e) => {
+                          const touchEndX = e.touches[0].clientX;
+                          setCurrentImageIndex((prev) => ({ ...prev, touchEndX }));
+                        }}
+                        onTouchEnd={() => {
+                          const startX = currentImageIndex.touchStartX;
+                          const endX = currentImageIndex.touchEndX;
+                          const diff = startX - endX;
+                          if (Math.abs(diff) > 50) {
+                            if (diff > 0 && currentIndex < totalImages - 1) goToImage(post.id, currentIndex + 1);
+                            if (diff < 0 && currentIndex > 0) goToImage(post.id, currentIndex - 1);
+                          }
+                          setCurrentImageIndex((prev) => ({ ...prev, touchStartX: null, touchEndX: null }));
+                        }}
+                      >
+                        {totalImages > 1 && (
+                          <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-10 flex space-x-1 px-2 py-1">
+                            {post.images.map((_, index) => (
+                              <button
+                                key={index}
+                                onClick={() => goToImage(post.id, index)}
+                                className={`w-1 h-1 rounded-full transition-all ${
+                                  index === currentIndex ? 'bg-gray-300' : 'bg-gray-100'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        )}
+                        <Link to={`/product/${post.id}`}>
+                          <img
+                            src={post.images[currentIndex]}
+                            alt={post.product}
+                            className="absolute inset-0 w-full h-full object-cover select-none"
+                          />
+                        </Link>
+                      </div>
+
+                      <div className="p-1 sm:p-3 flex flex-col mt-0">
+                        <div className="flex flex-col">
+                          <div className="flex justify-between items-center mb-0">
+                            <div className="flex space-x-1 sm:space-x-2">
+                              <button
+                                onClick={() => handleToggleLike(post.id)}
+                                className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full ${
+                                  post.is_liked ? 'text-red-500 bg-red-50' : 'text-gray-600 hover:text-red-500'
+                                }`}
+                                style={{
+                                  transform: animatingLike === post.id ? 'scale(1.3)' : 'scale(1)',
+                                  animation: animatingLike === post.id ? 'heartBeat 0.6s ease-in-out' : 'none'
+                                }}
+                              >
+                                <Heart className="w-3 h-3 sm:w-4 sm:h-4" fill={post.is_liked ? 'currentColor' : 'none'} />
+                              </button>
+                              <Link
+                                to={`/product/${post.id}/comments`}
+                                className="p-1 text-gray-600 hover:text-blue-500 rounded-full hover:bg-blue-50 flex items-center space-x-1"
+                              >
+                                <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
+                                {post.commentCount > 0 && (
+                                  <span className="text-xs text-gray-500">{post.commentCount}</span>
+                                )}
+                              </Link>
+                              <button
+                                onClick={() => toggleCart(post.id)}
+                                className={`p-1 rounded-full transition-colors ${
+                                  cartPosts[post.id] ? 'text-green-500 bg-green-50' : 'text-gray-600 hover:text-green-500'
+                                }`}
+                              >
+                                <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
+                              </button>
+                            </div>
+                            <button
+                              onClick={() => handleToggleFavorite(post.id)}
+                              className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full ${
+                                post.is_bookmarked ? 'text-blue-500 bg-blue-50' : 'text-gray-600 hover:text-blue-500'
+                              }`}
+                              style={{
+                                transform: animatingFavorite === post.id ? 'scale(1.2)' : 'scale(1)',
+                                animation: animatingFavorite === post.id ? 'bookmarkPop 0.5s ease-out' : 'none'
+                              }}
+                            >
+                              <Bookmark className="w-3 h-3 sm:w-4 sm:h-4" fill={post.is_bookmarked ? 'currentColor' : 'none'} />
+                            </button>
+                          </div>
+                          <div className="flex items-center space-x-1 sm:justify-end">
+                            <div className="flex">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${star <= post.rating ? 'text-yellow-500' : 'text-gray-300'}`}
+                                  fill={star <= post.rating ? 'currentColor' : 'none'}
+                                />
+                              ))}
+                            </div>
+                            <span className="text-xs text-gray-600">({post.ratingCount})</span>
+                          </div>
+                        </div>
+                        <Link to={`/product/${post.id}`} className="text-black hover:underline text-xs font-medium truncate mb-1">
+                          {post.product}
+                        </Link>
+                        <div className="mt-0 relative">
+                          <button className="text-xs text-gray-600 text-left w-full p-1 bg-gray-50 rounded hover:bg-gray-100 transition-colors">
+                            <span className="text-left">{truncatedDescription}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-8">
@@ -728,49 +795,153 @@ const AccountPage = () => {
               <p className="mt-4 text-gray-600">Loading liked products...</p>
             </div>
           ) : likedProducts.length > 0 ? (
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
-              {likedProducts.map((product) => (
-                <Card key={product.id} className="overflow-hidden">
-                  <Link to={`/product/${product.id}`}>
-                    <div className="aspect-square w-full bg-gray-200">
-                      <img 
-                        src={product.images[0]} 
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => e.target.src = '/sample1.jpg'}
-                      />
-                    </div>
-                  </Link>
-                  <CardContent className="p-3">
-                    <div className="flex justify-between items-start mb-1">
-                      <Link to={`/product/${product.id}`} className="font-medium text-sm hover:underline text-black">
-                        {product.name}
-                      </Link>
-                      <button
-                        onClick={() => toggleFavorite(product.id)}
-                        className={`${product.is_bookmarked ? 'text-blue-500' : 'text-gray-400'} hover:text-blue-600`}
-                      >
-                        <Bookmark className="w-4 h-4" fill={product.is_bookmarked ? 'currentColor' : 'none'} />
-                      </button>
-                    </div>
-                    <p className="text-xs text-gray-500 mb-2 line-clamp-2">{product.content}</p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-semibold text-green-600">
-                        {formatCurrency(product.price)}
-                      </span>
-                      <div className="flex items-center space-x-1">
-                        <button
-                          onClick={() => toggleLike(product.id)}
-                          className="text-red-500"
-                        >
-                          <Heart className="w-3 h-3 fill-current" />
-                        </button>
-                        <span className="text-xs text-gray-500">{product.like_count}</span>
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+              {likedProducts.map((post) => {
+                const currentIndex = currentImageIndex[post.id] || 0;
+                const totalImages = post.images.length;
+                const truncatedDescription = post.content.length > 40 ? post.content.substring(0, 40) + '...' : post.content;
+
+                return (
+                  <Card key={post.id} variant="elevated" className="overflow-hidden flex flex-col relative">
+                    <CardContent className="p-0 flex flex-col">
+                      <div className="p-0 sm:p-3 flex flex-col border-b border-gray-100">
+                        <div className="flex justify-between items-center">
+                          <Link
+                            to={`/seller/${post.sellerId}`}
+                            className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+                          >
+                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs">
+                              {post.authorAvatar}
+                            </div>
+                            <span className="font-medium text-black text-xs sm:text-sm truncate">
+                              {post.sellerName}
+                            </span>
+                          </Link>
+                          <button onClick={() => toggleDropdown(post.id)} className="p-1 rounded hover:bg-gray-100">
+                            <MoreHorizontal className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
+                          </button>
+                        </div>
+                        <div className="flex justify-center items-center mt-0.2">
+                          <span className="text-xs text-green-600 mb-1 font-semibold">{post.price}</span>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+
+                      <div
+                        className="relative aspect-square w-full bg-gray-200 flex-1"
+                        onTouchStart={(e) => {
+                          const touchStartX = e.touches[0].clientX;
+                          setCurrentImageIndex((prev) => ({ ...prev, touchStartX }));
+                        }}
+                        onTouchMove={(e) => {
+                          const touchEndX = e.touches[0].clientX;
+                          setCurrentImageIndex((prev) => ({ ...prev, touchEndX }));
+                        }}
+                        onTouchEnd={() => {
+                          const startX = currentImageIndex.touchStartX;
+                          const endX = currentImageIndex.touchEndX;
+                          const diff = startX - endX;
+                          if (Math.abs(diff) > 50) {
+                            if (diff > 0 && currentIndex < totalImages - 1) goToImage(post.id, currentIndex + 1);
+                            if (diff < 0 && currentIndex > 0) goToImage(post.id, currentIndex - 1);
+                          }
+                          setCurrentImageIndex((prev) => ({ ...prev, touchStartX: null, touchEndX: null }));
+                        }}
+                      >
+                        {totalImages > 1 && (
+                          <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-10 flex space-x-1 px-2 py-1">
+                            {post.images.map((_, index) => (
+                              <button
+                                key={index}
+                                onClick={() => goToImage(post.id, index)}
+                                className={`w-1 h-1 rounded-full transition-all ${
+                                  index === currentIndex ? 'bg-gray-300' : 'bg-gray-100'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        )}
+                        <Link to={`/product/${post.id}`}>
+                          <img
+                            src={post.images[currentIndex]}
+                            alt={post.product}
+                            className="absolute inset-0 w-full h-full object-cover select-none"
+                          />
+                        </Link>
+                      </div>
+
+                      <div className="p-1 sm:p-3 flex flex-col mt-0">
+                        <div className="flex flex-col">
+                          <div className="flex justify-between items-center mb-0">
+                            <div className="flex space-x-1 sm:space-x-2">
+                              <button
+                                onClick={() => handleToggleLike(post.id)}
+                                className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full ${
+                                  post.is_liked ? 'text-red-500 bg-red-50' : 'text-gray-600 hover:text-red-500'
+                                }`}
+                                style={{
+                                  transform: animatingLike === post.id ? 'scale(1.3)' : 'scale(1)',
+                                  animation: animatingLike === post.id ? 'heartBeat 0.6s ease-in-out' : 'none'
+                                }}
+                              >
+                                <Heart className="w-3 h-3 sm:w-4 sm:h-4" fill={post.is_liked ? 'currentColor' : 'none'} />
+                              </button>
+                              <Link
+                                to={`/product/${post.id}/comments`}
+                                className="p-1 text-gray-600 hover:text-blue-500 rounded-full hover:bg-blue-50 flex items-center space-x-1"
+                              >
+                                <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
+                                {post.commentCount > 0 && (
+                                  <span className="text-xs text-gray-500">{post.commentCount}</span>
+                                )}
+                              </Link>
+                              <button
+                                onClick={() => toggleCart(post.id)}
+                                className={`p-1 rounded-full transition-colors ${
+                                  cartPosts[post.id] ? 'text-green-500 bg-green-50' : 'text-gray-600 hover:text-green-500'
+                                }`}
+                              >
+                                <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
+                              </button>
+                            </div>
+                            <button
+                              onClick={() => handleToggleFavorite(post.id)}
+                              className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full ${
+                                post.is_bookmarked ? 'text-blue-500 bg-blue-50' : 'text-gray-600 hover:text-blue-500'
+                              }`}
+                              style={{
+                                transform: animatingFavorite === post.id ? 'scale(1.2)' : 'scale(1)',
+                                animation: animatingFavorite === post.id ? 'bookmarkPop 0.5s ease-out' : 'none'
+                              }}
+                            >
+                              <Bookmark className="w-3 h-3 sm:w-4 sm:h-4" fill={post.is_bookmarked ? 'currentColor' : 'none'} />
+                            </button>
+                          </div>
+                          <div className="flex items-center space-x-1 sm:justify-end">
+                            <div className="flex">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${star <= post.rating ? 'text-yellow-500' : 'text-gray-300'}`}
+                                  fill={star <= post.rating ? 'currentColor' : 'none'}
+                                />
+                              ))}
+                            </div>
+                            <span className="text-xs text-gray-600">({post.ratingCount})</span>
+                          </div>
+                        </div>
+                        <Link to={`/product/${post.id}`} className="text-black hover:underline text-xs font-medium truncate mb-1">
+                          {post.product}
+                        </Link>
+                        <div className="mt-0 relative">
+                          <button className="text-xs text-gray-600 text-left w-full p-1 bg-gray-50 rounded hover:bg-gray-100 transition-colors">
+                            <span className="text-left">{truncatedDescription}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-8">
@@ -781,6 +952,27 @@ const AccountPage = () => {
               </Link>
             </div>
           )}
+        </div>
+      )}
+
+      {dropdownOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeDropdown}>
+          <div className="bg-white rounded-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="p-4 border border-gray-200 text-center">
+              <h3 className="font-semibold text-lg text-black">Post Options</h3>
+            </div>
+            <div className="divide-y divide-gray-100">
+              {dropdownItems.map((item, index) => (
+                <button
+                  key={index}
+                  onClick={item.action}
+                  className="w-full text-center px-4 py-3 text-sm hover:bg-gray-50 text-black first:rounded-t-lg last:rounded-b-lg transition-colors"
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 

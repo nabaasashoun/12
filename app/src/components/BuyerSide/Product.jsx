@@ -2,8 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Minus, Plus, Star, Settings, ChevronLeft, ChevronDown,
-  CheckCircle, User, Clock
+  CheckCircle, User, Clock, Heart, Bookmark
 } from 'lucide-react';
+import { useLikeBookmark } from '../../utils/LikeBookmarkContext';
+import { useCart } from '../../utils/CartContext';
 
 const Product = () => {
   const { productId } = useParams();
@@ -20,8 +22,12 @@ const Product = () => {
   const [showQuestions, setShowQuestions] = useState(false);
   const [expandedQuestions, setExpandedQuestions] = useState([]);
   const [questionAnswers, setQuestionAnswers] = useState({});
-  const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
+  const [animatingLike, setAnimatingLike] = useState(false);
+  const [animatingFavorite, setAnimatingFavorite] = useState(false);
+  const [cartMessage, setCartMessage] = useState('');
+
+  const { isLiked, isBookmarked, toggleLike, toggleBookmark } = useLikeBookmark();
+  const { addToCart, cartItems } = useCart();
 
   const touchStartX = useRef(null);
 
@@ -43,6 +49,8 @@ const Product = () => {
     });
   };
 
+  const isInCart = cartItems.some(item => item.product?.id === parseInt(productId));
+
   useEffect(() => {
     const abortController = new AbortController();
     const signal = abortController.signal;
@@ -60,8 +68,6 @@ const Product = () => {
           const data = await response.json();
           if (!signal.aborted) {
             setProduct(data);
-            setIsLiked(data.is_liked || false);
-            setLikeCount(data.like_count || 0);
             setQuantity(data.min_order || 1);
           }
         } else if (response.status === 401) {
@@ -127,7 +133,13 @@ const Product = () => {
     fetchRelated();
 
     const saved = localStorage.getItem('cartQuestionAnswers');
-    if (saved) setQuestionAnswers(JSON.parse(saved));
+    if (saved) {
+      try {
+        setQuestionAnswers(JSON.parse(saved));
+      } catch (e) {
+        console.error('Error parsing saved answers:', e);
+      }
+    }
 
     return () => abortController.abort();
   }, [productId, navigate]);
@@ -137,7 +149,7 @@ const Product = () => {
       const newAnswers = {
         ...prev,
         [productId]: {
-          ...prev[productId],
+          ...(prev[productId] || {}),
           [qId]: value,
         },
       };
@@ -148,7 +160,8 @@ const Product = () => {
 
   const saveAnswers = () => {
     localStorage.setItem('cartQuestionAnswers', JSON.stringify(questionAnswers));
-    alert('Answers saved locally!');
+    setCartMessage('Answers saved successfully!');
+    setTimeout(() => setCartMessage(''), 3000);
   };
 
   const allRequiredAnswered = () => {
@@ -156,84 +169,94 @@ const Product = () => {
     const required = product.questions.filter(q => q.required);
     if (!required.length) return true;
     const answers = questionAnswers[productId] || {};
-    return required.every(q => answers[q.id]?.trim());
+    return required.every(q => {
+      const answer = answers[q.id];
+      return answer && answer.trim() !== '';
+    });
+  };
+
+  const handleToggleLike = async () => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    
+    setAnimatingLike(true);
+    setTimeout(() => setAnimatingLike(false), 600);
+    
+    await toggleLike(parseInt(productId));
+  };
+
+  const handleToggleFavorite = async () => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    
+    setAnimatingFavorite(true);
+    setTimeout(() => setAnimatingFavorite(false), 500);
+    
+    await toggleBookmark(parseInt(productId));
   };
 
   const handleAddToCart = async () => {
     if (!product) return;
+    
+    // Check if already in cart
+    if (isInCart) {
+      setCartMessage('Item already in cart!');
+      setTimeout(() => setCartMessage(''), 3000);
+      return;
+    }
+    
+    // Validate quantity
     if (quantity < product.min_order) {
-      alert(`Minimum order quantity is ${product.min_order}`);
+      setCartMessage(`Minimum order quantity is ${product.min_order}`);
+      setTimeout(() => setCartMessage(''), 3000);
       return;
     }
     if (quantity > product.max_order) {
-      alert(`Maximum order quantity is ${product.max_order}`);
+      setCartMessage(`Maximum order quantity is ${product.max_order}`);
+      setTimeout(() => setCartMessage(''), 3000);
       return;
     }
+    
+    // Validate required questions
     if (!allRequiredAnswered()) {
-      alert('Please answer all required seller questions.');
+      setCartMessage('Please answer all required seller questions first.');
       setShowQuestions(true);
+      setTimeout(() => setCartMessage(''), 3000);
       return;
     }
 
     setIsAddingToCart(true);
-    const token = localStorage.getItem('accessToken');
     try {
-      const response = await fetch('/api/cart/add/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `JWT ${token}`,
-        },
-        body: JSON.stringify({
-          product_id: productId,
-          quantity,
-          answers: questionAnswers[productId] || {},
-        }),
-      });
-      if (response.ok) {
-        alert(`Added ${quantity} item(s) to cart!`);
+      const success = await addToCart(parseInt(productId), quantity, questionAnswers[productId] || {});
+      if (success) {
+        setCartMessage(`Added ${quantity} item(s) to cart!`);
       } else {
-        const err = await response.json();
-        alert(`Error: ${err.message || 'Failed to add to cart'}`);
+        setCartMessage('Failed to add to cart. Please try again.');
       }
-    } catch (err) {
-      console.error('Add to cart error:', err);
-      alert('Network error. Please try again.');
+    } catch (error) {
+      setCartMessage('Error adding to cart.');
+      console.error('Add to cart error:', error);
     } finally {
       setIsAddingToCart(false);
-    }
-  };
-
-  const handleLike = async () => {
-    const token = localStorage.getItem('accessToken');
-    try {
-      const response = await fetch(`/api/products/${productId}/toggle-like/`, {
-        method: 'POST',
-        headers: { Authorization: `JWT ${token}` },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setIsLiked(data.liked);
-        setLikeCount(data.like_count);
-      }
-    } catch (err) {
-      console.error('Error toggling like:', err);
+      setTimeout(() => setCartMessage(''), 3000);
     }
   };
 
   const decreaseQuantity = () => {
     if (quantity > product.min_order) {
       setQuantity(q => q - 1);
-    } else {
-      alert(`Minimum order is ${product.min_order}`);
     }
   };
 
   const increaseQuantity = () => {
     if (quantity < product.max_order) {
       setQuantity(q => q + 1);
-    } else {
-      alert(`Maximum order is ${product.max_order}`);
     }
   };
 
@@ -241,10 +264,8 @@ const Product = () => {
     const val = parseInt(e.target.value);
     if (isNaN(val)) return;
     if (val < product.min_order) {
-      alert(`Minimum order is ${product.min_order}`);
       setQuantity(product.min_order);
     } else if (val > product.max_order) {
-      alert(`Maximum order is ${product.max_order}`);
       setQuantity(product.max_order);
     } else {
       setQuantity(val);
@@ -332,9 +353,23 @@ const Product = () => {
   const averageRating = Number(product.rating_magnitude) || 0;
   const totalReviews = Number(product.rating_number) || 0;
   const answers = questionAnswers[productId] || {};
+  const productIdNum = parseInt(productId);
 
   return (
     <div className="p-3 sm:p-4 md:p-6 max-w-4xl mx-auto text-black">
+      {/* Cart Message Toast */}
+      {cartMessage && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 animate-slideDown">
+          <div className={`px-6 py-3 rounded-full shadow-lg flex items-center gap-2 ${
+            cartMessage.includes('Failed') || cartMessage.includes('Please')
+              ? 'bg-red-600 text-white'
+              : 'bg-green-600 text-white'
+          }`}>
+            <span className="font-medium">{cartMessage}</span>
+          </div>
+        </div>
+      )}
+
       <div className="fixed top-0 left-0 right-0 z-20 bg-white py-2 px-3 sm:px-4 md:px-6 border-b">
         <div className="flex justify-between items-center">
           <button
@@ -447,14 +482,39 @@ const Product = () => {
         Min Order: {product.min_order} | Max Order: {product.max_order}
       </p>
 
-      <button
-        onClick={handleLike}
-        className={`mt-4 py-2 px-4 rounded transition ${
-          isLiked ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'
-        } text-white`}
-      >
-        {isLiked ? 'Liked' : 'Like'} ({likeCount})
-      </button>
+      <div className="flex gap-3 mt-4">
+        <button
+          onClick={handleToggleLike}
+          className={`py-2 px-4 rounded transition flex items-center gap-2 ${
+            isLiked(productIdNum)
+              ? 'bg-red-600 hover:bg-red-700 text-white'
+              : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+          }`}
+          style={{
+            transform: animatingLike ? 'scale(1.1)' : 'scale(1)',
+            animation: animatingLike ? 'heartBeat 0.6s ease-in-out' : 'none'
+          }}
+        >
+          <Heart className="w-4 h-4" fill={isLiked(productIdNum) ? 'white' : 'none'} />
+          <span>{isLiked(productIdNum) ? 'Liked' : 'Like'} ({product.like_count || 0})</span>
+        </button>
+
+        <button
+          onClick={handleToggleFavorite}
+          className={`py-2 px-4 rounded transition flex items-center gap-2 ${
+            isBookmarked(productIdNum)
+              ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+              : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+          }`}
+          style={{
+            transform: animatingFavorite ? 'scale(1.1)' : 'scale(1)',
+            animation: animatingFavorite ? 'bookmarkPop 0.5s ease-out' : 'none'
+          }}
+        >
+          <Bookmark className="w-4 h-4" fill={isBookmarked(productIdNum) ? 'white' : 'none'} />
+          <span>{isBookmarked(productIdNum) ? 'Bookmarked' : 'Bookmark'}</span>
+        </button>
+      </div>
 
       <div className="flex items-center mt-4">
         <button
@@ -492,50 +552,25 @@ const Product = () => {
 
         <button
           onClick={handleAddToCart}
-          disabled={
-            isAddingToCart ||
-            quantity < product.min_order ||
-            quantity > product.max_order
-          }
+          disabled={isAddingToCart || isInCart}
           className={`ml-4 py-2 px-4 rounded ${
-            isAddingToCart ||
-            quantity < product.min_order ||
-            quantity > product.max_order
+            isAddingToCart || isInCart
               ? 'bg-gray-400 cursor-not-allowed'
               : 'bg-green-600 hover:bg-green-700'
           } text-white`}
         >
-          {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+          {isAddingToCart ? 'Adding...' : isInCart ? 'In Cart' : 'Add to Cart'}
         </button>
       </div>
 
-      {(quantity < product.min_order || quantity > product.max_order) && (
-        <div className="mt-2 text-red-600 text-sm">
-          {quantity < product.min_order
-            ? `Minimum order is ${product.min_order}`
-            : `Maximum order is ${product.max_order}`}
-        </div>
-      )}
-
       <div className="mt-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold">Customer Reviews</h2>
-          {totalReviews > 2 && (
-            <button
-              onClick={() => navigate(`/product/${productId}/comments`)}
-              className="text-blue-600 text-sm font-medium hover:underline"
-            >
-              See all reviews
-            </button>
-          )}
-        </div>
-
+        <h2 className="text-lg font-bold">Customer Reviews</h2>
         {comments.length === 0 ? (
           <div className="text-center py-8 border rounded-lg bg-gray-50">
             <p className="text-gray-600">No reviews yet. Be the first to review!</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4 mt-4">
             {comments.slice(0, 2).map((comment) => (
               <div key={comment.id} className="border rounded-lg p-4 bg-white shadow-sm">
                 <div className="flex items-start justify-between">
@@ -575,6 +610,14 @@ const Product = () => {
                 <p className="text-gray-700 mt-2">{comment.comment}</p>
               </div>
             ))}
+            {totalReviews > 2 && (
+              <button
+                onClick={() => navigate(`/product/${productId}/comments`)}
+                className="text-blue-600 text-sm font-medium hover:underline mt-2"
+              >
+                See all {totalReviews} reviews →
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -598,68 +641,79 @@ const Product = () => {
 
           {showQuestions && (
             <div className="mt-2 space-y-2 p-4 bg-gray-50 rounded-lg">
-              {product.questions.map((q, idx) => (
-                <div key={q.id} className="border border-gray-200 rounded-lg overflow-hidden">
-                  <button
-                    onClick={() => toggleQuestion(idx)}
-                    className="w-full px-4 py-3 bg-white flex justify-between items-center text-left font-medium hover:bg-gray-50"
-                  >
-                    {q.question_text}
-                    <ChevronDown
-                      className={`w-4 h-4 transition-transform ${
-                        expandedQuestions.includes(idx) ? 'rotate-180' : ''
+              {product.questions.map((q, idx) => {
+                const requiredUnanswered = q.required && (!answers[q.id] || !answers[q.id].trim());
+                
+                return (
+                  <div key={q.id} className={`border rounded-lg overflow-hidden ${
+                    requiredUnanswered ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                  }`}>
+                    <button
+                      onClick={() => toggleQuestion(idx)}
+                      className="w-full px-4 py-3 bg-white flex justify-between items-center text-left font-medium hover:bg-gray-50"
+                    >
+                      <span>
+                        {q.question_text}
+                        {q.required && <span className="text-red-500 ml-1">*</span>}
+                      </span>
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform ${
+                          expandedQuestions.includes(idx) ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </button>
+
+                    <div
+                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                        expandedQuestions.includes(idx)
+                          ? 'max-h-96 opacity-100'
+                          : 'max-h-0 opacity-0'
                       }`}
-                    />
-                  </button>
-
-                  <div
-                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                      expandedQuestions.includes(idx)
-                        ? 'max-h-96 opacity-100'
-                        : 'max-h-0 opacity-0'
-                    }`}
-                  >
-                    <div className="px-4 py-3 bg-white border-t border-gray-200">
-                      <div className="flex justify-between items-start mb-3">
-                        {q.required && (
-                          <span className="text-sm text-red-500">(Required)</span>
-                        )}
-                        {answers[q.id]?.trim() && (
-                          <CheckCircle className="w-5 h-5 text-green-500" />
-                        )}
-                      </div>
-
-                      {q.question_type === 'text' ? (
-                        <textarea
-                          value={answers[q.id] || ''}
-                          onChange={(e) => handleAnswerChange(q.id, e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          rows={3}
-                          placeholder="Type your answer here..."
-                        />
-                      ) : q.question_type === 'multi-select' && q.options?.length ? (
-                        <div className="space-y-2">
-                          {q.options.map((opt, optIdx) => (
-                            <label
-                              key={optIdx}
-                              className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer"
-                            >
-                              <input
-                                type="radio"
-                                name={`question-${q.id}`}
-                                checked={answers[q.id] === opt.option_text}
-                                onChange={() => handleAnswerChange(q.id, opt.option_text)}
-                                className="text-blue-600"
-                              />
-                              <span className="text-gray-700">{opt.option_text}</span>
-                            </label>
-                          ))}
+                    >
+                      <div className="px-4 py-3 bg-white border-t border-gray-200">
+                        <div className="flex justify-between items-start mb-3">
+                          {q.required && (
+                            <span className="text-sm text-red-500">Required</span>
+                          )}
+                          {answers[q.id]?.trim() && (
+                            <CheckCircle className="w-5 h-5 text-green-500" />
+                          )}
                         </div>
-                      ) : null}
+
+                        {q.question_type === 'text' ? (
+                          <textarea
+                            value={answers[q.id] || ''}
+                            onChange={(e) => handleAnswerChange(q.id, e.target.value)}
+                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                              requiredUnanswered ? 'border-red-300' : 'border-gray-300'
+                            }`}
+                            rows={3}
+                            placeholder="Type your answer here..."
+                          />
+                        ) : q.question_type === 'multi-select' && q.options?.length ? (
+                          <div className="space-y-2">
+                            {q.options.map((opt, optIdx) => (
+                              <label
+                                key={optIdx}
+                                className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer"
+                              >
+                                <input
+                                  type="radio"
+                                  name={`question-${q.id}`}
+                                  checked={answers[q.id] === opt.option_text}
+                                  onChange={() => handleAnswerChange(q.id, opt.option_text)}
+                                  className="text-blue-600"
+                                />
+                                <span className="text-gray-700">{opt.option_text}</span>
+                              </label>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
 
               <button
                 onClick={saveAnswers}
@@ -680,6 +734,18 @@ const Product = () => {
         @keyframes slideDown {
           from { transform: translateY(-20px); opacity: 0; }
           to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes heartBeat {
+          0% { transform: scale(1); }
+          25% { transform: scale(1.3); }
+          50% { transform: scale(1); }
+          75% { transform: scale(1.3); }
+          100% { transform: scale(1); }
+        }
+        @keyframes bookmarkPop {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.2); }
+          100% { transform: scale(1); }
         }
         input[type=number]::-webkit-inner-spin-button,
         input[type=number]::-webkit-outer-spin-button {
