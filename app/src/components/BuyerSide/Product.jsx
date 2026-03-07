@@ -59,16 +59,39 @@ const Product = () => {
       setLoading(true);
       setError(null);
       const token = localStorage.getItem('accessToken');
+      
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+      
       try {
         const response = await fetch(`/api/products/${productId}/`, {
           headers: { Authorization: `JWT ${token}` },
           signal,
         });
+        
         if (response.ok) {
           const data = await response.json();
           if (!signal.aborted) {
             setProduct(data);
             setQuantity(data.min_order || 1);
+            
+            // Initialize answers for this product if they don't exist
+            setQuestionAnswers(prev => {
+              // Check if answers for this product already exist
+              if (!prev[productId]) {
+                console.log(`Initializing empty answers for product ${productId}`);
+                const newAnswers = {
+                  ...prev,
+                  [productId]: {}
+                };
+                // Save to localStorage
+                localStorage.setItem('cartQuestionAnswers', JSON.stringify(newAnswers));
+                return newAnswers;
+              }
+              return prev;
+            });
           }
         } else if (response.status === 401) {
           localStorage.removeItem('accessToken');
@@ -88,6 +111,8 @@ const Product = () => {
 
     const fetchComments = async () => {
       const token = localStorage.getItem('accessToken');
+      if (!token) return;
+      
       try {
         const response = await fetch(`/api/products/${productId}/comments/`, {
           headers: { Authorization: `JWT ${token}` },
@@ -104,6 +129,8 @@ const Product = () => {
 
     const fetchRelated = async () => {
       const token = localStorage.getItem('accessToken');
+      if (!token) return;
+      
       try {
         const response = await fetch(`/api/products/${productId}/related/`, {
           headers: { Authorization: `JWT ${token}` },
@@ -113,6 +140,7 @@ const Product = () => {
           const data = await response.json();
           if (!signal.aborted) setRelatedProducts(data);
         } else {
+          // Fallback to fetching all products and filtering
           const allRes = await fetch('/api/products/', {
             headers: { Authorization: `JWT ${token}` },
             signal,
@@ -120,7 +148,7 @@ const Product = () => {
           if (allRes.ok) {
             const all = await allRes.json();
             const filtered = all.filter(p => p.id.toString() !== productId).slice(0, 4);
-            setRelatedProducts(filtered);
+            if (!signal.aborted) setRelatedProducts(filtered);
           }
         }
       } catch (err) {
@@ -128,22 +156,37 @@ const Product = () => {
       }
     };
 
+    // Load saved answers from localStorage
+    const loadSavedAnswers = () => {
+      const saved = localStorage.getItem('cartQuestionAnswers');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          setQuestionAnswers(parsed);
+          console.log('Loaded saved answers from localStorage:', parsed);
+        } catch (e) {
+          console.error('Error parsing saved answers:', e);
+        }
+      } else {
+        // Initialize empty answers object if nothing in localStorage
+        const initialAnswers = {};
+        localStorage.setItem('cartQuestionAnswers', JSON.stringify(initialAnswers));
+        setQuestionAnswers(initialAnswers);
+      }
+    };
+
+    // Execute all fetch operations
+    loadSavedAnswers();
     fetchProduct();
     fetchComments();
     fetchRelated();
 
-    const saved = localStorage.getItem('cartQuestionAnswers');
-    if (saved) {
-      try {
-        setQuestionAnswers(JSON.parse(saved));
-      } catch (e) {
-        console.error('Error parsing saved answers:', e);
-      }
-    }
-
-    return () => abortController.abort();
+    // Cleanup function to abort all fetch requests
+    return () => {
+      abortController.abort();
+    };
   }, [productId, navigate]);
-
+  
   const handleAnswerChange = (qId, value) => {
     setQuestionAnswers(prev => {
       const newAnswers = {
@@ -166,15 +209,39 @@ const Product = () => {
 
   const allRequiredAnswered = () => {
     if (!product?.questions?.length) return true;
+    
     const required = product.questions.filter(q => q.required);
     if (!required.length) return true;
+    
     const answers = questionAnswers[productId] || {};
+    
+    // Debug log to see what's being checked
+    console.log('Checking required answers:', {
+      productId,
+      requiredQuestions: required.map(q => ({ id: q.id, text: q.question_text })),
+      currentAnswers: answers
+    });
+    
     return required.every(q => {
       const answer = answers[q.id];
-      return answer && answer.trim() !== '';
+      
+      // If no answer exists at all
+      if (answer === undefined || answer === null) {
+        console.log(`Question ${q.id} has no answer`);
+        return false;
+      }
+      
+      // For text inputs, check if it's not just empty/whitespace
+      if (typeof answer === 'string') {
+        const isValid = answer.trim() !== '';
+        console.log(`Question ${q.id} text answer validation:`, { answer, isValid });
+        return isValid;
+      }
+      
+      // For multi-select/radio, check if answer exists and is not empty
+      return answer !== '';
     });
   };
-
   const handleToggleLike = async () => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
@@ -222,23 +289,17 @@ const Product = () => {
       setTimeout(() => setCartMessage(''), 3000);
       return;
     }
-    
-    // Validate required questions
-    if (!allRequiredAnswered()) {
-      setCartMessage('Please answer all required seller questions first.');
-      setShowQuestions(true);
-      setTimeout(() => setCartMessage(''), 3000);
-      return;
-    }
 
     setIsAddingToCart(true);
     try {
-      const success = await addToCart(parseInt(productId), quantity, questionAnswers[productId] || {});
-      if (success) {
-        setCartMessage(`Added ${quantity} item(s) to cart!`);
-      } else {
-        setCartMessage('Failed to add to cart. Please try again.');
-      }
+      
+      const success = await addToCart(
+        parseInt(productId), 
+        quantity, 
+        questionAnswers[productId] || {} 
+      );
+      
+
     } catch (error) {
       setCartMessage('Error adding to cart.');
       console.error('Add to cart error:', error);
