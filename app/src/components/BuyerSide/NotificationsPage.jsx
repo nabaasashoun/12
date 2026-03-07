@@ -1,5 +1,5 @@
 import { Card, CardContent } from './card';
-import { Bell, CheckCircle, ShoppingCart, Star, Users, Gift, X, UserPlus } from 'lucide-react';
+import { Bell, CheckCircle, ShoppingCart, Star, Users, Gift, X, User, Settings, UserPlus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import { useNavigate } from 'react-router-dom';
@@ -22,13 +22,14 @@ const NotificationsPage = ({ setHasUnreadNotifications }) => {
         return { icon: Star, color: 'text-yellow-500' };
       case 'promotion':
         return { icon: Gift, color: 'text-purple-500' };
+      case 'profile_update':
+        return { icon: User, color: 'text-indigo-500' }; 
       case 'system':
         return { icon: CheckCircle, color: 'text-gray-500' };
       default:
         return { icon: Bell, color: 'text-gray-500' };
     }
   };
-
   // Format time
   const formatTime = (timestamp) => {
     const date = new Date(timestamp);
@@ -66,10 +67,25 @@ const NotificationsPage = ({ setHasUnreadNotifications }) => {
         
         const formattedNotifications = result.data.data.map(notif => {
           console.log('6. Processing notification:', notif);
+          
+          // Set appropriate title based on type
+          let title = notif.title;
+          if (!title) {
+            if (notif.notification_type === 'profile_update') {
+              title = 'Profile Update';
+            } else if (notif.notification_type === 'follow') {
+              title = 'New Follower';
+            } else if (notif.notification_type === 'follow_confirmation') {
+              title = 'Follow Confirmation';
+            } else {
+              title = 'Notification';
+            }
+          }
+          
           return {
             id: notif.id,
             type: notif.notification_type,
-            title: notif.title,
+            title: title,
             message: notif.message,
             time: formatTime(notif.created_at),
             read: notif.read,

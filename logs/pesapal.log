@@ -26308,3 +26308,59 @@ INFO 2026-03-07 23:03:16,032 log 26380 20156 "PUT /api/seller/profile/ HTTP/1.1"
 INFO 2026-03-07 23:03:16,175 log 26380 20156 "PUT /api/seller/profile/ HTTP/1.1" 200 116
 INFO 2026-03-07 23:03:22,064 log 26380 3892 "GET /admin/trendsync/seller/3/change/ HTTP/1.1" 200 24484
 INFO 2026-03-07 23:03:22,083 log 26380 3892 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-03-07 23:08:24,679 log 26380 17536 "PUT /api/seller/profile/ HTTP/1.1" 200 116
+INFO 2026-03-07 23:09:11,976 log 26380 25668 "GET /api/seller/products/ HTTP/1.1" 200 2
+INFO 2026-03-07 23:09:11,992 log 26380 11032 "GET /api/seller/products/ HTTP/1.1" 200 2
+INFO 2026-03-07 23:09:13,667 log 26380 8880 "GET /api/products/?ordering=-like_count HTTP/1.1" 200 763
+INFO 2026-03-07 23:09:13,685 log 26380 19000 "GET /api/products/?ordering=-like_count HTTP/1.1" 200 763
+INFO 2026-03-07 23:09:15,268 log 26380 17536 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:09:15,276 log 26380 17536 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:09:46,230 log 26380 17536 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:10:16,253 log 26380 17536 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:10:46,238 log 26380 17536 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:11:16,243 log 26380 17536 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:11:46,228 log 26380 17536 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:12:16,232 log 26380 17536 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:12:46,251 log 26380 17536 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:13:19,061 log 26380 17536 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:13:46,238 log 26380 17536 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:14:16,242 log 26380 17536 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:14:46,242 log 26380 17536 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:15:46,230 log 26380 17536 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:16:46,231 log 26380 17536 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:17:16,220 log 26380 17536 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:17:46,304 log 26380 17536 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:18:46,241 log 26380 17536 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:19:46,224 log 26380 17536 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:20:20,358 log 26380 17536 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:20:46,238 log 26380 17536 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:21:16,542 log 26380 27156 "OPTIONS /api/simple-notifications/ HTTP/1.1" 200 0
+INFO 2026-03-07 23:21:16,562 log 26380 27156 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:21:46,236 log 26380 27156 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:22:46,591 log 26380 27156 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:22:46,730 log 26380 29680 "GET /admin/trendsync/seller/3/change/ HTTP/1.1" 200 24484
+INFO 2026-03-07 23:23:16,222 log 26380 27156 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:23:46,231 log 26380 27156 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:24:23,759 log 26380 27156 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:24:46,248 log 26380 27156 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:25:16,229 log 26380 27156 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:25:46,352 log 26380 27156 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:26:46,237 log 26380 27156 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-07 23:31:44,576 autoreload 26380 22776 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-07 23:32:08,366 autoreload 5544 21124 Watching for file changes with StatReloader
+INFO 2026-03-07 23:33:22,995 autoreload 5544 21124 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-07 23:33:23,772 autoreload 11292 29276 Watching for file changes with StatReloader
+INFO 2026-03-07 23:33:28,826 autoreload 11292 29276 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-07 23:33:29,799 autoreload 8776 13244 Watching for file changes with StatReloader
+INFO 2026-03-07 23:33:32,507 autoreload 8776 13244 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-07 23:33:33,590 autoreload 12596 11380 Watching for file changes with StatReloader
+INFO 2026-03-07 23:33:35,408 autoreload 12596 11380 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-07 23:33:36,358 autoreload 16656 13624 Watching for file changes with StatReloader
+INFO 2026-03-07 23:34:02,131 autoreload 16656 13624 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-07 23:34:03,425 autoreload 8860 7188 Watching for file changes with StatReloader
+INFO 2026-03-07 23:34:06,478 autoreload 8860 7188 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-07 23:34:07,113 autoreload 14332 12304 Watching for file changes with StatReloader
+INFO 2026-03-07 23:34:12,083 autoreload 14332 12304 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-07 23:34:13,134 autoreload 28236 21508 Watching for file changes with StatReloader
+INFO 2026-03-07 23:34:36,485 autoreload 28236 21508 C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py changed, reloading.
+INFO 2026-03-07 23:34:37,405 autoreload 14944 27704 Watching for file changes with StatReloader

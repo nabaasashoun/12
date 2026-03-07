@@ -36,6 +36,32 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 logger = logging.getLogger('pesapal')
 
+def create_profile_notification(user, field_name):
+    """
+    Create a simple notification when a user updates their profile
+    Uses SimpleNotification model just like follower notifications
+    """
+    from .models import SimpleNotification
+    
+    field_display_names = {
+        'name': 'name',
+        'email': 'email address',
+        'password': 'password',
+        'contact': 'phone number',
+        'location': 'location',
+        'profile': 'profile information'
+    }
+    
+    display_name = field_display_names.get(field_name, field_name)
+    
+    # Create notification just like the follower notification
+    SimpleNotification.objects.create(
+        recipient=user,
+        sender_name='System',
+        message=f'You have successfully edited your {display_name}',
+        type='profile_update'  
+    )
+    print(f"✓ Profile update notification created for {user.username}: {display_name}")
 
 def get_cart(request):
     if request.user.is_authenticated and hasattr(request.user, 'buyer_profile'):
@@ -1442,12 +1468,14 @@ def change_email(request):
     request.user.email = new_email
     request.user.save()
     
+    # Create notification for email update 
+    create_profile_notification(request.user, 'email')
+    
     return Response({
         'success': True,
         'message': 'Email updated successfully',
         'email': new_email
     }, status=status.HTTP_200_OK)
-
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -1486,11 +1514,13 @@ def change_password(request):
     # Keep user logged in
     update_session_auth_hash(request, request.user)
     
+    # Create notification for password update - just like followers
+    create_profile_notification(request.user, 'password')
+    
     return Response({
         'success': True,
         'message': 'Password updated successfully'
     }, status=status.HTTP_200_OK)
-
 
 @api_view(['GET', 'PUT'])
 @permission_classes([IsAuthenticated])
@@ -1523,22 +1553,41 @@ def buyer_profile_detail(request):
             print(f"Updating profile for user: {request.user.username}")
             print(f"Received data: {request.data}")
             
+            # Track what fields were updated
+            updated_fields = []
+            
             # Update fields if provided
-            if 'name' in request.data:
+            if 'name' in request.data and request.data['name'] != buyer.name:
                 buyer.name = request.data['name']
+                updated_fields.append('name')
                 print(f"Updated name to: {buyer.name}")
-            if 'contact' in request.data:
-                buyer.contact = request.data['contact']
-                print(f"Updated contact to: {buyer.contact}")
-            if 'location' in request.data:
-                buyer.location = request.data['location']
-                print(f"Updated location to: {buyer.location}")
-            if 'dob' in request.data:
-                buyer.dob = request.data['dob']
-                print(f"Updated dob to: {buyer.dob}")
                 
+            if 'contact' in request.data and request.data['contact'] != buyer.contact:
+                buyer.contact = request.data['contact']
+                updated_fields.append('contact')
+                print(f"Updated contact to: {buyer.contact}")
+                
+            if 'location' in request.data and request.data['location'] != buyer.location:
+                buyer.location = request.data['location']
+                updated_fields.append('location')
+                print(f"Updated location to: {buyer.location}")
+                
+            if 'dob' in request.data and request.data['dob'] != buyer.dob:
+                buyer.dob = request.data['dob']
+                updated_fields.append('dob')
+                print(f"Updated dob to: {buyer.dob}")
+            
             buyer.save()
             print("Profile saved successfully")
+            
+            # Create notification for profile update - just like followers
+            if updated_fields:
+                if len(updated_fields) > 1:
+                    create_profile_notification(request.user, 'profile')
+                else:
+                    create_profile_notification(request.user, updated_fields[0])
+                print(f"✓ Created notification for updated fields: {updated_fields}")
+            
             print("========== UPDATE COMPLETE ==========")
             
             return Response({
