@@ -262,21 +262,41 @@ const AccountPage = () => {
     }
   };
 
-  // FIXED: Only show products that are actually liked according to context
   const fetchLikedProducts = async () => {
     try {
       setContentLoading(prev => ({ ...prev, liked: true }));
       
       const response = await api.getLikedProducts();
       if (response.data && Array.isArray(response.data)) {
-        // Get all products from API
-        const products = response.data;
-        
-        // Filter to ONLY include products that are currently liked according to context
-        const currentlyLikedProducts = products.filter(product => isLiked(product.id));
-        
-        setLikedProducts(currentlyLikedProducts);
-        console.log('📋 [AccountPage] Fetched liked products:', currentlyLikedProducts.length, 'out of', products.length);
+        const rawProducts = response.data;
+
+        // ── Same mapping logic as fetchBookmarkedProducts ──
+        const processed = rawProducts
+          .filter(product => isLiked(product.id))     // keep your existing safety filter
+          .map(product => ({
+            id: product.id,
+            sellerName: product.seller_name 
+              ? `${product.seller_name}'s store` 
+              : "Seller's store",
+            sellerUsername: product.seller?.user?.username || 'seller',
+            authorAvatar: (product.seller_name || 'S').charAt(0),
+            price: formatCurrency(product.unit_price || 0),
+            images: product.images && product.images.length > 0
+              ? product.images.map(img => getFullImageUrl(img))
+              : (product.product_photo ? [getFullImageUrl(product.product_photo)] : ['/sample1.jpg']),
+            product: product.name || 'Product',
+            content: product.description || 'No description available',
+            rating: Math.floor(product.rating_magnitude) || 0,
+            ratingCount: product.rating_number || 0,
+            commentCount: product.comment_count || 0,
+            like_count: product.like_count || 0,
+            sellerId: product.seller,                    // ← important!
+            is_bookmarked: isBookmarked(product.id),     // use context instead of static true
+            is_liked: true                               // since it's the liked tab
+          }));
+
+        setLikedProducts(processed);
+        console.log(`[Liked] Processed ${processed.length} products (filtered from ${rawProducts.length})`);
       }
     } catch (err) {
       console.error("Failed to load liked products:", err);
@@ -315,8 +335,13 @@ const AccountPage = () => {
       console.log('🔄 [AccountPage] likeToggled event received:', { productId, liked });
       
       if (activeTab === 'liked') {
-        console.log('📋 [AccountPage] On liked tab, refreshing list');
-        fetchLikedProducts();
+        // If we're on the liked tab and a product is unliked, remove it immediately
+        if (!liked) {
+          setLikedProducts(prev => prev.filter(p => p.id !== productId));
+        } else {
+          // If liked, refresh to make sure we have the full data
+          fetchLikedProducts();
+        }
       } else {
         // When unliked from other tabs, remove from likedProducts if present
         if (!liked) {
@@ -348,10 +373,15 @@ const AccountPage = () => {
     
     console.log('❤️ [AccountPage] After toggle - result:', result);
     
-    // On liked tab → refresh the full list after any like/unlike
+    // On liked tab → if unliked, remove immediately without waiting for refresh
     if (activeTab === 'liked') {
-      console.log('📋 [AccountPage] On liked tab → refreshing full list after toggle');
-      await fetchLikedProducts();
+      if (!result.liked) {
+        // Immediately remove from UI
+        setLikedProducts(prev => prev.filter(p => p.id !== productId));
+      } else {
+        // If liked, refresh to get full data
+        await fetchLikedProducts();
+      }
     } else {
       // On other tabs, if we're unliking a product, remove it from likedProducts if it exists
       if (!result.liked) {
@@ -645,17 +675,29 @@ const AccountPage = () => {
                     <CardContent className="p-0 flex flex-col">
                       <div className="p-0 sm:p-3 flex flex-col border-b border-gray-100">
                         <div className="flex justify-between items-center">
-                          <Link
-                            to={`/seller/${post.sellerId}`}
-                            className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
-                          >
-                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs">
-                              {post.authorAvatar}
+                          {/* FIXED: Only render seller link if sellerId exists */}
+                          {post.sellerId ? (
+                            <Link
+                              to={`/seller/${post.sellerId}`}
+                              className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+                            >
+                              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs">
+                                {post.authorAvatar}
+                              </div>
+                              <span className="font-medium text-black text-xs sm:text-sm truncate">
+                                {post.sellerName}
+                              </span>
+                            </Link>
+                          ) : (
+                            <div className="flex items-center space-x-2">
+                              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs">
+                                {post.authorAvatar}
+                              </div>
+                              <span className="font-medium text-black text-xs sm:text-sm truncate">
+                                {post.sellerName}
+                              </span>
                             </div>
-                            <span className="font-medium text-black text-xs sm:text-sm truncate">
-                              {post.sellerName}
-                            </span>
-                          </Link>
+                          )}
                           <button onClick={() => toggleDropdown(post.id)} className="p-1 rounded hover:bg-gray-100">
                             <MoreHorizontal className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
                           </button>
@@ -800,7 +842,7 @@ const AccountPage = () => {
         </div>
       )}
 
-      {/* Liked Tab - FIXED: Only shows products that are actually liked */}
+      {/* Liked Tab */}
       {activeTab === 'liked' && (
         <div>
           <h2 className="text-lg font-semibold mb-6 text-black">Liked Products ({likedProducts.length})</h2>
@@ -817,23 +859,41 @@ const AccountPage = () => {
                 const currentIndex = currentImageIndex[post.id] || 0;
                 const totalImages = post.images.length;
                 const truncatedDescription = post.content?.length > 40 ? post.content.substring(0, 40) + '...' : post.content || '';
-
+                  <div className="bg-yellow-100 p-2 text-xs mb-2 border border-yellow-300 rounded">
+                    DEBUG Liked product:
+                    <br />id: {post.id}
+                    <br />sellerName: "{post.sellerName || 'MISSING'}"
+                    <br />sellerId: {post.sellerId || 'MISSING'}
+                    <br />authorAvatar: "{post.authorAvatar || 'MISSING'}"
+                    <br />images: {post.images?.length || 0}
+                  </div>
                 return (
                   <Card key={post.id} variant="elevated" className="overflow-hidden flex flex-col relative">
                     <CardContent className="p-0 flex flex-col">
                       <div className="p-0 sm:p-3 flex flex-col border-b border-gray-100">
                         <div className="flex justify-between items-center">
-                          <Link
-                            to={`/seller/${post.sellerId}`}
-                            className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
-                          >
-                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs">
-                              {post.authorAvatar}
+                          {post.sellerId ? (
+                            <Link
+                              to={`/seller/${post.sellerId}`}
+                              className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+                            >
+                              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs">
+                                {post.authorAvatar}
+                              </div>
+                              <span className="font-medium text-black text-xs sm:text-sm truncate">
+                                {post.sellerName}
+                              </span>
+                            </Link>
+                          ) : (
+                            <div className="flex items-center space-x-2">
+                              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs">
+                                {post.authorAvatar}
+                              </div>
+                              <span className="font-medium text-black text-xs sm:text-sm truncate">
+                                {post.sellerName}
+                              </span>
                             </div>
-                            <span className="font-medium text-black text-xs sm:text-sm truncate">
-                              {post.sellerName}
-                            </span>
-                          </Link>
+                          )}
                           <button onClick={() => toggleDropdown(post.id)} className="p-1 rounded hover:bg-gray-100">
                             <MoreHorizontal className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
                           </button>
@@ -843,7 +903,7 @@ const AccountPage = () => {
                         </div>
                       </div>
 
-                      {/* Image Carousel */}
+                      {/* Image Carousel – identical to Bookmarks */}
                       <div
                         className="relative aspect-square w-full bg-gray-200 flex-1"
                         onTouchStart={(e) => {
@@ -887,7 +947,7 @@ const AccountPage = () => {
                         </Link>
                       </div>
 
-                      {/* Product Actions */}
+                      {/* Actions & info – pixel-perfect match with Bookmarks */}
                       <div className="p-1 sm:p-3 flex flex-col mt-0">
                         <div className="flex flex-col">
                           <div className="flex justify-between items-center mb-0">
@@ -935,7 +995,7 @@ const AccountPage = () => {
                               <Bookmark className="w-3 h-3 sm:w-4 sm:h-4" fill={isBookmarked(post.id) ? 'currentColor' : 'none'} />
                             </button>
                           </div>
-                          
+
                           {/* Rating */}
                           <div className="flex items-center space-x-1 sm:justify-end">
                             <div className="flex">
@@ -950,8 +1010,8 @@ const AccountPage = () => {
                             <span className="text-xs text-gray-600">({post.ratingCount})</span>
                           </div>
                         </div>
-                        
-                        {/* Product Info */}
+
+                        {/* Product name & description */}
                         <Link to={`/product/${post.id}`} className="text-black hover:underline text-xs font-medium truncate mb-1">
                           {post.product}
                         </Link>
