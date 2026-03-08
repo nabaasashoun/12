@@ -1,3 +1,4 @@
+// SettingsPage.jsx
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from './card';
 import { 
@@ -55,7 +56,6 @@ const SettingsPage = () => {
   const [passwordErrors, setPasswordErrors] = useState({});
   const [passwordSuccess, setPasswordSuccess] = useState('');
   
-  // Separate password visibility states
   const [showPasswords, setShowPasswords] = useState({
     current: false,
     new: false,
@@ -97,7 +97,6 @@ const SettingsPage = () => {
       console.log('1. Starting to fetch profile data...');
       
       try {
-        // Check what tokens we have
         console.log('2. Available tokens:', {
           accessToken: localStorage.getItem('accessToken') ? 'Present' : 'Missing',
           access: localStorage.getItem('access') ? 'Present' : 'Missing',
@@ -144,7 +143,6 @@ const SettingsPage = () => {
           console.log('9. Setting userInfo with:', userData);
           setUserInfo(userData);
           
-          // Set profile form with current values
           const profileData = {
             name: userData.name,
             phone: userData.phone === 'Not provided' ? '' : userData.phone,
@@ -338,7 +336,6 @@ const SettingsPage = () => {
         setEmailErrors({});
         setUserInfo(prev => ({ ...prev, email: emailForm.newEmail }));
         
-        // Also update localStorage user data
         const userStr = localStorage.getItem('user');
         if (userStr) {
           try {
@@ -458,7 +455,6 @@ const SettingsPage = () => {
       if (!response.error) {
         console.log('5. Profile update SUCCESSFUL!');
         
-        // Update local state with the saved data
         setUserInfo(prev => ({
           ...prev,
           name: profileForm.name,
@@ -493,6 +489,9 @@ const SettingsPage = () => {
     localStorage.removeItem('refresh');
     localStorage.removeItem('user');
     localStorage.removeItem('userRole');
+    
+    // Dispatch auth state changed event
+    window.dispatchEvent(new Event('authStateChanged'));
     
     console.log('Redirecting to login page');
     window.location.href = '/login';
@@ -566,7 +565,6 @@ const SettingsPage = () => {
         </div>
 
         <div className="space-y-4">
-          {/* Account Settings Group */}
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <button
               onClick={() => toggleGroup('account')}
@@ -587,7 +585,6 @@ const SettingsPage = () => {
             
             {expandedGroups.account && (
               <div className="divide-y divide-gray-100">
-                {/* Profile Information Section */}
                 <div className="px-6 py-3">
                   <button
                     onClick={() => toggleSection('profile')}
@@ -667,7 +664,6 @@ const SettingsPage = () => {
                   )}
                 </div>
 
-                {/* Email Section */}
                 <div className="px-6 py-3">
                   <button
                     onClick={() => toggleSection('email')}
@@ -788,7 +784,6 @@ const SettingsPage = () => {
             )}
           </div>
 
-          {/* Security Group */}
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <button
               onClick={() => toggleGroup('security')}
@@ -809,7 +804,6 @@ const SettingsPage = () => {
             
             {expandedGroups.security && (
               <div className="divide-y divide-gray-100">
-                {/* Password Section */}
                 <div className="px-6 py-3">
                   <button
                     onClick={() => toggleSection('password')}
@@ -998,7 +992,6 @@ const SettingsPage = () => {
                   )}
                 </div>
 
-                {/* 2FA Section */}
                 <div className="px-6 py-3">
                   <div className="flex items-center justify-between py-2">
                     <div className="flex items-center space-x-3">
@@ -1012,7 +1005,6 @@ const SettingsPage = () => {
             )}
           </div>
 
-          {/* Preferences Group */}
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <button
               onClick={() => toggleGroup('preferences')}
@@ -1033,7 +1025,6 @@ const SettingsPage = () => {
             
             {expandedGroups.preferences && (
               <div className="divide-y divide-gray-100">
-                {/* Appearance Section */}
                 <div className="px-6 py-3">
                   <button
                     onClick={() => toggleSection('appearance')}
@@ -1072,7 +1063,6 @@ const SettingsPage = () => {
                   )}
                 </div>
 
-                {/* Notifications Section */}
                 <div className="px-6 py-3">
                   <button
                     onClick={() => toggleSection('notifications')}
@@ -1134,7 +1124,6 @@ const SettingsPage = () => {
                   )}
                 </div>
 
-                {/* Language Section */}
                 <div className="px-6 py-3">
                   <button
                     onClick={() => toggleSection('language')}
@@ -1171,7 +1160,6 @@ const SettingsPage = () => {
           </div>
         </div>
 
-        {/* Logout Button */}
         <div className="mt-6">
           <button 
             onClick={handleLogout}

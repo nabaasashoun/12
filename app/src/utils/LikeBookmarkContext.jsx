@@ -1,233 +1,235 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import api from './api';
+// LikeBookmarkContext.jsx
+import React, { createContext, useState, useContext, useEffect, useCallback, useRef } from 'react';
+import api from '../utils/api';
 
 const LikeBookmarkContext = createContext();
 
 export const useLikeBookmark = () => useContext(LikeBookmarkContext);
 
 export const LikeBookmarkProvider = ({ children }) => {
-  const [likedPosts, setLikedPosts] = useState({});
-  const [favoritedPosts, setFavoritedPosts] = useState({});
+  const [likedPosts, setLikedPosts] = useState(new Set());
+  const [bookmarkedPosts, setBookmarkedPosts] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [initialFetchDone, setInitialFetchDone] = useState(false);
+  const fetchInProgress = useRef(false);
 
-  // Fetch initial like and bookmark data
-  const fetchLikeBookmarkData = useCallback(async () => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      setLikedPosts({});
-      setFavoritedPosts({});
-      setLoading(false);
-      setInitialFetchDone(true);
+  // Function to check if user is authenticated
+  const isAuthenticated = useCallback(() => {
+    return !!localStorage.getItem('accessToken');
+  }, []);
+
+  const fetchLikedProducts = useCallback(async () => {
+    if (!isAuthenticated()) {
+      setLikedPosts(new Set());
       return;
     }
 
     try {
-      setLoading(true);
-      
-      // Fetch liked products
-      const likedResult = await api.getLikedProducts();
-      const newLikedPosts = {};
-      if (likedResult.data && Array.isArray(likedResult.data)) {
-        likedResult.data.forEach(product => {
-          newLikedPosts[product.id] = true;
-        });
+      const response = await api.getLikedProducts();
+      if (response.data && Array.isArray(response.data)) {
+        const likedIds = new Set(response.data.map(p => p.id));
+        setLikedPosts(likedIds);
+        console.log('Fetched liked products:', likedIds);
       }
+    } catch (error) {
+      console.error('Error fetching liked products:', error);
+      setLikedPosts(new Set());
+    }
+  }, [isAuthenticated]);
 
-      // Fetch wishlist/bookmarked products
-      const wishlistResult = await api.getWishlist();
-      const newFavoritedPosts = {};
-      
-      if (wishlistResult.data) {
-        if (wishlistResult.data.status === 'success' && wishlistResult.data.items) {
-          wishlistResult.data.items.forEach(item => {
-            const productId = item.product?.id || item.id;
-            if (productId) newFavoritedPosts[productId] = true;
-          });
-        } else if (Array.isArray(wishlistResult.data)) {
-          wishlistResult.data.forEach(product => {
-            newFavoritedPosts[product.id] = true;
-          });
+  const fetchBookmarkedProducts = useCallback(async () => {
+    if (!isAuthenticated()) {
+      setBookmarkedPosts(new Set());
+      return;
+    }
+
+    try {
+      const response = await api.getWishlist();
+      let bookmarkedIds = new Set();
+
+      if (response.data) {
+        if (response.data.status === 'success' && response.data.items) {
+          bookmarkedIds = new Set(response.data.items.map(item => item.product?.id || item.id));
+        } else if (Array.isArray(response.data)) {
+          bookmarkedIds = new Set(response.data.map(p => p.id));
         }
       }
 
-      setLikedPosts(newLikedPosts);
-      setFavoritedPosts(newFavoritedPosts);
+      setBookmarkedPosts(bookmarkedIds);
+      console.log('Fetched bookmarked products:', bookmarkedIds);
     } catch (error) {
-      console.error('Error fetching like/bookmark data:', error);
-    } finally {
-      setLoading(false);
-      setInitialFetchDone(true);
+      console.error('Error fetching bookmarked products:', error);
+      setBookmarkedPosts(new Set());
     }
-  }, []);
+  }, [isAuthenticated]);
 
-  // Toggle like
-  const toggleLike = async (productId) => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) return { error: 'Not authenticated', success: false };
-
-    // Get current state BEFORE toggling
-    const currentState = likedPosts[productId] || false;
-    const newState = !currentState;
+  const fetchAllData = useCallback(async () => {
+    if (fetchInProgress.current) return;
     
-    // Optimistic update - immediately update UI
-    setLikedPosts(prev => ({
-      ...prev,
-      [productId]: newState
-    }));
-
-    try {
-      const result = await api.toggleLike(productId);
-      
-      if (result.data && !result.error) {
-        // Check if the response has the 'liked' field
-        const serverLiked = result.data.liked !== undefined ? result.data.liked : newState;
-        const newLikeCount = result.data.like_count || 0;
-        
-        // ALWAYS update with the server response to ensure consistency
-        setLikedPosts(prev => ({
-          ...prev,
-          [productId]: serverLiked
-        }));
-        
-        // Dispatch event for other components
-        window.dispatchEvent(new CustomEvent('likeToggled', {
-          detail: { 
-            productId, 
-            liked: serverLiked, 
-            likeCount: newLikeCount 
-          }
-        }));
-        
-        return { 
-          success: true, 
-          liked: serverLiked, 
-          likeCount: newLikeCount 
-        };
-      } else {
-        // Revert on error
-        setLikedPosts(prev => ({
-          ...prev,
-          [productId]: currentState
-        }));
-        return { success: false, error: 'Failed to toggle like' };
-      }
-    } catch (error) {
-      console.error('Error toggling like:', error);
-      // Revert on error
-      setLikedPosts(prev => ({
-        ...prev,
-        [productId]: currentState
-      }));
-      return { success: false, error: error.message };
-    }
-  };
-
-  // Toggle bookmark
-  const toggleBookmark = async (productId) => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) return { error: 'Not authenticated', success: false };
-
-    // Get current state BEFORE toggling
-    const currentState = favoritedPosts[productId] || false;
-    const newState = !currentState;
+    fetchInProgress.current = true;
+    setLoading(true);
     
-    // Optimistic update - immediately update UI
-    setFavoritedPosts(prev => ({
-      ...prev,
-      [productId]: newState
-    }));
+    await Promise.all([fetchLikedProducts(), fetchBookmarkedProducts()]);
+    
+    setLoading(false);
+    setInitialFetchDone(true);
+    fetchInProgress.current = false;
+  }, [fetchLikedProducts, fetchBookmarkedProducts]);
 
-    try {
-      const result = await api.toggleWishlist(productId);
-      
-      if (result.data && !result.error) {
-        const isNowBookmarked = result.data.action === 'added';
-        
-        // ALWAYS update with the server response
-        setFavoritedPosts(prev => ({
-          ...prev,
-          [productId]: isNowBookmarked
-        }));
-        
-        // Dispatch event for other components
-        window.dispatchEvent(new CustomEvent('bookmarkToggled', {
-          detail: { 
-            productId, 
-            bookmarked: isNowBookmarked 
-          }
-        }));
-        
-        return { 
-          success: true, 
-          bookmarked: isNowBookmarked 
-        };
-      } else {
-        // Revert on error
-        setFavoritedPosts(prev => ({
-          ...prev,
-          [productId]: currentState
-        }));
-        return { success: false, error: 'Failed to toggle bookmark' };
-      }
-    } catch (error) {
-      console.error('Error toggling bookmark:', error);
-      // Revert on error
-      setFavoritedPosts(prev => ({
-        ...prev,
-        [productId]: currentState
-      }));
-      return { success: false, error: error.message };
-    }
-  };
-
-  // Check if a product is liked
-  const isLiked = (productId) => {
-    return !!likedPosts[productId];
-  };
-
-  // Check if a product is bookmarked
-  const isBookmarked = (productId) => {
-    return !!favoritedPosts[productId];
-  };
-
-  // Refresh data
-  const refreshData = () => {
-    fetchLikeBookmarkData();
-  };
-
+  // Listen for auth state changes
   useEffect(() => {
-    fetchLikeBookmarkData();
-    
-    // Listen for auth changes to refresh data
     const handleAuthChange = () => {
-      fetchLikeBookmarkData();
+      console.log('Auth state changed, refreshing like/bookmark data');
+      if (isAuthenticated()) {
+        fetchAllData();
+      } else {
+        setLikedPosts(new Set());
+        setBookmarkedPosts(new Set());
+        setInitialFetchDone(false);
+      }
     };
-    
+
+    // Check on mount
+    if (isAuthenticated()) {
+      fetchAllData();
+    } else {
+      setLoading(false);
+    }
+
+    // Listen for auth changes
     window.addEventListener('authStateChanged', handleAuthChange);
     window.addEventListener('storage', (e) => {
-      if (e.key === 'accessToken' || e.key === 'user') {
-        fetchLikeBookmarkData();
+      if (e.key === 'accessToken' || e.key === 'access') {
+        handleAuthChange();
       }
     });
-    
+
     return () => {
       window.removeEventListener('authStateChanged', handleAuthChange);
+      window.removeEventListener('storage', handleAuthChange);
     };
-  }, [fetchLikeBookmarkData]);
+  }, [fetchAllData, isAuthenticated]);
+
+  useEffect(() => {
+    const handleLikeToggled = (event) => {
+      const { productId, liked } = event.detail;
+      setLikedPosts(prev => {
+        const newSet = new Set(prev);
+        if (liked) {
+          newSet.add(productId);
+        } else {
+          newSet.delete(productId);
+        }
+        return newSet;
+      });
+    };
+
+    const handleBookmarkToggled = (event) => {
+      const { productId, bookmarked } = event.detail;
+      setBookmarkedPosts(prev => {
+        const newSet = new Set(prev);
+        if (bookmarked) {
+          newSet.add(productId);
+        } else {
+          newSet.delete(productId);
+        }
+        return newSet;
+      });
+    };
+
+    window.addEventListener('likeToggled', handleLikeToggled);
+    window.addEventListener('bookmarkToggled', handleBookmarkToggled);
+
+    return () => {
+      window.removeEventListener('likeToggled', handleLikeToggled);
+      window.removeEventListener('bookmarkToggled', handleBookmarkToggled);
+    };
+  }, []);
+
+  const toggleLike = async (productId) => {
+    if (!isAuthenticated()) return { success: false, liked: false };
+
+    try {
+      const response = await api.toggleLike(productId);
+      
+      if (!response.error) {
+        const newLikedState = response.data?.liked ?? !likedPosts.has(productId);
+        
+        setLikedPosts(prev => {
+          const newSet = new Set(prev);
+          if (newLikedState) {
+            newSet.add(productId);
+          } else {
+            newSet.delete(productId);
+          }
+          return newSet;
+        });
+
+        window.dispatchEvent(new CustomEvent('likeToggled', { 
+          detail: { productId, liked: newLikedState } 
+        }));
+
+        return { success: true, liked: newLikedState };
+      }
+      
+      return { success: false, liked: likedPosts.has(productId) };
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      return { success: false, liked: likedPosts.has(productId) };
+    }
+  };
+
+  const toggleBookmark = async (productId) => {
+    if (!isAuthenticated()) return { success: false, bookmarked: false };
+
+    try {
+      const response = await api.toggleWishlist(productId);
+      
+      if (!response.error) {
+        const newBookmarkedState = response.data?.action === 'added' || 
+                                   (response.data?.status === 'success' && response.data?.action !== 'removed');
+        
+        setBookmarkedPosts(prev => {
+          const newSet = new Set(prev);
+          if (newBookmarkedState) {
+            newSet.add(productId);
+          } else {
+            newSet.delete(productId);
+          }
+          return newSet;
+        });
+
+        window.dispatchEvent(new CustomEvent('bookmarkToggled', { 
+          detail: { productId, bookmarked: newBookmarkedState } 
+        }));
+
+        return { success: true, bookmarked: newBookmarkedState };
+      }
+      
+      return { success: false, bookmarked: bookmarkedPosts.has(productId) };
+    } catch (error) {
+      console.error('Error toggling bookmark:', error);
+      return { success: false, bookmarked: bookmarkedPosts.has(productId) };
+    }
+  };
+
+  const isLiked = (productId) => likedPosts.has(productId);
+  const isBookmarked = (productId) => bookmarkedPosts.has(productId);
+
+  const value = {
+    likedPosts,
+    bookmarkedPosts,
+    isLiked,
+    isBookmarked,
+    toggleLike,
+    toggleBookmark,
+    loading,
+    initialFetchDone,
+    refreshData: fetchAllData
+  };
 
   return (
-    <LikeBookmarkContext.Provider value={{
-      likedPosts,
-      favoritedPosts,
-      loading,
-      initialFetchDone,
-      toggleLike,
-      toggleBookmark,
-      isLiked,
-      isBookmarked,
-      refreshData
-    }}>
+    <LikeBookmarkContext.Provider value={value}>
       {children}
     </LikeBookmarkContext.Provider>
   );
