@@ -17116,3 +17116,2246 @@ django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User ha
 ERROR 2026-03-08 00:12:14,153 log 25404 5436 "GET /api/wishlist/ HTTP/1.1" 500 106475
 ERROR 2026-03-08 01:09:17,735 log 10672 8836 Internal Server Error: /api/sellers/rate/
 ERROR 2026-03-08 01:09:17,736 log 10672 8836 "POST /api/sellers/rate/ HTTP/1.1" 500 84
+ERROR 2026-03-08 17:16:11,034 log 11004 1124 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 17:16:11,072 log 11004 18640 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 17:16:12,467 log 11004 18640 "GET /api/liked-products/ HTTP/1.1" 500 110030
+ERROR 2026-03-08 17:16:12,467 log 11004 1124 "GET /api/wishlist/ HTTP/1.1" 500 106471
+ERROR 2026-03-08 17:19:15,608 log 11004 1124 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 17:19:15,653 log 11004 18640 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 17:19:15,717 log 11004 1124 "GET /api/wishlist/ HTTP/1.1" 500 106471
+ERROR 2026-03-08 17:19:15,770 log 11004 18640 "GET /api/liked-products/ HTTP/1.1" 500 110030
+ERROR 2026-03-08 17:24:34,207 log 11004 18640 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 17:24:34,214 log 11004 18640 "GET /api/liked-products/ HTTP/1.1" 500 110030
+ERROR 2026-03-08 17:24:34,246 log 11004 18640 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 17:24:34,257 log 11004 18640 "GET /api/wishlist/ HTTP/1.1" 500 106471
+ERROR 2026-03-08 17:26:07,692 log 11004 10468 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 17:26:08,061 log 11004 10468 "GET /api/liked-products/ HTTP/1.1" 500 110030
+ERROR 2026-03-08 17:26:08,109 log 11004 18644 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 17:26:08,118 log 11004 18644 "GET /api/wishlist/ HTTP/1.1" 500 106471
+ERROR 2026-03-08 17:26:36,060 log 11004 31328 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 17:26:36,093 log 11004 10468 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 17:26:36,110 log 11004 31328 "GET /api/wishlist/ HTTP/1.1" 500 106471
+ERROR 2026-03-08 17:26:36,113 log 11004 10468 "GET /api/liked-products/ HTTP/1.1" 500 110030
+ERROR 2026-03-08 17:27:34,416 log 11004 29592 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 17:27:34,427 log 11004 25104 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 17:27:34,851 log 11004 29592 "GET /api/wishlist/ HTTP/1.1" 500 106471
+ERROR 2026-03-08 17:27:35,001 log 11004 25104 "GET /api/liked-products/ HTTP/1.1" 500 110030
+ERROR 2026-03-08 17:37:34,409 log 32932 13228 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 17:37:34,464 log 32932 13228 "GET /api/wishlist/ HTTP/1.1" 500 106471
+ERROR 2026-03-08 18:36:12,230 log 31324 14660 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 18:36:12,238 log 31324 32952 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 18:36:12,479 log 31324 14660 "GET /api/liked-products/ HTTP/1.1" 500 110030
+ERROR 2026-03-08 18:36:12,481 log 31324 32952 "GET /api/wishlist/ HTTP/1.1" 500 106471
+ERROR 2026-03-08 18:38:31,372 log 31324 8332 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 18:38:31,429 log 31324 33512 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 18:38:31,469 log 31324 33512 "GET /api/wishlist/ HTTP/1.1" 500 106471
+ERROR 2026-03-08 18:38:31,476 log 31324 8332 "GET /api/liked-products/ HTTP/1.1" 500 110030
+ERROR 2026-03-08 18:49:34,843 log 31324 10840 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 18:49:34,847 log 31324 28312 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 18:49:35,261 log 31324 10840 "GET /api/wishlist/ HTTP/1.1" 500 106471
+ERROR 2026-03-08 18:49:35,350 log 31324 28312 "GET /api/liked-products/ HTTP/1.1" 500 110030
+ERROR 2026-03-08 18:57:14,674 log 31324 28312 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 18:57:15,280 log 31324 13276 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 18:57:15,698 log 31324 13276 "GET /api/wishlist/ HTTP/1.1" 500 106471
+ERROR 2026-03-08 18:57:15,704 log 31324 28312 "GET /api/liked-products/ HTTP/1.1" 500 110030
+ERROR 2026-03-08 18:58:03,301 log 31324 10652 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 18:58:03,335 log 31324 13276 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 18:58:03,467 log 31324 10652 "GET /api/wishlist/ HTTP/1.1" 500 106471
+ERROR 2026-03-08 18:58:03,474 log 31324 13276 "GET /api/liked-products/ HTTP/1.1" 500 110030
+ERROR 2026-03-08 18:58:05,406 log 31324 28312 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 18:58:05,482 log 31324 10652 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 18:58:06,090 log 31324 10652 "GET /api/liked-products/ HTTP/1.1" 500 110030
+ERROR 2026-03-08 18:58:06,091 log 31324 28312 "GET /api/wishlist/ HTTP/1.1" 500 106471
+ERROR 2026-03-08 18:58:24,963 log 31324 13276 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 18:58:24,992 log 31324 28312 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 18:58:25,014 log 31324 13276 "GET /api/wishlist/ HTTP/1.1" 500 106471
+ERROR 2026-03-08 18:58:25,017 log 31324 28312 "GET /api/liked-products/ HTTP/1.1" 500 110030
+ERROR 2026-03-08 18:58:40,136 log 31324 10652 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 18:58:40,191 log 31324 13276 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 18:58:40,198 log 31324 10652 "GET /api/wishlist/ HTTP/1.1" 500 106471
+ERROR 2026-03-08 18:58:40,215 log 31324 13276 "GET /api/liked-products/ HTTP/1.1" 500 110030
+ERROR 2026-03-08 19:00:46,685 log 31324 28312 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:00:46,708 log 31324 10652 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:00:46,800 log 31324 28312 "GET /api/wishlist/ HTTP/1.1" 500 106471
+ERROR 2026-03-08 19:00:46,802 log 31324 10652 "GET /api/liked-products/ HTTP/1.1" 500 110030
+ERROR 2026-03-08 19:01:40,738 log 31324 13276 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:01:40,767 log 31324 28312 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:01:40,782 log 31324 13276 "GET /api/wishlist/ HTTP/1.1" 500 106471
+ERROR 2026-03-08 19:01:40,782 log 31324 28312 "GET /api/liked-products/ HTTP/1.1" 500 110030
+ERROR 2026-03-08 19:01:45,784 log 31324 10652 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:01:45,815 log 31324 13276 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:01:45,830 log 31324 10652 "GET /api/wishlist/ HTTP/1.1" 500 106471
+ERROR 2026-03-08 19:01:45,848 log 31324 13276 "GET /api/liked-products/ HTTP/1.1" 500 110030
+ERROR 2026-03-08 19:01:47,248 log 31324 28312 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:01:47,257 log 31324 10652 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:01:47,346 log 31324 28312 "GET /api/wishlist/ HTTP/1.1" 500 106471
+ERROR 2026-03-08 19:01:47,355 log 31324 10652 "GET /api/liked-products/ HTTP/1.1" 500 110030
+ERROR 2026-03-08 19:01:48,748 log 31324 28312 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:01:48,774 log 31324 13276 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:01:48,790 log 31324 28312 "GET /api/liked-products/ HTTP/1.1" 500 110030
+ERROR 2026-03-08 19:01:48,806 log 31324 13276 "GET /api/wishlist/ HTTP/1.1" 500 106471
+ERROR 2026-03-08 19:05:17,226 log 31324 11196 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:05:17,278 log 31324 5852 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:05:17,376 log 31324 11196 "GET /api/wishlist/ HTTP/1.1" 500 106471
+ERROR 2026-03-08 19:05:17,413 log 31324 5852 "GET /api/liked-products/ HTTP/1.1" 500 110030
+ERROR 2026-03-08 19:08:16,739 log 31324 17816 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:08:16,776 log 31324 11196 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:08:16,970 log 31324 17816 "GET /api/wishlist/ HTTP/1.1" 500 106471
+ERROR 2026-03-08 19:08:16,971 log 31324 11196 "GET /api/liked-products/ HTTP/1.1" 500 110030
+ERROR 2026-03-08 19:19:43,104 log 31324 27840 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:19:43,125 log 31324 27840 "GET /api/liked-products/ HTTP/1.1" 500 110030
+ERROR 2026-03-08 19:19:43,211 log 31324 27840 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:19:43,306 log 31324 27840 "GET /api/wishlist/ HTTP/1.1" 500 106471
+ERROR 2026-03-08 19:23:22,605 log 31324 27840 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:23:22,617 log 31324 27840 "GET /api/liked-products/ HTTP/1.1" 500 110031
+ERROR 2026-03-08 19:23:22,701 log 31324 27840 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:23:22,714 log 31324 27840 "GET /api/wishlist/ HTTP/1.1" 500 106472
+ERROR 2026-03-08 19:39:01,791 log 35080 35588 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:39:01,809 log 35080 35448 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:39:01,965 log 35080 35588 "GET /api/liked-products/ HTTP/1.1" 500 110031
+ERROR 2026-03-08 19:39:01,968 log 35080 35448 "GET /api/wishlist/ HTTP/1.1" 500 106472
+ERROR 2026-03-08 19:39:51,367 log 29684 35404 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:39:51,516 log 29684 34736 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:39:51,553 log 29684 35404 "GET /api/liked-products/ HTTP/1.1" 500 110031
+ERROR 2026-03-08 19:39:51,573 log 29684 34736 "GET /api/wishlist/ HTTP/1.1" 500 106472
+ERROR 2026-03-08 19:40:16,626 log 29684 35576 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:40:16,642 log 29684 35404 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:40:16,909 log 29684 35576 "GET /api/liked-products/ HTTP/1.1" 500 110031
+ERROR 2026-03-08 19:40:16,910 log 29684 35404 "GET /api/wishlist/ HTTP/1.1" 500 106472
+ERROR 2026-03-08 19:40:48,838 log 29684 35576 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:40:48,867 log 29684 35404 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:40:49,121 log 29684 35576 "GET /api/wishlist/ HTTP/1.1" 500 106472
+ERROR 2026-03-08 19:40:49,168 log 29684 35404 "GET /api/liked-products/ HTTP/1.1" 500 110031
+ERROR 2026-03-08 19:41:43,128 log 29684 35404 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:41:43,150 log 29684 17912 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:41:43,344 log 29684 35404 "GET /api/liked-products/ HTTP/1.1" 500 110031
+ERROR 2026-03-08 19:41:43,352 log 29684 17912 "GET /api/wishlist/ HTTP/1.1" 500 106472
+ERROR 2026-03-08 19:45:09,147 log 29684 35404 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:45:09,150 log 29684 17912 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:45:09,160 log 29684 17912 "GET /api/liked-products/ HTTP/1.1" 500 110031
+ERROR 2026-03-08 19:45:09,160 log 29684 35404 "GET /api/wishlist/ HTTP/1.1" 500 106472
+ERROR 2026-03-08 19:46:45,938 log 29684 17912 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:46:45,967 log 29684 35404 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:46:45,971 log 29684 17912 "GET /api/liked-products/ HTTP/1.1" 500 110031
+ERROR 2026-03-08 19:46:46,049 log 29684 35404 "GET /api/wishlist/ HTTP/1.1" 500 106472
+ERROR 2026-03-08 19:47:10,610 log 29684 35404 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:47:10,638 log 29684 17912 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:47:10,710 log 29684 35404 "GET /api/liked-products/ HTTP/1.1" 500 110031
+ERROR 2026-03-08 19:47:10,717 log 29684 17912 "GET /api/wishlist/ HTTP/1.1" 500 106472
+ERROR 2026-03-08 19:56:12,833 log 29684 34664 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:56:12,856 log 29684 23260 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:56:12,975 log 29684 34664 "GET /api/liked-products/ HTTP/1.1" 500 110031
+ERROR 2026-03-08 19:56:13,005 log 29684 23260 "GET /api/wishlist/ HTTP/1.1" 500 106472
+ERROR 2026-03-08 19:57:46,087 log 29684 24424 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:57:46,108 log 29684 13780 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+    ...<2 lines>...
+    )
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-08 19:57:46,212 log 29684 13780 "GET /api/liked-products/ HTTP/1.1" 500 110031
+ERROR 2026-03-08 19:57:46,224 log 29684 24424 "GET /api/wishlist/ HTTP/1.1" 500 106472

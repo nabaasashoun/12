@@ -7,11 +7,12 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import api from  '../../utils/api';
 import styled from 'styled-components';
-import Loader from '../UISkeleton/Loader';  
+import Loader from '../UISkeleton/Loader';
+import { useDarkMode } from '../../utils/DarkModeContext';
 
-const CustomCheckbox = ({ checked, onChange, id, value }) => {
+const CustomCheckbox = ({ checked, onChange, id, value, isDarkMode }) => {
   return (
-    <StyledWrapper>
+    <StyledWrapper isDarkMode={isDarkMode}>
       <div className="checkbox-wrapper-12">
         <div className="cbx">
           <input
@@ -39,7 +40,6 @@ const CustomCheckbox = ({ checked, onChange, id, value }) => {
     </StyledWrapper>
   );
 };
-
 
 const StyledWrapper = styled.div`
   .checkbox-wrapper-12 {
@@ -84,8 +84,10 @@ const StyledWrapper = styled.div`
     left: 0;
     width: 24px;
     height: 24px;
-    border: 2px solid #bfbfc0;
+    border: 2px solid ${props => props.isDarkMode ? '#4b5563' : '#bfbfc0'};
     border-radius: 50%;
+    background: ${props => props.isDarkMode ? '#374151' : 'white'};
+    transition: border-color 0.3s ease, background-color 0.3s ease;
   }
 
   .checkbox-wrapper-12 .cbx label {
@@ -140,6 +142,7 @@ const StyledWrapper = styled.div`
 `;
 
 const CartPage = () => {
+  const { isDarkMode } = useDarkMode();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -268,7 +271,6 @@ const CartPage = () => {
     try {
       const result = await api.removeFromCart(productId);
       if (result.error) {
-        
         setTimeout(() => setNotification(null), 3000);
         return;
       }
@@ -284,10 +286,8 @@ const CartPage = () => {
       setQuestionAnswers(updatedAnswers);
       localStorage.setItem('cartQuestionAnswers', JSON.stringify(updatedAnswers));
       triggerCartUpdate();
-     
       setTimeout(() => setNotification(null), 2000);
     } catch (err) {
-     
       setTimeout(() => setNotification(null), 3000);
     }
   };
@@ -353,7 +353,6 @@ const CartPage = () => {
       const answers = questionAnswers[productId] || {};
       await saveAnswersToBackend(productId, answers);
       setOpenQuestionModal(null);
-      
       setTimeout(() => setNotification(null), 3000);
     } catch (error) {
       console.error('Error saving answers:', error);
@@ -411,407 +410,550 @@ const CartPage = () => {
 
   if (loading) {
     return (
-      <div className="p-6 max-w-6xl mx-auto">
-        <div className="text-center py-12">
-          <Loader />
+      <div className={`min-h-screen transition-colors duration-300 ${
+        isDarkMode ? 'bg-gray-900' : 'bg-gray-100'
+      }`}>
+        <div className="p-6 max-w-6xl mx-auto">
+          <div className="text-center py-12">
+            <Loader />
+          </div>
         </div>
       </div>
     );
   }
 
-
-
   if (error) {
     return (
-      <div className="p-6 max-w-6xl mx-auto">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
-          <AlertCircle className="w-5 h-5 text-red-500 mr-3" />
-          <p className="text-red-700">{error}</p>
-        </div>
-        <div className="mt-4 text-center">
-          <button
-            onClick={() => navigate('/login')}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Go to Login
-          </button>
+      <div className={`min-h-screen transition-colors duration-300 ${
+        isDarkMode ? 'bg-gray-900' : 'bg-gray-100'
+      }`}>
+        <div className="p-6 max-w-6xl mx-auto">
+          <div className={`rounded-lg p-4 flex items-center ${
+            isDarkMode 
+              ? 'bg-red-900/30 border border-red-800' 
+              : 'bg-red-50 border border-red-200'
+          }`}>
+            <AlertCircle className={`w-5 h-5 mr-3 ${
+              isDarkMode ? 'text-red-400' : 'text-red-500'
+            }`} />
+            <p className={isDarkMode ? 'text-red-400' : 'text-red-700'}>{error}</p>
+          </div>
+          <div className="mt-4 text-center">
+            <button
+              onClick={() => navigate('/login')}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Go to Login
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="mb-2">
-        <div className="flex items-center mb-4">
-          <button
-            onClick={() => navigate(-1)}
-            className="mr-4 p-2 rounded-full hover:bg-gray-100 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
-          </button>
-          <p className="text-[23px] font-bold text-black">Shopping Cart</p>
-        </div>
-        <p className="text-gray-600">
-          {cartItems.length === 0 
-            ? 'Your cart is empty. Start adding products!'
-            : `You have ${cartItems.length} item${cartItems.length !== 1 ? 's' : ''} in your cart`
-          }
-        </p>
-      </div>
-
-      {notification && (
-        <div className={`mb-4 p-4 rounded-lg ${notification.type === 'success' ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700'}`}>
-          <div className="flex items-center">
-            {notification.type === 'success' ? (
-              <CheckCircle className="w-5 h-5 mr-3 text-green-500" />
-            ) : (
-              <AlertCircle className="w-5 h-5 mr-3 text-red-500" />
-            )}
-            <p>{notification.message}</p>
+    <div className={`min-h-screen transition-colors duration-300 ${
+      isDarkMode ? 'bg-gray-900' : 'bg-gray-100'
+    }`}>
+      <div className="p-6 max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-2">
+          <div className="flex items-center mb-4">
+            <button
+              onClick={() => navigate(-1)}
+              className={`mr-4 p-2 rounded-full transition-colors ${
+                isDarkMode 
+                  ? 'hover:bg-gray-800 text-gray-400' 
+                  : 'hover:bg-gray-200 text-gray-600'
+              }`}
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <p className={`text-[23px] font-bold ${
+              isDarkMode ? 'text-gray-100' : 'text-gray-900'
+            }`}>Shopping Cart</p>
           </div>
+          <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
+            {cartItems.length === 0 
+              ? 'Your cart is empty. Start adding products!'
+              : `You have ${cartItems.length} item${cartItems.length !== 1 ? 's' : ''} in your cart`
+            }
+          </p>
         </div>
-      )}
 
-      {cartItems.length > 0 ? (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Cart Items */}
-          <div className="lg:col-span-2">
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="text-lg font-semibold text-black">Cart Items</h2>
-              <button
-                onClick={clearCart}
-                className="text-sm text-red-600 hover:text-red-700 flex items-center"
-              >
-                <Trash2 className="w-4 h-4 mr-1" />
-                Clear All
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {cartItems.map((item) => {
-                const productImage = getProductImage(item.product);
-                const hasQuestions = getProductQuestions(item.product).length > 0;
-                const allRequiredAnswered = areAllRequiredQuestionsAnswered(item.product);
-                
-                return (
-                  <Card key={item.id} className="overflow-hidden">
-                    <CardContent className="p-4">
-                      <div className="flex">
-                        {/* Product Image */}
-                        <div className="w-24 h-24 flex-shrink-0 mr-4">
-                          <img
-                            src={productImage}
-                            alt={item.product.name}
-                            className="w-full h-full object-cover rounded-lg"
-                            onError={(e) => {
-                              console.log('Image failed to load:', productImage);
-                              e.target.src = '/sample1.jpg';
-                            }}
-                          />
-                        </div>
-
-                        {/* Product Details */}
-                        <div className="flex-1">
-                          <div className="flex justify-between">
-                            <div>
-                              <Link 
-                                to={`/product/${item.product.id}`}
-                                className="font-semibold text-black hover:underline"
-                              >
-                                {item.product.name}
-                              </Link>
-                              <p className="text-sm text-gray-600 mt-1">
-                                {formatCurrency(item.product.unit_price)}
-                              </p>
-                              <p className="text-sm text-green-600 mt-1">
-                                Subtotal: {formatCurrency(item.subtotal || (item.quantity * item.product.unit_price))}
-                              </p>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              {hasQuestions && (
-                                <button
-                                  onClick={() => setOpenQuestionModal(item.product.id)}
-                                  className={`p-2 rounded-full hover:opacity-80 transition-opacity ${
-                                    allRequiredAnswered 
-                                      ? 'bg-green-100 text-green-600 hover:bg-green-200' 
-                                      : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
-                                  }`}
-                                  title={allRequiredAnswered ? "All questions answered" : "Answer seller questions"}
-                                >
-                                  {allRequiredAnswered ? (
-                                    <CheckCircle className="w-5 h-5" />
-                                  ) : (
-                                    <HelpCircle className="w-5 h-5" />
-                                  )}
-                                </button>
-                              )}
-                              <button
-                                onClick={() => removeFromCart(item.product.id)}
-                                className="text-gray-400 hover:text-red-500 p-1"
-                              >
-                                <X className="w-5 h-5" />
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Quantity Controls */}
-                          <div className="flex items-center justify-between mt-4">
-                            <div className="flex items-center space-x-2">
-                              <button
-                                onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                                className="p-1 rounded-full border border-gray-300 hover:bg-gray-100"
-                              >
-                                <Minus className="text-black w-4 h-4" />
-                              </button>
-                              <span className="w-12 text-black text-center font-medium">
-                                {item.quantity}
-                              </span>
-                              <button
-                                onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                                className="p-1 rounded-full border border-gray-300 hover:bg-gray-100"
-                              >
-                                <Plus className="text-black w-4 h-4" />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+        {notification && (
+          <div className={`mb-4 p-4 rounded-lg ${
+            notification.type === 'success' 
+              ? isDarkMode 
+                ? 'bg-green-900/30 border border-green-800 text-green-400' 
+                : 'bg-green-50 border border-green-200 text-green-700'
+              : isDarkMode 
+                ? 'bg-red-900/30 border border-red-800 text-red-400' 
+                : 'bg-red-50 border border-red-200 text-red-700'
+          }`}>
+            <div className="flex items-center">
+              {notification.type === 'success' ? (
+                <CheckCircle className={`w-5 h-5 mr-3 ${
+                  isDarkMode ? 'text-green-400' : 'text-green-500'
+                }`} />
+              ) : (
+                <AlertCircle className={`w-5 h-5 mr-3 ${
+                  isDarkMode ? 'text-red-400' : 'text-red-500'
+                }`} />
+              )}
+              <p>{notification.message}</p>
             </div>
           </div>
+        )}
 
-          {/* Order Summary */}
-          <div>
-            <Card className="sticky top-6">
-              <CardContent className="p-6">
-                <h2 className="text-lg font-semibold mb-6 text-black">Order Summary</h2>
-                
-                <div className="space-y-3 mb-6">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Subtotal</span>
-                    <span className="font-medium text-black">{formatCurrency(cartTotal)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Shipping</span>
-                    <span className="font-medium text-black">{formatCurrency(0)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Tax</span>
-                    <span className="font-medium text-black">{formatCurrency(0)}</span>
-                  </div>
-                  <div className="border-t pt-3 flex justify-between">
-                    <span className="font-semibold text-lg text-black">Total</span>
-                    <span className="font-bold text-xl text-blue-600">
-                      {formatCurrency(cartTotal)}
-                    </span>
-                  </div>
-                </div>
-
-                {hasUnansweredRequiredQuestions() && (
-                  <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                    <div className="flex items-start">
-                      <AlertCircle className="w-5 h-5 text-amber-500 mr-2 mt-0.5" />
-                      <div>
-                        <p className="text-sm text-amber-800 font-medium">
-                          Answer Required Questions
-                        </p>
-                        <p className="text-xs text-amber-700 mt-1">
-                          Please answer all required seller questions before checkout.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
+        {cartItems.length > 0 ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Cart Items */}
+            <div className="lg:col-span-2">
+              <div className="flex justify-between items-center mb-2">
+                <h2 className={`text-lg font-semibold ${
+                  isDarkMode ? 'text-gray-100' : 'text-gray-900'
+                }`}>Cart Items</h2>
                 <button
-                  onClick={handleCheckout}
-                  disabled={hasUnansweredRequiredQuestions() || checkoutLoading}
-                  className={`w-full py-3 rounded-lg font-semibold transition-colors mb-4 flex items-center justify-center ${
-                    hasUnansweredRequiredQuestions() || checkoutLoading
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                  onClick={clearCart}
+                  className={`text-sm flex items-center ${
+                    isDarkMode 
+                      ? 'text-red-400 hover:text-red-300' 
+                      : 'text-red-600 hover:text-red-700'
                   }`}
                 >
-                  {checkoutLoading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Processing...
-                    </>
-                  ) : hasUnansweredRequiredQuestions() ? (
-                    'Answer Questions to Checkout'
-                  ) : (
-                    'Proceed to Checkout'
-                  )}
-                </button>
-
-                <div className="text-center">
-                  <Link
-                    to="/"
-                    className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                  >
-                    Continue Shopping
-                  </Link>
-                </div>
-
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <div className="space-y-4">
-                    <div className="flex items-start">
-                      <CreditCard className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm font-medium text-black">Secure Payment</p>
-                        <p className="text-xs text-gray-600">100% secure payment</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <Truck className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm font-medium text-black">Easy Returns</p>
-                        <p className="text-xs text-gray-600">30-day return policy</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      ) : (
-        <div className="text-center py-12">
-          <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">
-            Your cart is empty
-          </h3>
-          <p className="text-gray-600 mb-6">
-            Add some products to your cart and they will appear here!
-          </p>
-          <div className="space-x-4">
-            <Link
-              to="/"
-              className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Browse Products
-            </Link>
-            <Link
-              to="/account"
-              className="inline-flex items-center px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-            >
-              Go to Account
-            </Link>
-          </div>
-        </div>
-      )}
-
-      {/* Questions Modal */}
-      {openQuestionModal && (
-        <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={() => setOpenQuestionModal(null)}
-        >
-          <div
-            className="bg-white rounded-xl max-w-md w-full max-h-[80vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="sticky top-0 bg-white border-b border-gray-200 p-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-lg text-black">Seller Questions</h3>
-                <button
-                  onClick={() => setOpenQuestionModal(null)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <X className="w-5 h-5" />
+                  <Trash2 className="w-4 h-4 mr-1" />
+                  Clear All
                 </button>
               </div>
+
+              <div className="space-y-4">
+                {cartItems.map((item) => {
+                  const productImage = getProductImage(item.product);
+                  const hasQuestions = getProductQuestions(item.product).length > 0;
+                  const allRequiredAnswered = areAllRequiredQuestionsAnswered(item.product);
+                  
+                  return (
+                    <Card key={item.id} className="overflow-hidden">
+                      <CardContent className="p-4">
+                        <div className="flex">
+                          {/* Product Image */}
+                          <div className="w-24 h-24 flex-shrink-0 mr-4">
+                            <img
+                              src={productImage}
+                              alt={item.product.name}
+                              className="w-full h-full object-cover rounded-lg"
+                              onError={(e) => {
+                                console.log('Image failed to load:', productImage);
+                                e.target.src = '/sample1.jpg';
+                              }}
+                            />
+                          </div>
+
+                          {/* Product Details */}
+                          <div className="flex-1">
+                            <div className="flex justify-between">
+                              <div>
+                                <Link 
+                                  to={`/product/${item.product.id}`}
+                                  className={`font-semibold hover:underline ${
+                                    isDarkMode ? 'text-gray-200' : 'text-gray-900'
+                                  }`}
+                                >
+                                  {item.product.name}
+                                </Link>
+                                <p className={`text-sm mt-1 ${
+                                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                                }`}>
+                                  {formatCurrency(item.product.unit_price)}
+                                </p>
+                                <p className={`text-sm mt-1 ${
+                                  isDarkMode ? 'text-green-400' : 'text-green-600'
+                                }`}>
+                                  Subtotal: {formatCurrency(item.subtotal || (item.quantity * item.product.unit_price))}
+                                </p>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                {hasQuestions && (
+                                  <button
+                                    onClick={() => setOpenQuestionModal(item.product.id)}
+                                    className={`p-2 rounded-full hover:opacity-80 transition-opacity ${
+                                      allRequiredAnswered 
+                                        ? isDarkMode
+                                          ? 'bg-green-900/30 text-green-400 hover:bg-green-900/50'
+                                          : 'bg-green-100 text-green-600 hover:bg-green-200'
+                                        : isDarkMode
+                                          ? 'bg-blue-900/30 text-blue-400 hover:bg-blue-900/50'
+                                          : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+                                    }`}
+                                    title={allRequiredAnswered ? "All questions answered" : "Answer seller questions"}
+                                  >
+                                    {allRequiredAnswered ? (
+                                      <CheckCircle className="w-5 h-5" />
+                                    ) : (
+                                      <HelpCircle className="w-5 h-5" />
+                                    )}
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => removeFromCart(item.product.id)}
+                                  className={`p-1 transition-colors ${
+                                    isDarkMode 
+                                      ? 'text-gray-500 hover:text-red-400' 
+                                      : 'text-gray-400 hover:text-red-500'
+                                  }`}
+                                >
+                                  <X className="w-5 h-5" />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Quantity Controls */}
+                            <div className="flex items-center justify-between mt-4">
+                              <div className="flex items-center space-x-2">
+                                <button
+                                  onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                                  className={`p-1 rounded-full border transition-colors ${
+                                    isDarkMode 
+                                      ? 'border-gray-600 hover:bg-gray-700 text-gray-300' 
+                                      : 'border-gray-300 hover:bg-gray-100 text-gray-700'
+                                  }`}
+                                >
+                                  <Minus className="w-4 h-4" />
+                                </button>
+                                <span className={`w-12 text-center font-medium ${
+                                  isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                                }`}>
+                                  {item.quantity}
+                                </span>
+                                <button
+                                  onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                                  className={`p-1 rounded-full border transition-colors ${
+                                    isDarkMode 
+                                      ? 'border-gray-600 hover:bg-gray-700 text-gray-300' 
+                                      : 'border-gray-300 hover:bg-gray-100 text-gray-700'
+                                  }`}
+                                >
+                                  <Plus className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
             </div>
-            
-            <div className="p-4">
-              {(() => {
-                const cartItem = cartItems.find(item => item.product.id === openQuestionModal);
-                if (!cartItem) return null;
-                
-                const product = cartItem.product;
-                const questions = getProductQuestions(product);
-                const answers = questionAnswers[product.id] || {};
-                
-                return (
-                  <div className="space-y-6">
-                    <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                      <img
-                        src={getProductImage(product)}
-                        alt={product.name}
-                        className="w-12 h-12 object-cover rounded-lg"
-                        onError={(e) => e.target.src = '/sample1.jpg'}
-                      />
-                      <div>
-                        <p className="font-medium text-black">{product.name}</p>
-                        <p className="text-sm text-gray-600">Qty: {cartItem.quantity}</p>
+
+            {/* Order Summary */}
+            <div>
+              <Card className="sticky top-6">
+                <CardContent className="p-6">
+                  <h2 className={`text-lg font-semibold mb-6 ${
+                    isDarkMode ? 'text-gray-100' : 'text-gray-900'
+                  }`}>Order Summary</h2>
+                  
+                  <div className="space-y-3 mb-6">
+                    <div className="flex justify-between">
+                      <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Subtotal</span>
+                      <span className={`font-medium ${
+                        isDarkMode ? 'text-gray-200' : 'text-gray-900'
+                      }`}>{formatCurrency(cartTotal)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Shipping</span>
+                      <span className={`font-medium ${
+                        isDarkMode ? 'text-gray-200' : 'text-gray-900'
+                      }`}>{formatCurrency(0)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Tax</span>
+                      <span className={`font-medium ${
+                        isDarkMode ? 'text-gray-200' : 'text-gray-900'
+                      }`}>{formatCurrency(0)}</span>
+                    </div>
+                    <div className={`border-t pt-3 flex justify-between ${
+                      isDarkMode ? 'border-gray-700' : 'border-gray-200'
+                    }`}>
+                      <span className={`font-semibold text-lg ${
+                        isDarkMode ? 'text-gray-100' : 'text-gray-900'
+                      }`}>Total</span>
+                      <span className={`font-bold text-xl ${
+                        isDarkMode ? 'text-blue-400' : 'text-blue-600'
+                      }`}>
+                        {formatCurrency(cartTotal)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {hasUnansweredRequiredQuestions() && (
+                    <div className={`mb-4 p-3 rounded-lg ${
+                      isDarkMode 
+                        ? 'bg-amber-900/30 border border-amber-800' 
+                        : 'bg-amber-50 border border-amber-200'
+                    }`}>
+                      <div className="flex items-start">
+                        <AlertCircle className={`w-5 h-5 mr-2 mt-0.5 ${
+                          isDarkMode ? 'text-amber-400' : 'text-amber-500'
+                        }`} />
+                        <div>
+                          <p className={`text-sm font-medium ${
+                            isDarkMode ? 'text-amber-400' : 'text-amber-800'
+                          }`}>
+                            Answer Required Questions
+                          </p>
+                          <p className={`text-xs mt-1 ${
+                            isDarkMode ? 'text-amber-400/80' : 'text-amber-700'
+                          }`}>
+                            Please answer all required seller questions before checkout.
+                          </p>
+                        </div>
                       </div>
                     </div>
-                    
-                    <div className="space-y-4">
-                      {questions.map((q) => (
-                        <div key={q.id} className="border border-gray-200 rounded-lg p-4">
-                          <div className="flex justify-between items-start mb-3">
-                            <div>
-                              <p className="font-medium text-black">{q.question_text}</p>
-                              {q.required && (
-                                <span className="text-xs text-red-500 font-medium mt-1">Required</span>
-                              )}
-                            </div>
-                            {answers[q.id] && answers[q.id].trim() !== '' && (
-                              <CheckCircle className="w-5 h-5 text-green-500" />
-                            )}
-                          </div>
-                          
-                          {q.question_type === 'text' ? (
-                            <textarea
-                              value={answers[q.id] || ''}
-                              onChange={(e) => handleAnswerChange(product.id, q.id, e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 text-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              rows={3}
-                              placeholder="Type your answer here..."
-                            />
-                          ) : q.question_type === 'multi-select' && q.options ? (
-                            <div className="space-y-2">
-                              {q.options.map((option, index) => {
-                                const optionId = `q-${q.id}-opt-${index}`;
-                                const isChecked = answers[q.id] === option.option_text;
-                                return (
-                                  <label key={index} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
-                                    <CustomCheckbox
-                                      id={optionId}
-                                      checked={isChecked}
-                                      onChange={(val) => handleAnswerChange(product.id, q.id, val)}
-                                      value={option.option_text}
-                                    />
-                                    <span className="text-gray-700">{option.option_text}</span>
-                                  </label>
-                                );
-                              })}
-                            </div>
-                          ) : null}
-                        </div>
-                      ))}
-                    </div>
-                    
-                    <button
-                      onClick={() => saveAnswers(product.id)}
-                      className="w-full py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
+                  )}
+
+                  <button
+                    onClick={handleCheckout}
+                    disabled={hasUnansweredRequiredQuestions() || checkoutLoading}
+                    className={`w-full py-3 rounded-lg font-semibold transition-colors mb-4 flex items-center justify-center ${
+                      hasUnansweredRequiredQuestions() || checkoutLoading
+                        ? isDarkMode
+                          ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                          : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                    }`}
+                  >
+                    {checkoutLoading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : hasUnansweredRequiredQuestions() ? (
+                      'Answer Questions to Checkout'
+                    ) : (
+                      'Proceed to Checkout'
+                    )}
+                  </button>
+
+                  <div className="text-center">
+                    <Link
+                      to="/"
+                      className={`text-sm font-medium hover:underline ${
+                        isDarkMode ? 'text-blue-400' : 'text-blue-600'
+                      }`}
                     >
-                      <Save className="w-5 h-5 mr-2" />
-                      Save Answers
-                    </button>
+                      Continue Shopping
+                    </Link>
                   </div>
-                );
-              })()}
+
+                  <div className={`mt-6 pt-6 border-t ${
+                    isDarkMode ? 'border-gray-700' : 'border-gray-200'
+                  }`}>
+                    <div className="space-y-4">
+                      <div className="flex items-start">
+                        <CreditCard className={`w-5 h-5 mr-3 flex-shrink-0 ${
+                          isDarkMode ? 'text-gray-500' : 'text-gray-400'
+                        }`} />
+                        <div>
+                          <p className={`text-sm font-medium ${
+                            isDarkMode ? 'text-gray-200' : 'text-gray-900'
+                          }`}>Secure Payment</p>
+                          <p className={`text-xs ${
+                            isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                          }`}>100% secure payment</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <Truck className={`w-5 h-5 mr-3 flex-shrink-0 ${
+                          isDarkMode ? 'text-gray-500' : 'text-gray-400'
+                        }`} />
+                        <div>
+                          <p className={`text-sm font-medium ${
+                            isDarkMode ? 'text-gray-200' : 'text-gray-900'
+                          }`}>Easy Returns</p>
+                          <p className={`text-xs ${
+                            isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                          }`}>30-day return policy</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="text-center py-12">
+            <ShoppingCart className={`w-16 h-16 mx-auto mb-4 ${
+              isDarkMode ? 'text-gray-600' : 'text-gray-300'
+            }`} />
+            <h3 className={`text-xl font-semibold mb-2 ${
+              isDarkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              Your cart is empty
+            </h3>
+            <p className={`mb-6 ${
+              isDarkMode ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+              Add some products to your cart and they will appear here!
+            </p>
+            <div className="space-x-4">
+              <Link
+                to="/"
+                className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Browse Products
+              </Link>
+              <Link
+                to="/account"
+                className={`inline-flex items-center px-6 py-3 rounded-lg transition-colors ${
+                  isDarkMode 
+                    ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' 
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Go to Account
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Questions Modal */}
+        {openQuestionModal && (
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setOpenQuestionModal(null)}
+          >
+            <div
+              className={`rounded-xl max-w-md w-full max-h-[80vh] overflow-y-auto ${
+                isDarkMode ? 'bg-gray-800' : 'bg-white'
+              }`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className={`sticky top-0 border-b p-4 ${
+                isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <h3 className={`font-semibold text-lg ${
+                    isDarkMode ? 'text-gray-100' : 'text-gray-900'
+                  }`}>Seller Questions</h3>
+                  <button
+                    onClick={() => setOpenQuestionModal(null)}
+                    className={`transition-colors ${
+                      isDarkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'
+                    }`}
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+              
+              <div className="p-4">
+                {(() => {
+                  const cartItem = cartItems.find(item => item.product.id === openQuestionModal);
+                  if (!cartItem) return null;
+                  
+                  const product = cartItem.product;
+                  const questions = getProductQuestions(product);
+                  const answers = questionAnswers[product.id] || {};
+                  
+                  return (
+                    <div className="space-y-6">
+                      <div className={`flex items-center space-x-3 p-3 rounded-lg ${
+                        isDarkMode ? 'bg-gray-700' : 'bg-gray-50'
+                      }`}>
+                        <img
+                          src={getProductImage(product)}
+                          alt={product.name}
+                          className="w-12 h-12 object-cover rounded-lg"
+                          onError={(e) => e.target.src = '/sample1.jpg'}
+                        />
+                        <div>
+                          <p className={`font-medium ${
+                            isDarkMode ? 'text-gray-200' : 'text-gray-900'
+                          }`}>{product.name}</p>
+                          <p className={`text-sm ${
+                            isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                          }`}>Qty: {cartItem.quantity}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        {questions.map((q) => (
+                          <div key={q.id} className={`border rounded-lg p-4 ${
+                            isDarkMode ? 'border-gray-700' : 'border-gray-200'
+                          }`}>
+                            <div className="flex justify-between items-start mb-3">
+                              <div>
+                                <p className={`font-medium ${
+                                  isDarkMode ? 'text-gray-200' : 'text-gray-900'
+                                }`}>{q.question_text}</p>
+                                {q.required && (
+                                  <span className="text-xs text-red-500 font-medium mt-1">Required</span>
+                                )}
+                              </div>
+                              {answers[q.id] && answers[q.id].trim() !== '' && (
+                                <CheckCircle className="w-5 h-5 text-green-500" />
+                              )}
+                            </div>
+                            
+                            {q.question_type === 'text' ? (
+                              <textarea
+                                value={answers[q.id] || ''}
+                                onChange={(e) => handleAnswerChange(product.id, q.id, e.target.value)}
+                                className={`w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                                  isDarkMode 
+                                    ? 'bg-gray-700 border-gray-600 text-gray-100 focus:border-blue-400' 
+                                    : 'border-gray-300 text-gray-900 focus:border-blue-500'
+                                }`}
+                                rows={3}
+                                placeholder="Type your answer here..."
+                              />
+                            ) : q.question_type === 'multi-select' && q.options ? (
+                              <div className="space-y-2">
+                                {q.options.map((option, index) => {
+                                  const optionId = `q-${q.id}-opt-${index}`;
+                                  const isChecked = answers[q.id] === option.option_text;
+                                  return (
+                                    <label key={index} className={`flex items-center space-x-3 p-2 rounded cursor-pointer ${
+                                      isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'
+                                    }`}>
+                                      <CustomCheckbox
+                                        id={optionId}
+                                        checked={isChecked}
+                                        onChange={(val) => handleAnswerChange(product.id, q.id, val)}
+                                        value={option.option_text}
+                                        isDarkMode={isDarkMode}
+                                      />
+                                      <span className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
+                                        {option.option_text}
+                                      </span>
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            ) : null}
+                          </div>
+                        ))}
+                      </div>
+                      
+                      <button
+                        onClick={() => saveAnswers(product.id)}
+                        className="w-full py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
+                      >
+                        <Save className="w-5 h-5 mr-2" />
+                        Save Answers
+                      </button>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

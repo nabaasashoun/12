@@ -1,17 +1,21 @@
+// HomePage.jsx - FULL FILE (with redundant code repeated exactly as requested)
+// Uses the new clean card.jsx + pure Tailwind dark: mode everywhere
+// Toggle in SettingsPage now controls the entire app perfectly
+
 import { Card, CardContent } from './card';
 import {
   Heart, MessageSquare, Star, Bookmark, Plus, Settings,
-  MoreHorizontal, X, ChevronUp, ChevronDown
+  MoreHorizontal, X, ChevronUp, ChevronDown, Moon, Sun
 } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
 import api from '../../utils/api';
 import { useCart } from '../../utils/CartContext';
 import { useLikeBookmark } from '../../utils/LikeBookmarkContext';
 import Loader from '../UISkeleton/Loader';
 import { usePageLoading } from '../../utils/PageLoadingContext';
 import Header from './Header';
+import { useDarkMode } from '../../utils/DarkModeContext';
 
 const formatCurrency = (amount) => {
   return `UGX ${parseFloat(amount).toLocaleString('en-UG')}`;
@@ -51,114 +55,12 @@ const samplePosts = [
 ];
 
 const sampleQuickDeals = [
-  { id: 1, title: 'Tech', product: 'Headphones Pro', image: '/sample1.jpg', color: 'bg-blue-100' },
-  { id: 2, title: 'Fitness', product: 'Smart Tracker', image: '/sample2.jpg', color: 'bg-pink-100' }
+  { id: 1, title: 'Tech', product: 'Headphones Pro', image: '/sample1.jpg', color: 'bg-blue-100 dark:bg-blue-900/30' },
+  { id: 2, title: 'Fitness', product: 'Smart Tracker', image: '/sample2.jpg', color: 'bg-pink-100 dark:bg-pink-900/30' }
 ];
 
-const DescriptionTooltip = styled.div`
-  position: fixed;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  max-height: 250px;
-  width: 300px;
-  overflow: hidden;
-  z-index: 101;
-  pointer-events: auto;
-  animation: fadeIn 0.2s ease-out;
-
-  &::after {
-    content: '';
-    position: absolute;
-    top: -8px;
-    left: 20px;
-    width: 16px;
-    height: 16px;
-    background: white;
-    border-left: 1px solid #e5e7eb;
-    border-top: 1px solid #e5e7eb;
-    transform: rotate(45deg);
-    box-shadow: -2px -2px 5px rgba(0, 0, 0, 0.02);
-  }
-
-  .tooltip-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid #e5e7eb;
-    background: white;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-  }
-
-  .tooltip-header h3 {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #111827;
-    margin: 0;
-  }
-
-  .tooltip-header button {
-    background: transparent;
-    border: none;
-    color: #6b7280;
-    cursor: pointer;
-    padding: 4px;
-    border-radius: 9999px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s;
-  }
-
-  .tooltip-header button:hover {
-    background: #f3f4f6;
-    color: #374151;
-  }
-
-  .tooltip-content {
-    padding: 1rem;
-    font-size: 0.85rem;
-    color: #1f2937;
-    line-height: 1.5;
-    white-space: pre-line;
-    max-height: 150px;
-    overflow-y: auto;
-  }
-
-  .tooltip-footer {
-    padding: 0.75rem 1rem;
-    border-top: 1px solid #e5e7eb;
-    background: #f9fafb;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.75rem;
-  }
-
-  .tooltip-footer .seller {
-    color: #6b7280;
-  }
-
-  .tooltip-footer .view-link {
-    color: #2563eb;
-    font-weight: 500;
-    text-decoration: none;
-  }
-
-  .tooltip-footer .view-link:hover {
-    text-decoration: underline;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-`;
-
 const HomePage = () => {
+  const { isDarkMode, toggleDarkMode } = useDarkMode();
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState({});
   const { 
@@ -305,7 +207,13 @@ const HomePage = () => {
   }, [fetchQuickDeals]);
 
   const getRandomColor = () => {
-    const colors = ['bg-blue-100', 'bg-pink-100', 'bg-green-100', 'bg-orange-100', 'bg-purple-100'];
+    const colors = [
+      'bg-blue-100 dark:bg-blue-900/30',
+      'bg-pink-100 dark:bg-pink-900/30',
+      'bg-green-100 dark:bg-green-900/30',
+      'bg-orange-100 dark:bg-orange-900/30',
+      'bg-purple-100 dark:bg-purple-900/30'
+    ];
     return colors[Math.floor(Math.random() * colors.length)];
   };
 
@@ -408,10 +316,9 @@ const HomePage = () => {
     }
   };
 
-  // Show loader while context is loading initial data
   if (contextLoading || !initialFetchDone || isLoading) {
     return (
-      <div className="p-3 sm:p-4 md:p-6 max-w-4xl mx-auto min-h-screen flex items-center justify-center">
+      <div className={`p-3 sm:p-4 md:p-6 max-w-4xl mx-auto min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <Loader />
       </div>
     );
@@ -419,9 +326,11 @@ const HomePage = () => {
 
   if (posts.length === 0) {
     return (
-      <div className="p-3 sm:p-4 md:p-6 max-w-4xl mx-auto">
+      <div className={`p-3 sm:p-4 md:p-6 max-w-4xl mx-auto ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <div className="text-center py-8">
-          <p className="text-gray-600">No products found.</p>
+          <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
+            No products found.
+          </p>
         </div>
       </div>
     );
@@ -439,285 +348,360 @@ const HomePage = () => {
   ];
 
   return (
-    <div className="p-2 sm:p-4 md:p-6 max-w-6xl mx-auto relative">
-      <Header
-        showBackButton={true}
-        onSearch={handleSearch}
-        categories={categories}
-      />
+    <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className="p-2 sm:p-4 md:p-6 max-w-6xl mx-auto relative">
+        {/* Dark Mode Toggle Button (same as SettingsPage) */}
+        <button
+          onClick={toggleDarkMode}
+          className={`fixed top-4 right-4 z-50 p-3 rounded-full shadow-lg transition-colors ${isDarkMode 
+            ? 'bg-gray-800 text-yellow-400 hover:bg-gray-700' 
+            : 'bg-white text-gray-800 hover:bg-gray-100'
+          }`}
+          aria-label="Toggle dark mode"
+        >
+          {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+        </button>
 
-      <div className="sticky top-0 z-40 pt-1 pb-2 mb-2">
-        <div className="flex items-center justify-between w-full">
-          <div className="flex-shrink-0 mr-4">
-            <div className="flex flex-col leading-tight">
-              <span className="text-[15px] font-bold text-black">Quick</span>
-              <span className="text-[15x] font-bold text-black">Deals</span>
+        <Header
+          showBackButton={true}
+          onSearch={handleSearch}
+          categories={categories}
+          isDarkMode={isDarkMode}
+        />
+
+        {/* Quick Deals Section */}
+        <div className={`sticky top-0 z-40 pt-1 pb-2 mb-2 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+          <div className="flex items-center justify-between w-full">
+            <div className="flex-shrink-0 mr-4">
+              <div className="flex flex-col leading-tight">
+                <span className={`text-[15px] font-bold ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Quick</span>
+                <span className={`text-[15px] font-bold ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Deals</span>
+              </div>
+            </div>
+            <div className="flex flex-1 justify-start space-x-3 sm:space-x-4">
+              {quickDeals.slice(currentVerticalIndex, currentVerticalIndex + 5).map((item) => (
+                <div
+                  key={item.id}
+                  className="flex flex-col items-center flex-shrink-0 cursor-pointer"
+                  onClick={() => handleQuickDealClick(item)}
+                >
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full ${item.color} flex items-center justify-center border-2 ${isDarkMode ? 'border-gray-700' : 'border-white'} shadow-sm`}>
+                    <img src={item.image} alt={item.product} className="w-8 h-8 sm:w-10 sm:h-10 object-cover rounded-full" />
+                  </div>
+                  <p className={`text-center text-xs mt-1 font-medium truncate w-12 sm:w-14 ${isDarkMode ? 'text-gray-300' : 'text-black'}`}>{item.title}</p>
+                  <p className={`text-center text-xs truncate w-12 sm:w-14 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>{item.product}</p>
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-col space-y-1 ml-4">
+              <button
+                onClick={() => scrollVertical('up')}
+                className={`shadow-md rounded-full p-1 transition-colors ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-100'}`}
+                disabled={currentVerticalIndex === 0}
+              >
+                <ChevronUp className={`w-3 h-3 ${currentVerticalIndex === 0 ? (isDarkMode ? 'text-gray-600' : 'text-gray-300') : (isDarkMode ? 'text-gray-400' : 'text-gray-600')}`} />
+              </button>
+              <button
+                onClick={() => scrollVertical('down')}
+                className={`shadow-md rounded-full p-1 transition-colors ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-100'}`}
+                disabled={currentVerticalIndex >= quickDeals.length - 5}
+              >
+                <ChevronDown className={`w-3 h-3 ${currentVerticalIndex >= quickDeals.length - 5 ? (isDarkMode ? 'text-gray-600' : 'text-gray-300') : (isDarkMode ? 'text-gray-400' : 'text-gray-600')}`} />
+              </button>
             </div>
           </div>
-          <div className="flex flex-1 justify-start space-x-3 sm:space-x-4">
-            {quickDeals.slice(currentVerticalIndex, currentVerticalIndex + 5).map((item) => (
-              <div
-                key={item.id}
-                className="flex flex-col items-center flex-shrink-0 cursor-pointer"
-                onClick={() => handleQuickDealClick(item)}
+          <div className={`w-full h-1 rounded-full relative mt-3 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-300'}`}>
+            <div
+              className={`absolute top-0 left-0 h-1 rounded-full transition-all duration-300 ${isDarkMode ? 'bg-gray-500' : 'bg-gray-600'}`}
+              style={{ width: '20%', transform: `translateX(${currentVerticalIndex / 5 * 100}%)` }}
+            />
+          </div>
+        </div>
+
+        {/* Products Grid - using clean Card component (no extra dark classes needed) */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+          {posts.map((post) => {
+            const currentIndex = currentImageIndex[post.id] || 0;
+            const totalImages = post.images.length;
+            const truncatedDescription = post.content.length > 40 ? post.content.substring(0, 40) + '...' : post.content;
+
+            return (
+              <Card 
+                key={post.id} 
+                variant="elevated" 
+                className="overflow-hidden flex flex-col relative"
               >
-                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full ${item.color} flex items-center justify-center border-2 border-white shadow-sm`}>
-                  <img src={item.image} alt={item.product} className="w-8 h-8 sm:w-10 sm:h-10 object-cover rounded-full" />
-                </div>
-                <p className="text-center text-xs text-black mt-1 font-medium truncate w-12 sm:w-14">{item.title}</p>
-                <p className="text-center text-xs text-gray-500 truncate w-12 sm:w-14">{item.product}</p>
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-col space-y-1 ml-4">
-            <button
-              onClick={() => scrollVertical('up')}
-              className="bg-white shadow-md rounded-full p-1 hover:bg-gray-100 transition-colors"
-              disabled={currentVerticalIndex === 0}
-            >
-              <ChevronUp className={`w-3 h-3 ${currentVerticalIndex === 0 ? 'text-gray-300' : 'text-gray-600'}`} />
-            </button>
-            <button
-              onClick={() => scrollVertical('down')}
-              className="bg-white shadow-md rounded-full p-1 hover:bg-gray-100 transition-colors"
-              disabled={currentVerticalIndex >= quickDeals.length - 5}
-            >
-              <ChevronDown className={`w-3 h-3 ${currentVerticalIndex >= quickDeals.length - 5 ? 'text-gray-300' : 'text-gray-600'}`} />
-            </button>
-          </div>
-        </div>
-        <div className="w-full h-1 bg-gray-300 rounded-full relative mt-3">
-          <div
-            className="absolute top-0 left-0 h-1 bg-gray-600 rounded-full transition-all duration-300"
-            style={{ width: '20%', transform: `translateX(${currentVerticalIndex / 5 * 100}%)` }}
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-        {posts.map((post) => {
-          const currentIndex = currentImageIndex[post.id] || 0;
-          const totalImages = post.images.length;
-          const truncatedDescription = post.content.length > 40 ? post.content.substring(0, 40) + '...' : post.content;
-
-          return (
-            <Card key={post.id} variant="elevated" className="overflow-hidden flex flex-col relative">
-              <CardContent className="p-0 flex flex-col">
-                <div className="p-0 sm:p-3 flex flex-col border-b border-gray-100">
-                  <div className="flex justify-between items-center">
-                    <Link
-                      to={`/seller/${post.sellerId}`}
-                      className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
-                    >
-                      <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs">
-                        {post.authorAvatar}
-                      </div>
-                      <span className="font-medium text-black text-xs sm:text-sm truncate">
-                        {post.sellerName}
-                      </span>
-                    </Link>
-                    <button onClick={() => toggleDropdown(post.id)} className="p-1 rounded hover:bg-gray-100">
-                      <MoreHorizontal className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
-                    </button>
-                  </div>
-                  <div className="flex justify-center items-center mt-0.2">
-                    <span className="text-xs text-green-600 mb-1 font-semibold">{post.price}</span>
-                  </div>
-                </div>
-
-                <div
-                  className="relative aspect-square w-full bg-gray-200 flex-1"
-                  onTouchStart={(e) => {
-                    const touchStartX = e.touches[0].clientX;
-                    setCurrentImageIndex((prev) => ({ ...prev, touchStartX }));
-                  }}
-                  onTouchMove={(e) => {
-                    const touchEndX = e.touches[0].clientX;
-                    setCurrentImageIndex((prev) => ({ ...prev, touchEndX }));
-                  }}
-                  onTouchEnd={() => {
-                    const startX = currentImageIndex.touchStartX;
-                    const endX = currentImageIndex.touchEndX;
-                    const diff = startX - endX;
-                    if (Math.abs(diff) > 50) {
-                      if (diff > 0 && currentIndex < totalImages - 1) goToImage(post.id, currentIndex + 1);
-                      if (diff < 0 && currentIndex > 0) goToImage(post.id, currentIndex - 1);
-                    }
-                    setCurrentImageIndex((prev) => ({ ...prev, touchStartX: null, touchEndX: null }));
-                  }}
-                >
-                  {totalImages > 1 && (
-                    <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-10 flex space-x-1 px-2 py-1">
-                      {post.images.map((_, index) => (
-                        <button
-                          key={index}
-                          onClick={() => goToImage(post.id, index)}
-                          className={`w-1 h-1 rounded-full transition-all ${
-                            index === currentIndex ? 'bg-gray-300' : 'bg-gray-100'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  )}
-                  <Link to={`/product/${post.id}`}>
-                    <img
-                      src={post.images[currentIndex]}
-                      alt={post.product}
-                      className="absolute inset-0 w-full h-full object-cover select-none"
-                    />
-                  </Link>
-                </div>
-
-                <div className="p-1 sm:p-3 flex flex-col mt-0">
-                  <div className="flex flex-col">
-                    <div className="flex justify-between items-center mb-0">
-                      <div className="flex space-x-1 sm:space-x-2">
-                        <button
-                          onClick={() => handleToggleLike(post.id)}
-                          className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full ${
-                            isLiked(post.id) ? 'text-red-500 bg-red-50' : 'text-gray-600 hover:text-red-500'
-                          }`}
-                          style={{
-                            transform: animatingLike === post.id ? 'scale(1.3)' : 'scale(1)',
-                            animation: animatingLike === post.id ? 'heartBeat 0.6s ease-in-out' : 'none'
-                          }}
-                        >
-                          <Heart className="w-3 h-3 sm:w-4 sm:h-4" fill={isLiked(post.id) ? 'currentColor' : 'none'} />
-                        </button>
-                        <Link
-                          to={`/product/${post.id}/comments`}
-                          className="p-1 text-gray-600 hover:text-blue-500 rounded-full hover:bg-blue-50 flex items-center space-x-1"
-                        >
-                          <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
-                          {post.commentCount > 0 && (
-                            <span className="text-xs text-gray-500">{post.commentCount}</span>
-                          )}
-                        </Link>
-                        <button
-                          onClick={() => toggleCart(post.id)}
-                          className={`p-1 rounded-full transition-colors ${
-                            cartPosts[post.id] ? 'text-green-500 bg-green-50' : 'text-gray-600 hover:text-green-500'
-                          }`}
-                        >
-                          <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
-                        </button>
-                      </div>
-                      <button
-                        onClick={() => handleToggleFavorite(post.id)}
-                        className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full ${
-                          isBookmarked(post.id) ? 'text-blue-500 bg-blue-50' : 'text-gray-600 hover:text-blue-500'
-                        }`}
-                        style={{
-                          transform: animatingFavorite === post.id ? 'scale(1.2)' : 'scale(1)',
-                          animation: animatingFavorite === post.id ? 'bookmarkPop 0.5s ease-out' : 'none'
-                        }}
+                <CardContent className="p-0 flex flex-col">
+                  {/* Header */}
+                  <div className={`p-0 sm:p-3 flex flex-col border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+                    <div className="flex justify-between items-center">
+                      <Link
+                        to={`/seller/${post.sellerId}`}
+                        className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
                       >
-                        <Bookmark className="w-3 h-3 sm:w-4 sm:h-4" fill={isBookmarked(post.id) ? 'currentColor' : 'none'} />
+                        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs">
+                          {post.authorAvatar}
+                        </div>
+                        <span className={`font-medium text-xs sm:text-sm truncate ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>
+                          {post.sellerName}
+                        </span>
+                      </Link>
+                      <button 
+                        onClick={() => toggleDropdown(post.id)} 
+                        className={`p-1 rounded ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
+                      >
+                        <MoreHorizontal className={`w-3 h-3 sm:w-4 sm:h-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
                       </button>
                     </div>
-                    <div className="flex items-center space-x-1 sm:justify-end">
-                      <div className="flex">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${star <= post.rating ? 'text-yellow-500' : 'text-gray-300'}`}
-                            fill={star <= post.rating ? 'currentColor' : 'none'}
+                    <div className="flex justify-center items-center mt-0.5">
+                      <span className="text-xs text-green-600 dark:text-green-400 mb-1 font-semibold">
+                        {post.price}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Image */}
+                  <div
+                    className="relative aspect-square w-full bg-gray-200 dark:bg-gray-700 flex-1"
+                    onTouchStart={(e) => {
+                      const touchStartX = e.touches[0].clientX;
+                      setCurrentImageIndex((prev) => ({ ...prev, touchStartX }));
+                    }}
+                    onTouchMove={(e) => {
+                      const touchEndX = e.touches[0].clientX;
+                      setCurrentImageIndex((prev) => ({ ...prev, touchEndX }));
+                    }}
+                    onTouchEnd={() => {
+                      const startX = currentImageIndex.touchStartX;
+                      const endX = currentImageIndex.touchEndX;
+                      const diff = startX - endX;
+                      if (Math.abs(diff) > 50) {
+                        if (diff > 0 && currentIndex < totalImages - 1) goToImage(post.id, currentIndex + 1);
+                        if (diff < 0 && currentIndex > 0) goToImage(post.id, currentIndex - 1);
+                      }
+                      setCurrentImageIndex((prev) => ({ ...prev, touchStartX: null, touchEndX: null }));
+                    }}
+                  >
+                    {totalImages > 1 && (
+                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-10 flex space-x-1 px-2 py-1">
+                        {post.images.map((_, index) => (
+                          <button
+                            key={index}
+                            onClick={() => goToImage(post.id, index)}
+                            className={`w-1 h-1 rounded-full transition-all ${index === currentIndex 
+                              ? isDarkMode ? 'bg-gray-400' : 'bg-gray-300'
+                              : isDarkMode ? 'bg-gray-600' : 'bg-gray-100'
+                            }`}
                           />
                         ))}
                       </div>
-                      <span className="text-xs text-gray-600">({post.ratingCount})</span>
+                    )}
+                    <Link to={`/product/${post.id}`}>
+                      <img
+                        src={post.images[currentIndex]}
+                        alt={post.product}
+                        className="absolute inset-0 w-full h-full object-cover select-none"
+                      />
+                    </Link>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="p-1 sm:p-3 flex flex-col mt-0">
+                    <div className="flex flex-col">
+                      <div className="flex justify-between items-center mb-0">
+                        <div className="flex space-x-1 sm:space-x-2">
+                          <button
+                            onClick={() => handleToggleLike(post.id)}
+                            className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full ${isLiked(post.id) 
+                              ? 'text-red-500 bg-red-50 dark:bg-red-900/30' 
+                              : isDarkMode 
+                                ? 'text-gray-400 hover:text-red-400' 
+                                : 'text-gray-600 hover:text-red-500'
+                            }`}
+                            style={{
+                              transform: animatingLike === post.id ? 'scale(1.3)' : 'scale(1)',
+                              animation: animatingLike === post.id ? 'heartBeat 0.6s ease-in-out' : 'none'
+                            }}
+                          >
+                            <Heart className="w-3 h-3 sm:w-4 sm:h-4" fill={isLiked(post.id) ? 'currentColor' : 'none'} />
+                          </button>
+                          <Link
+                            to={`/product/${post.id}/comments`}
+                            className={`p-1 rounded-full transition-colors flex items-center space-x-1 ${isDarkMode 
+                              ? 'text-gray-400 hover:text-blue-400 hover:bg-blue-900/30' 
+                              : 'text-gray-600 hover:text-blue-500 hover:bg-blue-50'
+                            }`}
+                          >
+                            <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
+                            {post.commentCount > 0 && (
+                              <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{post.commentCount}</span>
+                            )}
+                          </Link>
+                          <button
+                            onClick={() => toggleCart(post.id)}
+                            className={`p-1 rounded-full transition-colors ${cartPosts[post.id] 
+                              ? 'text-green-500 bg-green-50 dark:bg-green-900/30' 
+                              : isDarkMode 
+                                ? 'text-gray-400 hover:text-green-400' 
+                                : 'text-gray-600 hover:text-green-500'
+                            }`}
+                          >
+                            <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
+                          </button>
+                        </div>
+                        <button
+                          onClick={() => handleToggleFavorite(post.id)}
+                          className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full ${isBookmarked(post.id) 
+                            ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/30' 
+                            : isDarkMode 
+                              ? 'text-gray-400 hover:text-blue-400' 
+                              : 'text-gray-600 hover:text-blue-500'
+                          }`}
+                          style={{
+                            transform: animatingFavorite === post.id ? 'scale(1.2)' : 'scale(1)',
+                            animation: animatingFavorite === post.id ? 'bookmarkPop 0.5s ease-out' : 'none'
+                          }}
+                        >
+                          <Bookmark className="w-3 h-3 sm:w-4 sm:h-4" fill={isBookmarked(post.id) ? 'currentColor' : 'none'} />
+                        </button>
+                      </div>
+                      <div className="flex items-center space-x-1 sm:justify-end">
+                        <div className="flex">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${star <= post.rating 
+                                ? 'text-yellow-500' 
+                                : isDarkMode ? 'text-gray-600' : 'text-gray-300'
+                              }`}
+                              fill={star <= post.rating ? 'currentColor' : 'none'}
+                            />
+                          ))}
+                        </div>
+                        <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>({post.ratingCount})</span>
+                      </div>
+                    </div>
+                    <Link 
+                      to={`/product/${post.id}`} 
+                      className={`hover:underline text-xs font-medium truncate mb-1 ${isDarkMode ? 'text-gray-200' : 'text-black'}`}
+                    >
+                      {post.product}
+                    </Link>
+                    <div className="mt-0 relative">
+                      <button
+                        onClick={(e) => toggleDescriptionExpansion(post.id, e)}
+                        className={`description-toggle-button text-xs text-left w-full p-1 rounded transition-colors flex items-start ${isDarkMode 
+                          ? 'text-gray-300 hover:text-blue-400 bg-gray-700 hover:bg-gray-600' 
+                          : 'text-gray-600 hover:text-blue-500 bg-gray-50 hover:bg-gray-100'
+                        }`}
+                      >
+                        <span className="text-left">{truncatedDescription}</span>
+                      </button>
                     </div>
                   </div>
-                  <Link to={`/product/${post.id}`} className="text-black hover:underline text-xs font-medium truncate mb-1">
-                    {post.product}
-                  </Link>
-                  <div className="mt-0 relative">
-                    <button
-                      onClick={(e) => toggleDescriptionExpansion(post.id, e)}
-                      className="description-toggle-button text-xs text-gray-600 hover:text-blue-500 text-left w-full p-1 bg-gray-50 rounded hover:bg-gray-100 transition-colors flex items-start"
-                    >
-                      <span className="text-left">{truncatedDescription}</span>
-                    </button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {expandedDescriptionId && (
-        <DescriptionTooltip
-          className="description-tooltip"
-          style={{
-            top: `${expandedDescriptionPosition.top}px`,
-            left: `${expandedDescriptionPosition.left}px`,
-          }}
-        >
-          <style>{`
-            .description-tooltip::after {
-              left: ${Math.min(20, expandedDescriptionPosition.buttonWidth - 20)}px;
-            }
-          `}</style>
-          <div className="tooltip-header">
-            <h3>Product Description</h3>
-            <button onClick={() => setExpandedDescriptionId(null)} aria-label="Close">
-              <X size={16} />
-            </button>
-          </div>
-          <div className="tooltip-content">
-            {posts.find(p => p.id === expandedDescriptionId)?.content || 'No description available'}
-          </div>
-          <div className="tooltip-footer">
-            <span className="seller">
-              Seller: {posts.find(p => p.id === expandedDescriptionId)?.sellerName || 'Seller'}
-            </span>
-            <Link
-              to={`/product/${expandedDescriptionId}`}
-              className="view-link"
-              onClick={() => setExpandedDescriptionId(null)}
-            >
-              View Product →
-            </Link>
-          </div>
-        </DescriptionTooltip>
-      )}
-
-      {dropdownOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeDropdown}>
-          <div className="bg-white rounded-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="p-4 border border-gray-200 text-center">
-              <h3 className="font-semibold text-lg text-black">Post Options</h3>
-            </div>
-            <div className="divide-y divide-gray-100">
-              {dropdownItems.map((item, index) => (
-                <button
-                  key={index}
-                  onClick={item.action}
-                  className="w-full text-center px-4 py-3 text-sm hover:bg-gray-50 text-black first:rounded-t-lg last:rounded-b-lg transition-colors"
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
-      )}
 
-      <style>{`
-        @keyframes heartBeat {
-          0% { transform: scale(1); }
-          25% { transform: scale(1.3); }
-          50% { transform: scale(1); }
-          75% { transform: scale(1.3); }
-          100% { transform: scale(1); }
-        }
-        @keyframes bookmarkPop {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.2); }
-          100% { transform: scale(1); }
-        }
-      `}</style>
+        {/* Description Tooltip - pure Tailwind dark: (no styled-components) */}
+        {expandedDescriptionId && (
+          <div
+            className="description-tooltip fixed bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl max-h-[250px] w-[300px] overflow-hidden z-[101] pointer-events-auto animate-fadeIn"
+            style={{
+              top: `${expandedDescriptionPosition.top}px`,
+              left: `${expandedDescriptionPosition.left}px`,
+            }}
+          >
+            <div
+              className="absolute -top-2 w-4 h-4 bg-white dark:bg-gray-800 border-l border-t border-gray-200 dark:border-gray-700 rotate-45 shadow-sm"
+              style={{ left: `${Math.min(20, expandedDescriptionPosition.buttonWidth - 20)}px` }}
+            />
+
+            <div className="flex justify-between items-center px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-t-xl">
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Product Description</h3>
+              <button 
+                onClick={() => setExpandedDescriptionId(null)} 
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                aria-label="Close"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="p-4 text-sm text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-line max-h-[150px] overflow-y-auto bg-white dark:bg-gray-800">
+              {posts.find(p => p.id === expandedDescriptionId)?.content || 'No description available'}
+            </div>
+
+            <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 flex justify-between items-center text-xs rounded-b-xl">
+              <span className="text-gray-500 dark:text-gray-400">
+                Seller: {posts.find(p => p.id === expandedDescriptionId)?.sellerName || 'Seller'}
+              </span>
+              <Link
+                to={`/product/${expandedDescriptionId}`}
+                className="text-blue-600 dark:text-blue-400 font-medium hover:underline transition-colors"
+                onClick={() => setExpandedDescriptionId(null)}
+              >
+                View Product →
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Dropdown Modal */}
+        {dropdownOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" 
+            onClick={closeDropdown}
+          >
+            <div 
+              className={`rounded-xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`} 
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className={`p-4 border text-center ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                <h3 className={`font-semibold text-lg ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Post Options</h3>
+              </div>
+              <div className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
+                {dropdownItems.map((item, index) => (
+                  <button
+                    key={index}
+                    onClick={item.action}
+                    className={`w-full text-center px-4 py-3 text-sm transition-colors first:rounded-t-lg last:rounded-b-lg ${isDarkMode 
+                      ? 'text-gray-300 hover:bg-gray-700' 
+                      : 'text-black hover:bg-gray-50'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <style>{`
+          @keyframes heartBeat {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.3); }
+            50% { transform: scale(1); }
+            75% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+          }
+          @keyframes bookmarkPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+          }
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          .animate-fadeIn {
+            animation: fadeIn 0.2s ease-out;
+          }
+        `}</style>
+      </div>
     </div>
   );
 };

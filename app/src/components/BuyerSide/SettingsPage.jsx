@@ -5,7 +5,7 @@ import {
   User, Moon, LogOut, Save, ArrowLeft, 
   Mail, Lock, Eye, EyeOff, CheckCircle, XCircle,
   ChevronDown, ChevronUp, Shield, Edit3, Bell,
-  Globe, Smartphone, Palette, Key, AtSign
+  Globe, Smartphone, Palette, Key, AtSign, Sun
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
@@ -13,7 +13,7 @@ import { useDarkMode } from '../../utils/DarkModeContext';
 
 const SettingsPage = () => {
   const navigate = useNavigate();
-  const { darkMode, toggleDarkMode } = useDarkMode();
+  const { isDarkMode, toggleDarkMode } = useDarkMode();
   
   const [expandedGroups, setExpandedGroups] = useState({
     account: true,
@@ -94,39 +94,12 @@ const SettingsPage = () => {
     const fetchProfile = async () => {
       setIsLoading(true);
       console.log('========== FETCHING PROFILE ==========');
-      console.log('1. Starting to fetch profile data...');
       
       try {
-        console.log('2. Available tokens:', {
-          accessToken: localStorage.getItem('accessToken') ? 'Present' : 'Missing',
-          access: localStorage.getItem('access') ? 'Present' : 'Missing',
-          refreshToken: localStorage.getItem('refreshToken') ? 'Present' : 'Missing',
-          refresh: localStorage.getItem('refresh') ? 'Present' : 'Missing'
-        });
-
-        console.log('3. Making API calls to get buyer profile and verify token...');
-        
         const buyerRes = await api.getBuyerProfile();
-        console.log('4. Buyer profile response:', {
-          status: buyerRes.status,
-          hasError: buyerRes.error,
-          errorMessage: buyerRes.message,
-          data: buyerRes.data
-        });
-
         const tokenRes = await api.verifyToken();
-        console.log('5. Token verification response:', {
-          status: tokenRes.status,
-          hasError: tokenRes.error,
-          errorMessage: tokenRes.message,
-          data: tokenRes.data
-        });
 
         if (buyerRes.data && tokenRes.data?.user) {
-          console.log('6. Successfully received profile data');
-          console.log('7. Buyer data:', buyerRes.data);
-          console.log('8. User data from token:', tokenRes.data.user);
-          
           const userData = {
             name: buyerRes.data.name || tokenRes.data.user.username || 'User',
             email: tokenRes.data.user.email || 'No email',
@@ -140,39 +113,25 @@ const SettingsPage = () => {
             })
           };
           
-          console.log('9. Setting userInfo with:', userData);
           setUserInfo(userData);
           
-          const profileData = {
+          setProfileForm({
             name: userData.name,
             phone: userData.phone === 'Not provided' ? '' : userData.phone,
             location: userData.location === 'Not set' ? '' : userData.location,
             bio: userData.bio === 'No location set' ? '' : userData.bio
-          };
-          console.log('10. Setting profileForm with:', profileData);
-          setProfileForm(profileData);
+          });
           
           setEmailForm(prev => ({
             ...prev,
             newEmail: tokenRes.data.user.email || '',
             confirmEmail: tokenRes.data.user.email || ''
           }));
-          console.log('11. Email form initialized with:', tokenRes.data.user.email);
-        } else {
-          console.log('6. Failed to get profile data');
-          if (!buyerRes.data) console.log('   - buyerRes.data is missing');
-          if (!tokenRes.data?.user) console.log('   - tokenRes.data.user is missing');
         }
       } catch (error) {
-        console.error('12. ERROR fetching profile:', error);
-        console.error('    Error details:', {
-          message: error.message,
-          stack: error.stack
-        });
+        console.error('Error fetching profile:', error);
       } finally {
         setIsLoading(false);
-        console.log('13. Profile fetch completed');
-        console.log('========== FETCH PROFILE END ==========');
       }
     };
     fetchProfile();
@@ -204,133 +163,71 @@ const SettingsPage = () => {
   };
 
   const validateEmailForm = () => {
-    console.log('========== VALIDATING EMAIL FORM ==========');
-    console.log('Email form values:', {
-      newEmail: emailForm.newEmail,
-      confirmEmail: emailForm.confirmEmail,
-      password: emailForm.password ? '[PRESENT]' : '[MISSING]'
-    });
-    
     const errors = {};
     
     if (!emailForm.newEmail) {
       errors.newEmail = 'New email is required';
-      console.log('Validation failed: New email is required');
     } else if (!/\S+@\S+\.\S+/.test(emailForm.newEmail)) {
       errors.newEmail = 'Email is invalid';
-      console.log('Validation failed: Email format is invalid');
     }
     
     if (!emailForm.confirmEmail) {
       errors.confirmEmail = 'Please confirm your email';
-      console.log('Validation failed: Confirm email is required');
     } else if (emailForm.newEmail !== emailForm.confirmEmail) {
       errors.confirmEmail = 'Emails do not match';
-      console.log('Validation failed: Emails do not match');
     }
     
     if (!emailForm.password) {
       errors.password = 'Password is required to verify your identity';
-      console.log('Validation failed: Password is required');
     }
     
     setEmailErrors(errors);
-    const isValid = Object.keys(errors).length === 0;
-    console.log('Email form validation result:', isValid ? 'VALID' : 'INVALID');
-    console.log('Errors:', errors);
-    console.log('========== VALIDATION END ==========');
-    
-    return isValid;
+    return Object.keys(errors).length === 0;
   };
 
   const validatePasswordForm = () => {
-    console.log('========== VALIDATING PASSWORD FORM ==========');
-    console.log('Password form values:', {
-      currentPassword: passwordForm.currentPassword ? '[PRESENT]' : '[MISSING]',
-      newPassword: passwordForm.newPassword ? '[PRESENT]' : '[MISSING]',
-      confirmPassword: passwordForm.confirmPassword ? '[PRESENT]' : '[MISSING]'
-    });
-    
     const errors = {};
     
     if (!passwordForm.currentPassword) {
       errors.currentPassword = 'Current password is required';
-      console.log('Validation failed: Current password is required');
     }
     
     if (!passwordForm.newPassword) {
       errors.newPassword = 'New password is required';
-      console.log('Validation failed: New password is required');
     } else {
       if (passwordForm.newPassword.length < 8) {
         errors.newPassword = 'Password must be at least 8 characters';
-        console.log('Validation failed: Password too short');
       }
     }
     
     if (!passwordForm.confirmPassword) {
       errors.confirmPassword = 'Please confirm your new password';
-      console.log('Validation failed: Confirm password is required');
     } else if (passwordForm.newPassword !== passwordForm.confirmPassword) {
       errors.confirmPassword = 'Passwords do not match';
-      console.log('Validation failed: Passwords do not match');
     }
     
     setPasswordErrors(errors);
-    const isValid = Object.keys(errors).length === 0;
-    console.log('Password form validation result:', isValid ? 'VALID' : 'INVALID');
-    console.log('Errors:', errors);
-    console.log('========== VALIDATION END ==========');
-    
-    return isValid;
+    return Object.keys(errors).length === 0;
   };
 
   const validateProfileForm = () => {
-    console.log('========== VALIDATING PROFILE FORM ==========');
-    console.log('Profile form values:', profileForm);
-    
     const errors = {};
     if (!profileForm.name) {
       errors.name = 'Name is required';
-      console.log('Validation failed: Name is required');
     }
-    
-    const isValid = Object.keys(errors).length === 0;
-    console.log('Profile form validation result:', isValid ? 'VALID' : 'INVALID');
-    console.log('Errors:', errors);
-    console.log('========== VALIDATION END ==========');
-    
-    return isValid;
+    return Object.keys(errors).length === 0;
   };
 
   const handleEmailChange = async () => {
-    console.log('========== EMAIL CHANGE ATTEMPT ==========');
-    console.log('1. Starting email change process...');
-    
     if (!validateEmailForm()) return;
     
     setIsSavingEmail(true);
     setEmailSuccess('');
     
     try {
-      console.log('2. Preparing email change request with data:', {
-        newEmail: emailForm.newEmail,
-        passwordPresent: !!emailForm.password
-      });
-      
-      console.log('3. Calling api.changeEmail()...');
       const response = await api.changeEmail(emailForm.newEmail, emailForm.password);
       
-      console.log('4. Raw API response:', response);
-      console.log('5. Response details:', {
-        error: response.error,
-        status: response.status,
-        data: response.data,
-        message: response.message
-      });
-      
       if (!response.error) {
-        console.log('6. Email change SUCCESSFUL!');
         setEmailSuccess('Email updated successfully!');
         setEmailForm(prev => ({ ...prev, password: '' }));
         setEmailErrors({});
@@ -342,64 +239,35 @@ const SettingsPage = () => {
             const user = JSON.parse(userStr);
             user.email = emailForm.newEmail;
             localStorage.setItem('user', JSON.stringify(user));
-            console.log('7. Updated user in localStorage:', user);
           } catch (e) {
-            console.error('8. Failed to update user in localStorage:', e);
+            console.error('Failed to update user in localStorage:', e);
           }
         }
         
-        console.log('9. Email update completed successfully');
         setTimeout(() => setEmailSuccess(''), 3000);
       } else if (response.status === 401) {
-        console.log('6. Email change FAILED: Unauthorized - password may be incorrect');
         setEmailErrors({ password: response.data?.error || 'Current password is incorrect' });
       } else {
-        console.log('6. Email change FAILED with status:', response.status);
-        console.log('   Error data:', response.data);
         setEmailErrors({ general: response.data?.error || 'Failed to update email' });
       }
     } catch (error) {
-      console.error('7. EXCEPTION in email change:', error);
-      console.error('   Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      });
+      console.error('Error changing email:', error);
       setEmailErrors({ general: 'Network error. Please try again.' });
     } finally {
       setIsSavingEmail(false);
-      console.log('8. Email change process completed');
-      console.log('========== EMAIL CHANGE END ==========');
     }
   };
 
   const handlePasswordChange = async () => {
-    console.log('========== PASSWORD CHANGE ATTEMPT ==========');
-    console.log('1. Starting password change process...');
-    
     if (!validatePasswordForm()) return;
     
     setIsSavingPassword(true);
     setPasswordSuccess('');
     
     try {
-      console.log('2. Preparing password change request...');
-      console.log('   Current password present:', !!passwordForm.currentPassword);
-      console.log('   New password length:', passwordForm.newPassword.length);
-      
-      console.log('3. Calling api.changePassword()...');
       const response = await api.changePassword(passwordForm.currentPassword, passwordForm.newPassword);
       
-      console.log('4. Raw API response:', response);
-      console.log('5. Response details:', {
-        error: response.error,
-        status: response.status,
-        data: response.data,
-        message: response.message
-      });
-      
       if (!response.error) {
-        console.log('6. Password change SUCCESSFUL!');
         setPasswordSuccess('Password updated successfully!');
         setPasswordForm({
           currentPassword: '',
@@ -408,53 +276,32 @@ const SettingsPage = () => {
         });
         setPasswordErrors({});
         setTimeout(() => setPasswordSuccess(''), 3000);
-        console.log('7. Password form cleared');
       } else if (response.status === 401) {
-        console.log('6. Password change FAILED: Unauthorized - current password may be incorrect');
         setPasswordErrors({ currentPassword: response.data?.error || 'Current password is incorrect' });
       } else {
-        console.log('6. Password change FAILED with status:', response.status);
-        console.log('   Error data:', response.data);
         setPasswordErrors({ general: response.data?.error || 'Failed to update password' });
       }
     } catch (error) {
-      console.error('7. EXCEPTION in password change:', error);
-      console.error('   Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      });
+      console.error('Error changing password:', error);
       setPasswordErrors({ general: 'Network error. Please try again.' });
     } finally {
       setIsSavingPassword(false);
-      console.log('8. Password change process completed');
-      console.log('========== PASSWORD CHANGE END ==========');
     }
   };
 
   const handleProfileSave = async () => {
-    console.log('========== PROFILE SAVE ATTEMPT ==========');
-    console.log('1. Starting profile save process...');
-    console.log('2. Profile form data:', profileForm);
-    
     if (!validateProfileForm()) return;
     
     setIsSavingProfile(true);
     
     try {
-      console.log('3. Calling API to update profile with:', profileForm);
-      
       const response = await api.updateBuyerProfile({
         name: profileForm.name,
         contact: profileForm.phone,
         location: profileForm.location
       });
       
-      console.log('4. API response:', response);
-      
       if (!response.error) {
-        console.log('5. Profile update SUCCESSFUL!');
-        
         setUserInfo(prev => ({
           ...prev,
           name: profileForm.name,
@@ -462,27 +309,18 @@ const SettingsPage = () => {
           location: profileForm.location || 'Not set',
           bio: profileForm.location || 'No location set'
         }));
-                
-        console.log('6. Local state updated');
       } else {
-        console.log('5. Profile update FAILED:', response);
         alert(`Failed to update profile: ${response.data?.error || 'Unknown error'}`);
       }
-      
     } catch (error) {
-      console.error('6. EXCEPTION in profile save:', error);
+      console.error('Error saving profile:', error);
       alert('Failed to update profile. Please try again.');
     } finally {
       setIsSavingProfile(false);
-      console.log('7. Profile save process completed');
-      console.log('========== PROFILE SAVE END ==========');
     }
   };
   
   const handleLogout = () => {
-    console.log('========== LOGOUT ==========');
-    console.log('Clearing all auth data from localStorage');
-    
     localStorage.removeItem('accessToken');
     localStorage.removeItem('access');
     localStorage.removeItem('refreshToken');
@@ -490,10 +328,7 @@ const SettingsPage = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('userRole');
     
-    // Dispatch auth state changed event
     window.dispatchEvent(new Event('authStateChanged'));
-    
-    console.log('Redirecting to login page');
     window.location.href = '/login';
   };
 
@@ -527,77 +362,124 @@ const SettingsPage = () => {
 
   if (isLoading) {
     return (
-      <div className="p-3 sm:p-4 md:p-6 max-w-4xl mx-auto">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-black">Loading settings...</div>
+      <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
+        <div className="p-3 sm:p-4 md:p-6 max-w-4xl mx-auto">
+          <div className="flex items-center justify-center h-64">
+            <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Loading settings...</div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={`min-h-screen transition-colors duration-300 ${
+      isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
+    }`}>
       <div className="p-3 sm:p-4 md:p-6 max-w-4xl mx-auto">
-        <div className="flex items-center mb-6 sm:mb-8 bg-white p-4 rounded-xl shadow-sm">
+        {/* Header */}
+        <div className={`flex items-center mb-6 sm:mb-8 p-4 rounded-xl shadow-sm transition-colors ${
+          isDarkMode ? 'bg-gray-800' : 'bg-white'
+        }`}>
           <button
             onClick={() => navigate(-1)}
-            className="p-2 mr-4 text-gray-600 hover:text-black hover:bg-gray-100 rounded-lg transition-all"
+            className={`p-2 mr-4 rounded-lg transition-all ${
+              isDarkMode 
+                ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700' 
+                : 'text-gray-600 hover:text-black hover:bg-gray-100'
+            }`}
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <div>
-            <p className="text-[20px] sm:text-2xl font-bold text-black">Settings</p>
-            <p className="text-sm text-gray-500">Manage your account preferences</p>
+          <div className="flex-1">
+            <p className={`text-[20px] sm:text-2xl font-bold ${
+              isDarkMode ? 'text-gray-100' : 'text-black'
+            }`}>Settings</p>
+            <p className={`text-sm ${
+              isDarkMode ? 'text-gray-400' : 'text-gray-500'
+            }`}>Manage your account preferences</p>
           </div>
+          {/* Dark mode toggle button */}
+          <button
+            onClick={toggleDarkMode}
+            className={`p-3 rounded-full transition-colors ${
+              isDarkMode 
+                ? 'bg-purple-600 hover:bg-purple-700 text-white' 
+                : 'bg-purple-100 hover:bg-purple-200 text-purple-600'
+            }`}
+            aria-label="Toggle dark mode"
+          >
+            {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
         </div>
 
-        <div className="mb-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
+        {/* Profile Header Card */}
+        <div className={`mb-6 rounded-xl p-6 shadow-lg transition-colors ${
+          isDarkMode 
+            ? 'bg-gradient-to-r from-blue-600 to-purple-700' 
+            : 'bg-gradient-to-r from-blue-500 to-purple-600'
+        }`}>
           <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-2xl font-bold border-2 border-white">
+            <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-2xl font-bold border-2 border-white text-white">
               {userInfo.name.split(' ').map(n => n[0]).join('').toUpperCase()}
             </div>
             <div className="flex-1">
-              <h2 className="text-xl font-bold">{userInfo.name}</h2>
+              <h2 className="text-xl font-bold text-white">{userInfo.name}</h2>
               <p className="text-white/80 text-sm">@{userInfo.username}</p>
               <p className="text-white/60 text-xs mt-1">Member since {userInfo.memberSince}</p>
             </div>
           </div>
         </div>
 
+        {/* Settings Groups */}
         <div className="space-y-4">
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          {/* Account Settings Group */}
+          <div className={`rounded-xl shadow-sm overflow-hidden transition-colors ${
+            isDarkMode ? 'bg-gray-800' : 'bg-white'
+          }`}>
             <button
               onClick={() => toggleGroup('account')}
-              className="w-full px-6 py-4 flex items-center justify-between bg-white hover:bg-gray-50 transition-colors border-b border-gray-100"
+              className={`w-full px-6 py-4 flex items-center justify-between transition-colors ${
+                isDarkMode 
+                  ? 'hover:bg-gray-700 border-gray-700' 
+                  : 'hover:bg-gray-50 border-gray-100'
+              } border-b`}
             >
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <User className="w-4 h-4 text-blue-600" />
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                  isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100'
+                }`}>
+                  <User className={`w-4 h-4 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
                 </div>
-                <span className="font-semibold text-black">Account Settings</span>
+                <span className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>
+                  Account Settings
+                </span>
               </div>
               {expandedGroups.account ? (
-                <ChevronUp className="w-5 h-5 text-gray-400" />
+                <ChevronUp className={`w-5 h-5 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
               ) : (
-                <ChevronDown className="w-5 h-5 text-gray-400" />
+                <ChevronDown className={`w-5 h-5 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
               )}
             </button>
             
             {expandedGroups.account && (
-              <div className="divide-y divide-gray-100">
+              <div className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
+                {/* Profile Section */}
                 <div className="px-6 py-3">
                   <button
                     onClick={() => toggleSection('profile')}
                     className="w-full flex items-center justify-between py-2 text-left"
                   >
                     <div className="flex items-center space-x-3">
-                      <User className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-700">Profile Information</span>
+                      <User className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                      <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        Profile Information
+                      </span>
                     </div>
                     {expandedSections.profile ? (
-                      <ChevronUp className="w-4 h-4 text-gray-400" />
+                      <ChevronUp className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                     ) : (
-                      <ChevronDown className="w-4 h-4 text-gray-400" />
+                      <ChevronDown className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                     )}
                   </button>
                   
@@ -605,58 +487,77 @@ const SettingsPage = () => {
                     <div className="mt-3 space-y-3 pl-7">
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-xs text-gray-500 mb-1">Full Name</label>
+                          <label className={`block text-xs mb-1 ${
+                            isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                          }`}>Full Name</label>
                           <input
                             type="text"
                             value={profileForm.name}
-                            onChange={(e) => {
-                              console.log('Profile: Name changed to:', e.target.value);
-                              setProfileForm({ ...profileForm, name: e.target.value });
-                            }}
-                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg text-black focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                            className={`w-full px-3 py-2 text-sm rounded-lg transition-colors ${
+                              isDarkMode 
+                                ? 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-blue-500' 
+                                : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-blue-500'
+                            } border`}
                             placeholder="Enter your full name"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-gray-500 mb-1">Username</label>
+                          <label className={`block text-xs mb-1 ${
+                            isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                          }`}>Username</label>
                           <input
                             type="text"
                             value={`@${userInfo.username}`}
-                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg text-black bg-gray-50"
+                            className={`w-full px-3 py-2 text-sm rounded-lg border ${
+                              isDarkMode 
+                                ? 'bg-gray-600 border-gray-600 text-gray-400' 
+                                : 'bg-gray-50 border-gray-200 text-gray-600'
+                            }`}
                             disabled
                           />
                         </div>
                       </div>
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Location</label>
+                        <label className={`block text-xs mb-1 ${
+                          isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                        }`}>Location</label>
                         <input
                           type="text"
                           value={profileForm.location}
-                          onChange={(e) => {
-                            console.log('Profile: Location changed to:', e.target.value);
-                            setProfileForm({ ...profileForm, location: e.target.value });
-                          }}
-                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg text-black focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          onChange={(e) => setProfileForm({ ...profileForm, location: e.target.value })}
+                          className={`w-full px-3 py-2 text-sm rounded-lg transition-colors ${
+                            isDarkMode 
+                              ? 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-blue-500' 
+                              : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-blue-500'
+                          } border`}
                           placeholder="Add your location"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Phone</label>
+                        <label className={`block text-xs mb-1 ${
+                          isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                        }`}>Phone</label>
                         <input
                           type="tel"
                           value={profileForm.phone}
-                          onChange={(e) => {
-                            console.log('Profile: Phone changed to:', e.target.value);
-                            setProfileForm({ ...profileForm, phone: e.target.value });
-                          }}
-                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg text-black focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                          className={`w-full px-3 py-2 text-sm rounded-lg transition-colors ${
+                            isDarkMode 
+                              ? 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-blue-500' 
+                              : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-blue-500'
+                          } border`}
                           placeholder="Add phone number"
                         />
                       </div>
                       <button 
                         onClick={handleProfileSave}
                         disabled={isSavingProfile}
-                        className="mt-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:bg-blue-300 transition-colors"
+                        className={`mt-2 px-4 py-2 text-sm rounded-lg transition-colors ${
+                          isDarkMode 
+                            ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                            : 'bg-blue-600 hover:bg-blue-700 text-white'
+                        } disabled:opacity-50`}
                       >
                         {isSavingProfile ? 'Saving...' : 'Save Profile Changes'}
                       </button>
@@ -664,116 +565,151 @@ const SettingsPage = () => {
                   )}
                 </div>
 
+                {/* Email Section */}
                 <div className="px-6 py-3">
                   <button
                     onClick={() => toggleSection('email')}
                     className="w-full flex items-center justify-between py-2 text-left"
                   >
                     <div className="flex items-center space-x-3">
-                      <Mail className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-700">Email Address</span>
+                      <Mail className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                      <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        Email Address
+                      </span>
                     </div>
                     {expandedSections.email ? (
-                      <ChevronUp className="w-4 h-4 text-gray-400" />
+                      <ChevronUp className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                     ) : (
-                      <ChevronDown className="w-4 h-4 text-gray-400" />
+                      <ChevronDown className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                     )}
                   </button>
                   
                   {expandedSections.email && (
                     <div className="mt-3 space-y-3 pl-7">
                       {emailSuccess && (
-                        <div className="p-2 bg-green-50 border border-green-200 text-green-700 rounded-lg text-xs flex items-center">
+                        <div className={`p-2 rounded-lg text-xs flex items-center ${
+                          isDarkMode 
+                            ? 'bg-green-900/30 border border-green-800 text-green-400' 
+                            : 'bg-green-50 border border-green-200 text-green-700'
+                        }`}>
                           <CheckCircle className="w-3 h-3 mr-1" />
                           {emailSuccess}
                         </div>
                       )}
                       {emailErrors.general && (
-                        <div className="p-2 bg-red-50 border border-red-200 text-red-700 rounded-lg text-xs flex items-center">
+                        <div className={`p-2 rounded-lg text-xs flex items-center ${
+                          isDarkMode 
+                            ? 'bg-red-900/30 border border-red-800 text-red-400' 
+                            : 'bg-red-50 border border-red-200 text-red-700'
+                        }`}>
                           <XCircle className="w-3 h-3 mr-1" />
                           {emailErrors.general}
                         </div>
                       )}
                       
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Current Email</label>
+                        <label className={`block text-xs mb-1 ${
+                          isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                        }`}>Current Email</label>
                         <input
                           type="email"
                           value={userInfo.email}
                           disabled
-                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 text-black"
+                          className={`w-full px-3 py-2 text-sm rounded-lg border ${
+                            isDarkMode 
+                              ? 'bg-gray-600 border-gray-600 text-gray-400' 
+                              : 'bg-gray-50 border-gray-200 text-gray-600'
+                          }`}
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">New Email</label>
+                        <label className={`block text-xs mb-1 ${
+                          isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                        }`}>New Email</label>
                         <input
                           type="email"
                           value={emailForm.newEmail}
-                          onChange={(e) => {
-                            console.log('Email: New email changed to:', e.target.value);
-                            setEmailForm({ ...emailForm, newEmail: e.target.value });
-                          }}
-                          className={`w-full px-3 py-2 text-sm border rounded-lg text-black focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                            emailErrors.newEmail ? 'border-red-300' : 'border-gray-200'
+                          onChange={(e) => setEmailForm({ ...emailForm, newEmail: e.target.value })}
+                          className={`w-full px-3 py-2 text-sm rounded-lg transition-colors border ${
+                            isDarkMode 
+                              ? emailErrors.newEmail 
+                                ? 'bg-gray-700 border-red-600 text-gray-100' 
+                                : 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-blue-500'
+                              : emailErrors.newEmail 
+                                ? 'bg-white border-red-300 text-black' 
+                                : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-blue-500'
                           }`}
                           placeholder="Enter new email"
                         />
                         {emailErrors.newEmail && (
-                          <p className="mt-1 text-xs text-red-600">{emailErrors.newEmail}</p>
+                          <p className="mt-1 text-xs text-red-600 dark:text-red-400">{emailErrors.newEmail}</p>
                         )}
                       </div>
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Confirm Email</label>
+                        <label className={`block text-xs mb-1 ${
+                          isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                        }`}>Confirm Email</label>
                         <input
                           type="email"
                           value={emailForm.confirmEmail}
-                          onChange={(e) => {
-                            console.log('Email: Confirm email changed to:', e.target.value);
-                            setEmailForm({ ...emailForm, confirmEmail: e.target.value });
-                          }}
-                          className={`w-full px-3 py-2 text-sm border rounded-lg text-black focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                            emailErrors.confirmEmail ? 'border-red-300' : 'border-gray-200'
+                          onChange={(e) => setEmailForm({ ...emailForm, confirmEmail: e.target.value })}
+                          className={`w-full px-3 py-2 text-sm rounded-lg transition-colors border ${
+                            isDarkMode 
+                              ? emailErrors.confirmEmail 
+                                ? 'bg-gray-700 border-red-600 text-gray-100' 
+                                : 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-blue-500'
+                              : emailErrors.confirmEmail 
+                                ? 'bg-white border-red-300 text-black' 
+                                : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-blue-500'
                           }`}
                           placeholder="Confirm new email"
                         />
                         {emailErrors.confirmEmail && (
-                          <p className="mt-1 text-xs text-red-600">{emailErrors.confirmEmail}</p>
+                          <p className="mt-1 text-xs text-red-600 dark:text-red-400">{emailErrors.confirmEmail}</p>
                         )}
                       </div>
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Password <span className="text-red-500">*</span></label>
+                        <label className={`block text-xs mb-1 ${
+                          isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                        }`}>Password <span className="text-red-500">*</span></label>
                         <div className="relative">
                           <input
                             type={showEmailPassword ? 'text' : 'password'}
                             value={emailForm.password}
-                            onChange={(e) => {
-                              console.log('Email: Password field updated');
-                              setEmailForm({ ...emailForm, password: e.target.value });
-                            }}
-                            className={`w-full px-3 py-2 text-sm border rounded-lg pr-10 text-black focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                              emailErrors.password ? 'border-red-300' : 'border-gray-200'
+                            onChange={(e) => setEmailForm({ ...emailForm, password: e.target.value })}
+                            className={`w-full px-3 py-2 text-sm rounded-lg pr-10 transition-colors border ${
+                              isDarkMode 
+                                ? emailErrors.password 
+                                  ? 'bg-gray-700 border-red-600 text-gray-100' 
+                                  : 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-blue-500'
+                                : emailErrors.password 
+                                  ? 'bg-white border-red-300 text-black' 
+                                  : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-blue-500'
                             }`}
                             placeholder="Enter password to verify"
                           />
                           <button
                             type="button"
-                            onClick={() => {
-                              console.log('Email: Toggle password visibility');
-                              setShowEmailPassword(!showEmailPassword);
-                            }}
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            onClick={() => setShowEmailPassword(!showEmailPassword)}
+                            className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${
+                              isDarkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'
+                            }`}
                           >
                             {showEmailPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
                         </div>
                         {emailErrors.password && (
-                          <p className="mt-1 text-xs text-red-600">{emailErrors.password}</p>
+                          <p className="mt-1 text-xs text-red-600 dark:text-red-400">{emailErrors.password}</p>
                         )}
                       </div>
                       <button
                         onClick={handleEmailChange}
                         disabled={isSavingEmail}
-                        className="mt-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:bg-blue-300 transition-colors"
+                        className={`mt-2 px-4 py-2 text-sm rounded-lg transition-colors ${
+                          isDarkMode 
+                            ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                            : 'bg-blue-600 hover:bg-blue-700 text-white'
+                        } disabled:opacity-50`}
                       >
                         {isSavingEmail ? 'Updating...' : 'Update Email'}
                       </button>
@@ -784,161 +720,201 @@ const SettingsPage = () => {
             )}
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          {/* Security Group */}
+          <div className={`rounded-xl shadow-sm overflow-hidden transition-colors ${
+            isDarkMode ? 'bg-gray-800' : 'bg-white'
+          }`}>
             <button
               onClick={() => toggleGroup('security')}
-              className="w-full px-6 py-4 flex items-center justify-between bg-white hover:bg-gray-50 transition-colors border-b border-gray-100"
+              className={`w-full px-6 py-4 flex items-center justify-between transition-colors ${
+                isDarkMode 
+                  ? 'hover:bg-gray-700 border-gray-700' 
+                  : 'hover:bg-gray-50 border-gray-100'
+              } border-b`}
             >
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                  <Shield className="w-4 h-4 text-green-600" />
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                  isDarkMode ? 'bg-green-900/30' : 'bg-green-100'
+                }`}>
+                  <Shield className={`w-4 h-4 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
                 </div>
-                <span className="font-semibold text-black">Security</span>
+                <span className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>
+                  Security
+                </span>
               </div>
               {expandedGroups.security ? (
-                <ChevronUp className="w-5 h-5 text-gray-400" />
+                <ChevronUp className={`w-5 h-5 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
               ) : (
-                <ChevronDown className="w-5 h-5 text-gray-400" />
+                <ChevronDown className={`w-5 h-5 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
               )}
             </button>
             
             {expandedGroups.security && (
-              <div className="divide-y divide-gray-100">
+              <div className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
+                {/* Password Section */}
                 <div className="px-6 py-3">
                   <button
                     onClick={() => toggleSection('password')}
                     className="w-full flex items-center justify-between py-2 text-left"
                   >
                     <div className="flex items-center space-x-3">
-                      <Key className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-700">Change Password</span>
+                      <Key className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                      <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        Change Password
+                      </span>
                     </div>
                     {expandedSections.password ? (
-                      <ChevronUp className="w-4 h-4 text-gray-400" />
+                      <ChevronUp className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                     ) : (
-                      <ChevronDown className="w-4 h-4 text-gray-400" />
+                      <ChevronDown className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                     )}
                   </button>
                   
                   {expandedSections.password && (
                     <div className="mt-3 space-y-3 pl-7">
                       {passwordSuccess && (
-                        <div className="p-2 bg-green-50 border border-green-200 text-green-700 rounded-lg text-xs flex items-center">
+                        <div className={`p-2 rounded-lg text-xs flex items-center ${
+                          isDarkMode 
+                            ? 'bg-green-900/30 border border-green-800 text-green-400' 
+                            : 'bg-green-50 border border-green-200 text-green-700'
+                        }`}>
                           <CheckCircle className="w-3 h-3 mr-1" />
                           {passwordSuccess}
                         </div>
                       )}
                       {passwordErrors.general && (
-                        <div className="p-2 bg-red-50 border border-red-200 text-red-700 rounded-lg text-xs flex items-center">
+                        <div className={`p-2 rounded-lg text-xs flex items-center ${
+                          isDarkMode 
+                            ? 'bg-red-900/30 border border-red-800 text-red-400' 
+                            : 'bg-red-50 border border-red-200 text-red-700'
+                        }`}>
                           <XCircle className="w-3 h-3 mr-1" />
                           {passwordErrors.general}
                         </div>
                       )}
                       
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Current Password</label>
+                        <label className={`block text-xs mb-1 ${
+                          isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                        }`}>Current Password</label>
                         <div className="relative">
                           <input
                             type={showPasswords.current ? 'text' : 'password'}
                             value={passwordForm.currentPassword}
-                            onChange={(e) => {
-                              console.log('Password: Current password field updated');
-                              setPasswordForm({ ...passwordForm, currentPassword: e.target.value });
-                            }}
-                            className={`w-full px-3 py-2 text-sm border rounded-lg pr-10 text-black focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                              passwordErrors.currentPassword ? 'border-red-300' : 'border-gray-200'
+                            onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                            className={`w-full px-3 py-2 text-sm rounded-lg pr-10 transition-colors border ${
+                              isDarkMode 
+                                ? passwordErrors.currentPassword 
+                                  ? 'bg-gray-700 border-red-600 text-gray-100' 
+                                  : 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-blue-500'
+                                : passwordErrors.currentPassword 
+                                  ? 'bg-white border-red-300 text-black' 
+                                  : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-blue-500'
                             }`}
                             placeholder="Enter current password"
                           />
                           <button
                             type="button"
-                            onClick={() => {
-                              console.log('Password: Toggle current password visibility');
-                              togglePasswordVisibility('current');
-                            }}
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            onClick={() => togglePasswordVisibility('current')}
+                            className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${
+                              isDarkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'
+                            }`}
                           >
                             {showPasswords.current ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
                         </div>
                         {passwordErrors.currentPassword && (
-                          <p className="mt-1 text-xs text-red-600">{passwordErrors.currentPassword}</p>
+                          <p className="mt-1 text-xs text-red-600 dark:text-red-400">{passwordErrors.currentPassword}</p>
                         )}
                       </div>
                       
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">New Password</label>
+                        <label className={`block text-xs mb-1 ${
+                          isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                        }`}>New Password</label>
                         <div className="relative">
                           <input
                             type={showPasswords.new ? 'text' : 'password'}
                             value={passwordForm.newPassword}
-                            onChange={(e) => {
-                              console.log('Password: New password field updated, length:', e.target.value.length);
-                              setPasswordForm({ ...passwordForm, newPassword: e.target.value });
-                            }}
-                            className={`w-full px-3 py-2 text-sm border rounded-lg pr-10 text-black focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                              passwordErrors.newPassword ? 'border-red-300' : 'border-gray-200'
+                            onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                            className={`w-full px-3 py-2 text-sm rounded-lg pr-10 transition-colors border ${
+                              isDarkMode 
+                                ? passwordErrors.newPassword 
+                                  ? 'bg-gray-700 border-red-600 text-gray-100' 
+                                  : 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-blue-500'
+                                : passwordErrors.newPassword 
+                                  ? 'bg-white border-red-300 text-black' 
+                                  : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-blue-500'
                             }`}
                             placeholder="Enter new password"
                           />
                           <button
                             type="button"
-                            onClick={() => {
-                              console.log('Password: Toggle new password visibility');
-                              togglePasswordVisibility('new');
-                            }}
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            onClick={() => togglePasswordVisibility('new')}
+                            className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${
+                              isDarkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'
+                            }`}
                           >
                             {showPasswords.new ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
                         </div>
                         {passwordErrors.newPassword && (
-                          <p className="mt-1 text-xs text-red-600">{passwordErrors.newPassword}</p>
+                          <p className="mt-1 text-xs text-red-600 dark:text-red-400">{passwordErrors.newPassword}</p>
                         )}
                       </div>
                       
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Confirm Password</label>
+                        <label className={`block text-xs mb-1 ${
+                          isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                        }`}>Confirm Password</label>
                         <div className="relative">
                           <input
                             type={showPasswords.confirm ? 'text' : 'password'}
                             value={passwordForm.confirmPassword}
-                            onChange={(e) => {
-                              console.log('Password: Confirm password field updated');
-                              setPasswordForm({ ...passwordForm, confirmPassword: e.target.value });
-                            }}
-                            className={`w-full px-3 py-2 text-sm border rounded-lg pr-10 text-black focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                              passwordErrors.confirmPassword ? 'border-red-300' : 'border-gray-200'
+                            onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                            className={`w-full px-3 py-2 text-sm rounded-lg pr-10 transition-colors border ${
+                              isDarkMode 
+                                ? passwordErrors.confirmPassword 
+                                  ? 'bg-gray-700 border-red-600 text-gray-100' 
+                                  : 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-blue-500'
+                                : passwordErrors.confirmPassword 
+                                  ? 'bg-white border-red-300 text-black' 
+                                  : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-blue-500'
                             }`}
                             placeholder="Confirm new password"
                           />
                           <button
                             type="button"
-                            onClick={() => {
-                              console.log('Password: Toggle confirm password visibility');
-                              togglePasswordVisibility('confirm');
-                            }}
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            onClick={() => togglePasswordVisibility('confirm')}
+                            className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${
+                              isDarkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'
+                            }`}
                           >
                             {showPasswords.confirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
                         </div>
                         {passwordErrors.confirmPassword && (
-                          <p className="mt-1 text-xs text-red-600">{passwordErrors.confirmPassword}</p>
+                          <p className="mt-1 text-xs text-red-600 dark:text-red-400">{passwordErrors.confirmPassword}</p>
                         )}
                       </div>
 
                       {passwordForm.newPassword && (
-                        <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                        <div className={`mt-2 p-3 rounded-lg ${
+                          isDarkMode ? 'bg-gray-700' : 'bg-gray-50'
+                        }`}>
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs text-gray-600">Password Strength:</span>
+                            <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                              Password Strength:
+                            </span>
                             <span className={`text-xs font-medium ${
                               getPasswordStrengthColor().replace('bg-', 'text-')
                             }`}>
                               {getPasswordStrengthText()}
                             </span>
                           </div>
-                          <div className="h-1 w-full bg-gray-200 rounded-full overflow-hidden mb-2">
+                          <div className={`h-1 w-full rounded-full overflow-hidden mb-2 ${
+                            isDarkMode ? 'bg-gray-600' : 'bg-gray-200'
+                          }`}>
                             <div 
                               className={`h-full ${getPasswordStrengthColor()} transition-all duration-300`}
                               style={{ width: `${(Object.values(passwordStrength).filter(Boolean).length / 5) * 100}%` }}
@@ -951,7 +927,7 @@ const SettingsPage = () => {
                               ) : (
                                 <XCircle className="w-3 h-3 text-red-500 mr-1" />
                               )}
-                              <span className="text-gray-600">8+ chars</span>
+                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>8+ chars</span>
                             </div>
                             <div className="flex items-center">
                               {passwordStrength.hasUpperCase ? (
@@ -959,7 +935,7 @@ const SettingsPage = () => {
                               ) : (
                                 <XCircle className="w-3 h-3 text-red-500 mr-1" />
                               )}
-                              <span className="text-gray-600">Uppercase</span>
+                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Uppercase</span>
                             </div>
                             <div className="flex items-center">
                               {passwordStrength.hasLowerCase ? (
@@ -967,7 +943,7 @@ const SettingsPage = () => {
                               ) : (
                                 <XCircle className="w-3 h-3 text-red-500 mr-1" />
                               )}
-                              <span className="text-gray-600">Lowercase</span>
+                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Lowercase</span>
                             </div>
                             <div className="flex items-center">
                               {passwordStrength.hasNumber ? (
@@ -975,7 +951,7 @@ const SettingsPage = () => {
                               ) : (
                                 <XCircle className="w-3 h-3 text-red-500 mr-1" />
                               )}
-                              <span className="text-gray-600">Number</span>
+                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Number</span>
                             </div>
                           </div>
                         </div>
@@ -984,7 +960,11 @@ const SettingsPage = () => {
                       <button
                         onClick={handlePasswordChange}
                         disabled={isSavingPassword}
-                        className="mt-2 px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 disabled:bg-green-300 transition-colors"
+                        className={`mt-2 px-4 py-2 text-sm rounded-lg transition-colors ${
+                          isDarkMode 
+                            ? 'bg-green-600 hover:bg-green-700 text-white' 
+                            : 'bg-green-600 hover:bg-green-700 text-white'
+                        } disabled:opacity-50`}
                       >
                         {isSavingPassword ? 'Updating...' : 'Update Password'}
                       </button>
@@ -992,52 +972,77 @@ const SettingsPage = () => {
                   )}
                 </div>
 
+                {/* 2FA Section */}
                 <div className="px-6 py-3">
                   <div className="flex items-center justify-between py-2">
                     <div className="flex items-center space-x-3">
-                      <Shield className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-700">Two-Factor Authentication</span>
+                      <Shield className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                      <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        Two-Factor Authentication
+                      </span>
                     </div>
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">Coming Soon</span>
+                    <span className={`text-xs px-2 py-1 rounded-full ${
+                      isDarkMode 
+                        ? 'bg-gray-700 text-gray-400' 
+                        : 'bg-gray-100 text-gray-600'
+                    }`}>Coming Soon</span>
                   </div>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          {/* Preferences Group */}
+          <div className={`rounded-xl shadow-sm overflow-hidden transition-colors ${
+            isDarkMode ? 'bg-gray-800' : 'bg-white'
+          }`}>
             <button
               onClick={() => toggleGroup('preferences')}
-              className="w-full px-6 py-4 flex items-center justify-between bg-white hover:bg-gray-50 transition-colors border-b border-gray-100"
+              className={`w-full px-6 py-4 flex items-center justify-between transition-colors ${
+                isDarkMode 
+                  ? 'hover:bg-gray-700 border-gray-700' 
+                  : 'hover:bg-gray-50 border-gray-100'
+              } border-b`}
             >
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <Palette className="w-4 h-4 text-purple-600" />
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                  isDarkMode ? 'bg-purple-900/30' : 'bg-purple-100'
+                }`}>
+                  <Palette className={`w-4 h-4 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`} />
                 </div>
-                <span className="font-semibold text-black">Preferences</span>
+                <span className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>
+                  Preferences
+                </span>
               </div>
               {expandedGroups.preferences ? (
-                <ChevronUp className="w-5 h-5 text-gray-400" />
+                <ChevronUp className={`w-5 h-5 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
               ) : (
-                <ChevronDown className="w-5 h-5 text-gray-400" />
+                <ChevronDown className={`w-5 h-5 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
               )}
             </button>
             
             {expandedGroups.preferences && (
-              <div className="divide-y divide-gray-100">
+              <div className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
+                {/* Appearance Section */}
                 <div className="px-6 py-3">
                   <button
                     onClick={() => toggleSection('appearance')}
                     className="w-full flex items-center justify-between py-2 text-left"
                   >
                     <div className="flex items-center space-x-3">
-                      <Moon className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-700">Appearance</span>
+                      {isDarkMode ? (
+                        <Sun className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                      ) : (
+                        <Moon className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                      )}
+                      <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        Appearance
+                      </span>
                     </div>
                     {expandedSections.appearance ? (
-                      <ChevronUp className="w-4 h-4 text-gray-400" />
+                      <ChevronUp className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                     ) : (
-                      <ChevronDown className="w-4 h-4 text-gray-400" />
+                      <ChevronDown className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                     )}
                   </button>
                   
@@ -1045,17 +1050,19 @@ const SettingsPage = () => {
                     <div className="mt-3 pl-7">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-gray-700">Dark Mode</p>
-                          <p className="text-xs text-gray-500">Switch between light and dark themes</p>
+                          <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Dark Mode</p>
+                          <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                            Switch between light and dark themes
+                          </p>
                         </div>
                         <button
                           onClick={toggleDarkMode}
                           className={`relative w-12 h-6 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                            darkMode ? 'bg-purple-600' : 'bg-gray-300'
+                            isDarkMode ? 'bg-purple-600' : 'bg-gray-300'
                           }`}
                         >
                           <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
-                            darkMode ? 'translate-x-6' : ''
+                            isDarkMode ? 'translate-x-6' : ''
                           }`} />
                         </button>
                       </div>
@@ -1063,19 +1070,22 @@ const SettingsPage = () => {
                   )}
                 </div>
 
+                {/* Notifications Section */}
                 <div className="px-6 py-3">
                   <button
                     onClick={() => toggleSection('notifications')}
                     className="w-full flex items-center justify-between py-2 text-left"
                   >
                     <div className="flex items-center space-x-3">
-                      <Bell className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-700">Notifications</span>
+                      <Bell className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                      <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        Notifications
+                      </span>
                     </div>
                     {expandedSections.notifications ? (
-                      <ChevronUp className="w-4 h-4 text-gray-400" />
+                      <ChevronUp className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                     ) : (
-                      <ChevronDown className="w-4 h-4 text-gray-400" />
+                      <ChevronDown className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                     )}
                   </button>
                   
@@ -1083,16 +1093,17 @@ const SettingsPage = () => {
                     <div className="mt-3 space-y-3 pl-7">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-gray-700">Email Notifications</p>
-                          <p className="text-xs text-gray-500">Receive updates via email</p>
+                          <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Email Notifications</p>
+                          <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                            Receive updates via email
+                          </p>
                         </div>
                         <button
-                          onClick={() => {
-                            console.log('Toggling email notifications');
-                            toggleNotification('emailNotifications');
-                          }}
+                          onClick={() => toggleNotification('emailNotifications')}
                           className={`relative w-10 h-5 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                            notificationSettings.emailNotifications ? 'bg-blue-600' : 'bg-gray-300'
+                            notificationSettings.emailNotifications 
+                              ? 'bg-blue-600' 
+                              : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
                           }`}
                         >
                           <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform ${
@@ -1103,16 +1114,17 @@ const SettingsPage = () => {
                       
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-gray-700">Push Notifications</p>
-                          <p className="text-xs text-gray-500">Browser push notifications</p>
+                          <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Push Notifications</p>
+                          <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                            Browser push notifications
+                          </p>
                         </div>
                         <button
-                          onClick={() => {
-                            console.log('Toggling push notifications');
-                            toggleNotification('pushNotifications');
-                          }}
+                          onClick={() => toggleNotification('pushNotifications')}
                           className={`relative w-10 h-5 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                            notificationSettings.pushNotifications ? 'bg-blue-600' : 'bg-gray-300'
+                            notificationSettings.pushNotifications 
+                              ? 'bg-blue-600' 
+                              : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
                           }`}
                         >
                           <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform ${
@@ -1124,19 +1136,22 @@ const SettingsPage = () => {
                   )}
                 </div>
 
+                {/* Language Section */}
                 <div className="px-6 py-3">
                   <button
                     onClick={() => toggleSection('language')}
                     className="w-full flex items-center justify-between py-2 text-left"
                   >
                     <div className="flex items-center space-x-3">
-                      <Globe className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-700">Language & Region</span>
+                      <Globe className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                      <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        Language & Region
+                      </span>
                     </div>
                     {expandedSections.language ? (
-                      <ChevronUp className="w-4 h-4 text-gray-400" />
+                      <ChevronUp className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                     ) : (
-                      <ChevronDown className="w-4 h-4 text-gray-400" />
+                      <ChevronDown className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                     )}
                   </button>
                   
@@ -1144,14 +1159,20 @@ const SettingsPage = () => {
                     <div className="mt-3 pl-7">
                       <select 
                         onChange={(e) => console.log('Language changed to:', e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg text-black focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className={`w-full px-3 py-2 text-sm rounded-lg border transition-colors ${
+                          isDarkMode 
+                            ? 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-blue-500' 
+                            : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-blue-500'
+                        }`}
                       >
                         <option>English (US)</option>
                         <option>English (UK)</option>
                         <option>French</option>
                         <option>Spanish</option>
                       </select>
-                      <p className="text-xs text-gray-500 mt-2">More languages coming soon</p>
+                      <p className={`text-xs mt-2 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                        More languages coming soon
+                      </p>
                     </div>
                   )}
                 </div>
@@ -1160,29 +1181,21 @@ const SettingsPage = () => {
           </div>
         </div>
 
+        {/* Logout Button */}
         <div className="mt-6">
           <button 
             onClick={handleLogout}
-            className="w-full flex items-center justify-center space-x-2 bg-red-50 text-red-600 hover:bg-red-100 py-3 px-4 rounded-xl transition-colors border border-red-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+            className={`w-full flex items-center justify-center space-x-2 py-3 px-4 rounded-xl transition-colors border ${
+              isDarkMode 
+                ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50 border-red-800' 
+                : 'bg-red-50 text-red-600 hover:bg-red-100 border-red-200'
+            } focus:outline-none focus:ring-2 focus:ring-red-500`}
           >
             <LogOut className="w-4 h-4" />
             <span className="font-medium">Logout</span>
           </button>
         </div>
       </div>
-
-      <style>{`
-        input, textarea, select {
-          color: black !important;
-        }
-        input::placeholder, textarea::placeholder {
-          color: #9ca3af;
-        }
-        input:focus, textarea:focus, select:focus {
-          outline: none;
-          ring: 2px solid #3b82f6;
-        }
-      `}</style>
     </div>
   );
 };

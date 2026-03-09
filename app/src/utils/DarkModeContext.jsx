@@ -1,63 +1,42 @@
-import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+// DarkModeContext.jsx (already correct)
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
-const DarkModeContext = createContext();
-
-export const useDarkMode = () => useContext(DarkModeContext);
+export const DarkModeContext = createContext();
 
 export const DarkModeProvider = ({ children }) => {
-
-  const getInitialDarkMode = () => {
-    
-    const saved = localStorage.getItem('darkMode');
-    if (saved !== null) {
-      return JSON.parse(saved);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      return savedTheme === 'dark';
     }
-  
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return true;
-    }
-    return false;
-  };
-
-  const [darkMode, setDarkMode] = useState(getInitialDarkMode);
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
 
   useEffect(() => {
-    console.log("darkMode changed →", darkMode);
-    localStorage.setItem('darkMode', JSON.stringify(darkMode));
-    if (darkMode) {
+    if (isDarkMode) {
       document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
     }
-  }, [darkMode]);
+  }, [isDarkMode]);
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e) => {
-
-      if (localStorage.getItem('darkMode') === null) {
-        setDarkMode(e.matches);
-      }
-    };
-    
-    // Modern browsers
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', handleChange);
-      return () => mediaQuery.removeEventListener('change', handleChange);
-    } else {
-      // Fallback for older browsers
-      mediaQuery.addListener(handleChange);
-      return () => mediaQuery.removeListener(handleChange);
-    }
-  }, []);
-
-  const toggleDarkMode = useCallback(() => {
-    setDarkMode(prev => !prev);
-  }, []);
+  const toggleDarkMode = () => {
+    setIsDarkMode((prev) => !prev);
+  };
 
   return (
-    <DarkModeContext.Provider value={{ darkMode, toggleDarkMode }}>
+    <DarkModeContext.Provider value={{ isDarkMode, toggleDarkMode }}>
       {children}
     </DarkModeContext.Provider>
   );
+};
+
+export const useDarkMode = () => {
+  const context = useContext(DarkModeContext);
+  if (!context) {
+    throw new Error('useDarkMode must be used within a DarkModeProvider');
+  }
+  return context;
 };
