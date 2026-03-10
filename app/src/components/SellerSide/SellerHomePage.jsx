@@ -3,8 +3,10 @@ import { Heart, MessageSquare, Star, Bookmark, Edit, Settings, Search, MoreHoriz
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
+import { useSellerDarkMode } from '../../utils/SellerDarkModeContext';
 
 const SellerHomePage = () => {
+  const { isDarkMode } = useSellerDarkMode();
   const [searchFocused, setSearchFocused] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState({});
@@ -34,7 +36,7 @@ const SellerHomePage = () => {
     product_id: '',
     caption: '',
     picture: null,
-    priority: 0,  // kept for backend compatibility, but no UI field
+    priority: 0,
   });
   const [isCreating, setIsCreating] = useState(false);
 
@@ -134,7 +136,9 @@ const SellerHomePage = () => {
   }, [quickDeals.length, currentVerticalIndex]);
   
   const getRandomColor = () => {
-    const colors = ['bg-blue-100', 'bg-pink-100', 'bg-green-100', 'bg-orange-100', 'bg-purple-100'];
+    const colors = isDarkMode 
+      ? ['bg-gray-700', 'bg-gray-800', 'bg-gray-900', 'bg-blue-900', 'bg-purple-900']
+      : ['bg-blue-100', 'bg-pink-100', 'bg-green-100', 'bg-orange-100', 'bg-purple-100'];
     return colors[Math.floor(Math.random() * colors.length)];
   };
 
@@ -145,7 +149,7 @@ const SellerHomePage = () => {
 
   // Scroll quick deals vertically
   const scrollVertical = (direction) => {
-    const step = 4;   // now scrolling 4 deals at a time
+    const step = 4;
 
     if (direction === 'up' && currentVerticalIndex > 0) {
       setCurrentVerticalIndex(prev => Math.max(0, prev - step));
@@ -371,19 +375,25 @@ const SellerHomePage = () => {
 
   if (isLoading) {
     return (
-      <div className="p-6 max-w-4xl mx-auto text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"></div>
-        <p className="mt-4 text-gray-600">Loading your products...</p>
+      <div className={`p-6 max-w-4xl mx-auto text-center ${isDarkMode ? 'bg-gray-900' : ''}`}>
+        <div className={`animate-spin rounded-full h-12 w-12 border-b-2 mx-auto ${isDarkMode ? 'border-green-400' : 'border-green-500'}`}></div>
+        <p className={`mt-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Loading your products...</p>
       </div>
     );
   }
 
   return (
-    <div className="p-2 sm:p-4 md:p-6 max-w-4xl mx-auto relative">
+    <div className={`p-2 sm:p-4 md:p-6 max-w-4xl mx-auto relative min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       {/* Header section */}
       <div className="flex justify-between items-center mb-2 sm:mb-3">
-        <div className="flex w-full sm:w-64 border border-gray-300 rounded-lg overflow-hidden">
-          <select className="w-1/5 px-2 py-1 bg-white text-black focus:outline-none text-xs border-r border-gray-300">
+        <div className={`flex w-full sm:w-64 border rounded-lg overflow-hidden ${
+          isDarkMode ? 'border-gray-700' : 'border-gray-300'
+        }`}>
+          <select className={`w-1/5 px-2 py-1 focus:outline-none text-xs border-r ${
+            isDarkMode 
+              ? 'bg-gray-800 text-gray-200 border-gray-700' 
+              : 'bg-white text-black border-gray-300'
+          }`}>
             <option value="all">All</option>
             <option value="tech">Tech</option>
             <option value="fitness">Fitness</option>
@@ -394,36 +404,52 @@ const SellerHomePage = () => {
             <input
               type="text"
               placeholder="Search your products..."
-              className="w-full px-2 py-1 bg-white text-black placeholder-gray-500 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-2 py-1 placeholder-gray-500 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                isDarkMode 
+                  ? 'bg-gray-800 text-gray-200' 
+                  : 'bg-white text-black'
+              }`}
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
             />
-            <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3" />
+            <Search className={`absolute right-2 top-1/2 transform -translate-y-1/2 w-3 h-3 ${
+              isDarkMode ? 'text-gray-500' : 'text-gray-400'
+            }`} />
           </div>
         </div>
         <div className="relative group ml-4">
-          <Link to="/seller/settings" className="text-black hover:text-blue-500 p-0.5">
+          <Link to="/seller/settings" className={`p-0.5 ${isDarkMode ? 'text-gray-300 hover:text-blue-400' : 'text-black hover:text-blue-500'}`}>
             <Settings className="w-4 h-4" />
           </Link>
-          <span className="absolute hidden group-hover:block -top-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2">Settings</span>
+          <span className={`absolute hidden group-hover:block -top-6 left-1/2 transform -translate-x-1/2 text-white text-xs rounded py-1 px-2 ${
+            isDarkMode ? 'bg-gray-700' : 'bg-gray-800'
+          }`}>Settings</span>
         </div>
       </div>
 
       {/* Quick Deals Section */}
-      <div className="sticky top-0 z-40 pt-2 pb-2 mb-2 bg-gray-50 rounded-lg">
+      <div className={`sticky top-0 z-40 pt-2 pb-2 mb-2 rounded-lg transition-colors ${
+        isDarkMode ? 'bg-gray-800' : 'bg-gray-50'
+      }`}>
         <div className="flex items-center justify-between w-full">
           {/* Heading + Add button*/}
           <div className="flex-shrink-0 mr-4 flex items-center">
             <div className="flex flex-col leading-tight mr-2">
-              <span className="text-lg font-bold text-black">Quick</span>
-              <span className="text-lg font-bold text-black">Deals</span>
+              <span className={`text-lg font-bold ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>Quick</span>
+              <span className={`text-lg font-bold ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>Deals</span>
             </div>
             <button
               onClick={openQuickDealModal}
-              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-green-100 flex items-center justify-center hover:bg-green-200 transition-colors"
+              className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-colors ${
+                isDarkMode 
+                  ? 'bg-green-900 hover:bg-green-800' 
+                  : 'bg-green-100 hover:bg-green-200'
+              }`}
               title="Add Quick Deal"
             >
-              <Plus className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+              <Plus className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                isDarkMode ? 'text-green-400' : 'text-green-600'
+              }`} />
             </button>
           </div>
 
@@ -435,17 +461,23 @@ const SellerHomePage = () => {
                 className="flex flex-col items-center flex-shrink-0 cursor-pointer"
                 onClick={() => handleQuickDealClick(item)}
               >
-                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full ${item.color} flex items-center justify-center border-2 border-white shadow-sm`}>
+                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full ${item.color} flex items-center justify-center border-2 ${
+                  isDarkMode ? 'border-gray-700' : 'border-white'
+                } shadow-sm`}>
                   <img
                     src={item.image}
                     alt={item.product}
                     className="w-8 h-8 sm:w-10 sm:h-10 object-cover rounded-full"
                   />
                 </div>
-                <p className="text-center text-xs text-black mt-1 font-medium truncate w-12 sm:w-14">
+                <p className={`text-center text-xs mt-1 font-medium truncate w-12 sm:w-14 ${
+                  isDarkMode ? 'text-gray-300' : 'text-black'
+                }`}>
                   {item.title}
                 </p>
-                <p className="text-center text-xs text-gray-500 truncate w-12 sm:w-14">
+                <p className={`text-center text-xs truncate w-12 sm:w-14 ${
+                  isDarkMode ? 'text-gray-500' : 'text-gray-500'
+                }`}>
                   {item.product}
                 </p>
               </div>
@@ -456,25 +488,45 @@ const SellerHomePage = () => {
           <div className="flex flex-col space-y-1 ml-4">
             <button
               onClick={() => scrollVertical('up')}
-              className="bg-white shadow-md rounded-full p-1 hover:bg-gray-100 transition-colors"
+              className={`shadow-md rounded-full p-1 transition-colors ${
+                isDarkMode 
+                  ? 'bg-gray-700 hover:bg-gray-600' 
+                  : 'bg-white hover:bg-gray-100'
+              }`}
               disabled={currentVerticalIndex === 0}
             >
-              <ChevronUp className={`w-3 h-3 ${currentVerticalIndex === 0 ? 'text-gray-300' : 'text-gray-600'}`} />
+              <ChevronUp className={`w-3 h-3 ${
+                currentVerticalIndex === 0 
+                  ? isDarkMode ? 'text-gray-600' : 'text-gray-300'
+                  : isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`} />
             </button>
             <button
               onClick={() => scrollVertical('down')}
-              className="bg-white shadow-md rounded-full p-1 hover:bg-gray-100 transition-colors"
-              disabled={currentVerticalIndex >= quickDeals.length - 4}   
+              className={`shadow-md rounded-full p-1 transition-colors ${
+                isDarkMode 
+                  ? 'bg-gray-700 hover:bg-gray-600' 
+                  : 'bg-white hover:bg-gray-100'
+              }`}
+              disabled={currentVerticalIndex >= quickDeals.length - 4}
             >
-              <ChevronDown className={`w-3 h-3 ${currentVerticalIndex >= quickDeals.length - 4 ? 'text-gray-300' : 'text-gray-600'}`} />
+              <ChevronDown className={`w-3 h-3 ${
+                currentVerticalIndex >= quickDeals.length - 4
+                  ? isDarkMode ? 'text-gray-600' : 'text-gray-300'
+                  : isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`} />
             </button>
           </div>
         </div>
 
-        {/* Progress bar – width changed to 25% (1/4) */}
-        <div className="w-full h-1 bg-gray-300 rounded-full relative mt-3">
+        {/* Progress bar */}
+        <div className={`w-full h-1 rounded-full relative mt-3 ${
+          isDarkMode ? 'bg-gray-700' : 'bg-gray-300'
+        }`}>
           <div
-            className="absolute top-0 left-0 h-1 bg-gray-600 rounded-full transition-all duration-300"
+            className={`absolute top-0 left-0 h-1 rounded-full transition-all duration-300 ${
+              isDarkMode ? 'bg-gray-400' : 'bg-gray-600'
+            }`}
             style={{
               width: '25%',
               transform: `translateX(${currentVerticalIndex / 4 * 100}%)`
@@ -486,7 +538,7 @@ const SellerHomePage = () => {
       {/* Posts grid */}
       {posts.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-gray-500">You haven't added any products yet.</p>
+          <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>You haven't added any products yet.</p>
           <button
             onClick={() => navigate('/seller/add-product/step1')}
             className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
@@ -502,9 +554,11 @@ const SellerHomePage = () => {
             const truncatedDescription = post.content.length > 40 ? post.content.substring(0, 40) + '...' : post.content;
 
             return (
-              <Card key={post.id} variant="elevated" className="overflow-hidden flex flex-col relative">
+              <Card key={post.id} variant="elevated" className="overflow-hidden flex flex-col relative" isDarkMode={isDarkMode}>
                 <CardContent className="p-0 flex flex-col">
-                  <div className="p-0 sm:p-3 flex flex-col border-b border-gray-100">
+                  <div className={`p-0 sm:p-3 flex flex-col border-b ${
+                    isDarkMode ? 'border-gray-700' : 'border-gray-100'
+                  }`}>
                     <div className="flex justify-between items-center">
                       <Link
                         to={`/seller/${post.sellerId || post.id}`}
@@ -513,15 +567,21 @@ const SellerHomePage = () => {
                         <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs">
                           {post.authorAvatar}
                         </div>
-                        <span className="font-medium text-black text-xs sm:text-sm truncate">
+                        <span className={`font-medium text-xs sm:text-sm truncate ${
+                          isDarkMode ? 'text-gray-200' : 'text-black'
+                        }`}>
                           {post.sellerName}
                         </span>
                       </Link>
                       <button
                         onClick={() => toggleDropdown(post.id)}
-                        className="p-1 rounded hover:bg-gray-100"
+                        className={`p-1 rounded ${
+                          isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+                        }`}
                       >
-                        <MoreHorizontal className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
+                        <MoreHorizontal className={`w-3 h-3 sm:w-4 sm:h-4 ${
+                          isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                        }`} />
                       </button>
                     </div>
                     <div className="flex justify-center items-center mt-0.2">
@@ -529,7 +589,9 @@ const SellerHomePage = () => {
                     </div>
                   </div>
                   <div
-                    className="relative aspect-square w-full bg-gray-200 flex-1"
+                    className={`relative aspect-square w-full flex-1 ${
+                      isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
+                    }`}
                     onTouchStart={(e) => {
                       const touchStartX = e.touches[0].clientX;
                       setCurrentImageIndex((prev) => ({ ...prev, touchStartX }));
@@ -556,7 +618,9 @@ const SellerHomePage = () => {
                             key={index}
                             onClick={() => goToImage(post.id, index)}
                             className={`w-1 h-1 rounded-full transition-all ${
-                              index === currentIndex ? 'bg-gray-300' : 'bg-gray-100'
+                              index === currentIndex 
+                                ? isDarkMode ? 'bg-gray-400' : 'bg-gray-300'
+                                : isDarkMode ? 'bg-gray-600' : 'bg-gray-100'
                             }`}
                           />
                         ))}
@@ -577,20 +641,32 @@ const SellerHomePage = () => {
                           <button
                             onClick={() => toggleLike(post.id)}
                             className={`p-1 rounded-full transition-colors ${
-                              likedPosts[post.id] ? 'text-red-500 bg-red-50' : 'text-gray-600 hover:text-red-500'
+                              likedPosts[post.id] 
+                                ? 'text-red-500 bg-red-50' 
+                                : isDarkMode 
+                                  ? 'text-gray-400 hover:text-red-400' 
+                                  : 'text-gray-600 hover:text-red-500'
                             }`}
                           >
                             <Heart className="w-3 h-3 sm:w-4 sm:h-4" fill={likedPosts[post.id] ? 'currentColor' : 'none'} />
                           </button>
                           <Link
                             to={`/product/${post.id}/comments`}
-                            className="p-1 text-gray-600 hover:text-blue-500 rounded-full hover:bg-blue-50"
+                            className={`p-1 rounded-full ${
+                              isDarkMode 
+                                ? 'text-gray-400 hover:text-blue-400 hover:bg-blue-900/30' 
+                                : 'text-gray-600 hover:text-blue-500 hover:bg-blue-50'
+                            }`}
                           >
                             <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
                           </Link>
                           <button
                             onClick={() => openEditModal(post)}
-                            className="p-1 rounded-full text-gray-600 hover:text-yellow-500"
+                            className={`p-1 rounded-full ${
+                              isDarkMode 
+                                ? 'text-gray-400 hover:text-yellow-400' 
+                                : 'text-gray-600 hover:text-yellow-500'
+                            }`}
                             title="Edit Product"
                           >
                             <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -599,7 +675,11 @@ const SellerHomePage = () => {
                         <button
                           onClick={() => toggleFavorite(post.id)}
                           className={`p-1 rounded-full transition-colors ${
-                            favoritedPosts[post.id] ? 'text-blue-500 bg-blue-50' : 'text-gray-600 hover:text-blue-500'
+                            favoritedPosts[post.id] 
+                              ? 'text-blue-500 bg-blue-50' 
+                              : isDarkMode 
+                                ? 'text-gray-400 hover:text-blue-400' 
+                                : 'text-gray-600 hover:text-blue-500'
                           }`}
                         >
                           <Bookmark className="w-3 h-3 sm:w-4 sm:h-4" fill={favoritedPosts[post.id] ? 'currentColor' : 'none'} />
@@ -610,21 +690,33 @@ const SellerHomePage = () => {
                           {[1, 2, 3, 4, 5].map((star) => (
                             <Star
                               key={star}
-                              className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${star <= post.rating ? 'text-yellow-500' : 'text-gray-300'}`}
+                              className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${
+                                star <= post.rating 
+                                  ? 'text-yellow-500' 
+                                  : isDarkMode ? 'text-gray-600' : 'text-gray-300'
+                              }`}
                               fill={star <= post.rating ? 'currentColor' : 'none'}
                             />
                           ))}
                         </div>
-                        <span className="text-xs text-gray-600">({post.ratingCount})</span>
+                        <span className={`text-xs ${
+                          isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                        }`}>({post.ratingCount})</span>
                       </div>
                     </div>
-                    <Link to={`/product/${post.id}`} className="text-black hover:underline text-xs font-medium truncate mb-1">
+                    <Link to={`/product/${post.id}`} className={`hover:underline text-xs font-medium truncate mb-1 ${
+                      isDarkMode ? 'text-gray-300' : 'text-black'
+                    }`}>
                       {post.product}
                     </Link>
                     <div className="mt-0 relative">
                       <button
                         onClick={(e) => toggleDescriptionExpansion(post.id, e)}
-                        className="description-toggle-button text-xs text-gray-600 hover:text-blue-500 text-left w-full p-1 bg-gray-50 rounded hover:bg-gray-100 transition-colors flex items-start"
+                        className={`description-toggle-button text-xs text-left w-full p-1 rounded transition-colors flex items-start ${
+                          isDarkMode 
+                            ? 'text-gray-400 hover:text-blue-400 bg-gray-700 hover:bg-gray-600' 
+                            : 'text-gray-600 hover:text-blue-500 bg-gray-50 hover:bg-gray-100'
+                        }`}
                       >
                         <span className="text-left">{truncatedDescription}</span>
                       </button>
@@ -642,7 +734,11 @@ const SellerHomePage = () => {
         <div className="fixed inset-0 z-[100] pointer-events-none">
           <div className="absolute inset-0 pointer-events-auto" onClick={() => setExpandedDescriptionId(null)} />
           <div
-            className="description-expanded-box fixed bg-white border border-gray-300 rounded-lg shadow-lg z-[101] animate-fadeIn max-h-[200px] overflow-y-auto pointer-events-auto"
+            className={`description-expanded-box fixed border rounded-lg shadow-lg z-[101] animate-fadeIn max-h-[200px] overflow-y-auto pointer-events-auto ${
+              isDarkMode 
+                ? 'bg-gray-800 border-gray-700' 
+                : 'bg-white border-gray-300'
+            }`}
             style={{
               top: `${expandedDescriptionPosition.top}px`,
               left: `${expandedDescriptionPosition.left}px`,
@@ -652,20 +748,34 @@ const SellerHomePage = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-3">
-              <div className="flex justify-between items-center mb-2 pb-2 border-b border-gray-200">
-                <h3 className="font-medium text-black text-sm">Product Description</h3>
-                <button onClick={() => setExpandedDescriptionId(null)} className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-1 transition-colors">
+              <div className={`flex justify-between items-center mb-2 pb-2 border-b ${
+                isDarkMode ? 'border-gray-700' : 'border-gray-200'
+              }`}>
+                <h3 className={`font-medium text-sm ${
+                  isDarkMode ? 'text-gray-200' : 'text-black'
+                }`}>Product Description</h3>
+                <button onClick={() => setExpandedDescriptionId(null)} className={`rounded-full p-1 transition-colors ${
+                  isDarkMode 
+                    ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-700' 
+                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                }`}>
                   <X className="w-3 h-3" />
                 </button>
               </div>
               <div className="overflow-y-auto pr-1" style={{ maxHeight: '120px' }}>
-                <p className="text-xs text-gray-700 whitespace-pre-line leading-relaxed">
+                <p className={`text-xs whitespace-pre-line leading-relaxed ${
+                  isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                }`}>
                   {posts.find(p => p.id === expandedDescriptionId)?.content || 'No description available'}
                 </p>
               </div>
-              <div className="mt-2 pt-2 border-t border-gray-200">
+              <div className={`mt-2 pt-2 border-t ${
+                isDarkMode ? 'border-gray-700' : 'border-gray-200'
+              }`}>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-500">
+                  <span className={`text-xs ${
+                    isDarkMode ? 'text-gray-500' : 'text-gray-500'
+                  }`}>
                     Seller: {posts.find(p => p.id === expandedDescriptionId)?.sellerName || 'Seller'}
                   </span>
                   <Link
@@ -685,75 +795,121 @@ const SellerHomePage = () => {
       {/* Edit Modal */}
       {editModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="p-4 border-b border-gray-200">
-              <h3 className="font-semibold text-lg text-black">Edit Product</h3>
-              <p className="text-sm text-gray-600 mt-1">Make changes to your product.</p>
+          <div className={`rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto ${
+            isDarkMode ? 'bg-gray-800' : 'bg-white'
+          }`}>
+            <div className={`p-4 border-b ${
+              isDarkMode ? 'border-gray-700' : 'border-gray-200'
+            }`}>
+              <h3 className={`font-semibold text-lg ${
+                isDarkMode ? 'text-gray-200' : 'text-black'
+              }`}>Edit Product</h3>
+              <p className={`text-sm mt-1 ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>Make changes to your product.</p>
             </div>
             <form onSubmit={handleUpdateProduct} className="p-4">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+                  <label className={`block text-sm font-medium mb-1 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>Product Name</label>
                   <input
                     type="text"
                     name="name"
                     value={editFormData.name}
                     onChange={handleEditFormChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      isDarkMode 
+                        ? 'bg-gray-700 border-gray-600 text-gray-200' 
+                        : 'bg-white border-gray-300 text-black'
+                    }`}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <label className={`block text-sm font-medium mb-1 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>Description</label>
                   <textarea
                     name="description"
                     value={editFormData.description}
                     onChange={handleEditFormChange}
                     rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      isDarkMode 
+                        ? 'bg-gray-700 border-gray-600 text-gray-200' 
+                        : 'bg-white border-gray-300 text-black'
+                    }`}
                     required
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Price (UGX)</label>
+                    <label className={`block text-sm font-medium mb-1 ${
+                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>Price (UGX)</label>
                     <input
                       type="number"
                       name="unit_price"
                       value={editFormData.unit_price}
                       onChange={handleEditFormChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        isDarkMode 
+                          ? 'bg-gray-700 border-gray-600 text-gray-200' 
+                          : 'bg-white border-gray-300 text-black'
+                      }`}
                       required
                       min="0"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Stock Quantity</label>
+                    <label className={`block text-sm font-medium mb-1 ${
+                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>Stock Quantity</label>
                     <input
                       type="number"
                       name="stock_quantity"
                       value={editFormData.stock_quantity}
                       onChange={handleEditFormChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        isDarkMode 
+                          ? 'bg-gray-700 border-gray-600 text-gray-200' 
+                          : 'bg-white border-gray-300 text-black'
+                      }`}
                       required
                       min="0"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Product Image</label>
+                  <label className={`block text-sm font-medium mb-1 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>Product Image</label>
                   <input
                     type="file"
                     name="image"
                     onChange={handleEditFormChange}
                     accept="image/*"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      isDarkMode 
+                        ? 'bg-gray-700 border-gray-600 text-gray-200' 
+                        : 'bg-white border-gray-300 text-black'
+                    }`}
                   />
-                  <p className="text-xs text-gray-500 mt-1">Leave empty to keep current image</p>
+                  <p className={`text-xs mt-1 ${
+                    isDarkMode ? 'text-gray-500' : 'text-gray-500'
+                  }`}>Leave empty to keep current image</p>
                 </div>
               </div>
-              <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
-                <button type="button" onClick={closeEditModal} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">
+              <div className={`flex justify-end space-x-3 mt-6 pt-4 border-t ${
+                isDarkMode ? 'border-gray-700' : 'border-gray-200'
+              }`}>
+                <button type="button" onClick={closeEditModal} className={`px-4 py-2 text-sm font-medium rounded-md ${
+                  isDarkMode 
+                    ? 'text-gray-300 bg-gray-700 hover:bg-gray-600' 
+                    : 'text-gray-700 bg-gray-100 hover:bg-gray-200'
+                }`}>
                   Cancel
                 </button>
                 <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
@@ -765,25 +921,39 @@ const SellerHomePage = () => {
         </div>
       )}
 
-      {/* Quick Deal Creation Modal (priority field removed) */}
+      {/* Quick Deal Creation Modal */}
       {quickDealModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-              <h3 className="font-semibold text-lg text-black">Create Quick Deal</h3>
-              <button onClick={() => setQuickDealModalOpen(false)} className="text-gray-500 hover:text-gray-700">
+          <div className={`rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto ${
+            isDarkMode ? 'bg-gray-800' : 'bg-white'
+          }`}>
+            <div className={`p-4 border-b flex justify-between items-center ${
+              isDarkMode ? 'border-gray-700' : 'border-gray-200'
+            }`}>
+              <h3 className={`font-semibold text-lg ${
+                isDarkMode ? 'text-gray-200' : 'text-black'
+              }`}>Create Quick Deal</h3>
+              <button onClick={() => setQuickDealModalOpen(false)} className={`${
+                isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
+              }`}>
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleCreateQuickDeal} className="p-4">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Select Product *</label>
+                  <label className={`block text-sm font-medium mb-1 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>Select Product *</label>
                   <select
                     name="product_id"
                     value={newQuickDeal.product_id}
                     onChange={handleQuickDealInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      isDarkMode 
+                        ? 'bg-gray-700 border-gray-600 text-gray-200' 
+                        : 'bg-white border-gray-300 text-black'
+                    }`}
                     required
                   >
                     <option value="">Choose a product</option>
@@ -795,34 +965,53 @@ const SellerHomePage = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Caption</label>
+                  <label className={`block text-sm font-medium mb-1 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>Caption</label>
                   <input
                     type="text"
                     name="caption"
                     value={newQuickDeal.caption}
                     onChange={handleQuickDealInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      isDarkMode 
+                        ? 'bg-gray-700 border-gray-600 text-gray-200' 
+                        : 'bg-white border-gray-300 text-black'
+                    }`}
                     placeholder="e.g., Limited offer!"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Picture (optional)</label>
+                  <label className={`block text-sm font-medium mb-1 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>Picture (optional)</label>
                   <input
                     type="file"
                     name="picture"
                     accept="image/*"
                     onChange={handleQuickDealInputChange}
-                    className="w-full px-3 py-2 border text-black border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      isDarkMode 
+                        ? 'bg-gray-700 border-gray-600 text-gray-200' 
+                        : 'bg-white border-gray-300 text-black'
+                    }`}
                   />
-                  <p className="text-xs text-gray-500 mt-1">If not provided, product image will be used</p>
+                  <p className={`text-xs mt-1 ${
+                    isDarkMode ? 'text-gray-500' : 'text-gray-500'
+                  }`}>If not provided, product image will be used</p>
                 </div>
-                {/* Priority field removed */}
               </div>
-              <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
+              <div className={`flex justify-end space-x-3 mt-6 pt-4 border-t ${
+                isDarkMode ? 'border-gray-700' : 'border-gray-200'
+              }`}>
                 <button
                   type="button"
                   onClick={() => setQuickDealModalOpen(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                  className={`px-4 py-2 text-sm font-medium rounded-md ${
+                    isDarkMode 
+                      ? 'text-gray-300 bg-gray-700 hover:bg-gray-600' 
+                      : 'text-gray-700 bg-gray-100 hover:bg-gray-200'
+                  }`}
                 >
                   Cancel
                 </button>
@@ -849,16 +1038,28 @@ const SellerHomePage = () => {
       {/* Dropdown Modal */}
       {dropdownOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeDropdown}>
-          <div className="bg-white rounded-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="p-4 border border-gray-200 text-center">
-              <h3 className="font-semibold text-lg text-black">Post Options</h3>
+          <div className={`rounded-xl ${
+            isDarkMode ? 'bg-gray-800' : 'bg-white'
+          }`} onClick={(e) => e.stopPropagation()}>
+            <div className={`p-4 border text-center ${
+              isDarkMode ? 'border-gray-700' : 'border-gray-200'
+            }`}>
+              <h3 className={`font-semibold text-lg ${
+                isDarkMode ? 'text-gray-200' : 'text-black'
+              }`}>Post Options</h3>
             </div>
-            <div className="divide-y divide-gray-100">
+            <div className={`divide-y ${
+              isDarkMode ? 'divide-gray-700' : 'divide-gray-100'
+            }`}>
               {dropdownItems.map((item, index) => (
                 <button
                   key={index}
                   onClick={item.action}
-                  className="w-full text-center px-4 py-3 text-sm hover:bg-gray-50 text-black first:rounded-t-lg last:rounded-b-lg transition-colors"
+                  className={`w-full text-center px-4 py-3 text-sm first:rounded-t-lg last:rounded-b-lg transition-colors ${
+                    isDarkMode 
+                      ? 'text-gray-300 hover:bg-gray-700' 
+                      : 'text-black hover:bg-gray-50'
+                  }`}
                 >
                   {item.label}
                 </button>
@@ -871,14 +1072,24 @@ const SellerHomePage = () => {
       {/* Search Results Placeholder */}
       {searchFocused && (
         <div className="mt-4">
-          <p className="text-gray-500 text-center py-8 text-sm">Type to search for products, people, and topics</p>
+          <p className={`text-center py-8 text-sm ${
+            isDarkMode ? 'text-gray-400' : 'text-gray-500'
+          }`}>Type to search for products, people, and topics</p>
           <div className="mt-4">
-            <h3 className="text-sm text-gray-700 mb-3">Recent searches</h3>
+            <h3 className={`text-sm mb-3 ${
+              isDarkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>Recent searches</h3>
             <div className="space-y-2">
               {['wireless headphones', 'fitness tracker', 'laptop backpack'].map((term, index) => (
-                <div key={index} className="flex items-center p-3 hover:bg-gray-100 rounded-lg cursor-pointer">
-                  <Search className="w-4 h-4 text-gray-400 mr-3" />
-                  <span className="text-black text-sm">{term}</span>
+                <div key={index} className={`flex items-center p-3 rounded-lg cursor-pointer ${
+                  isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
+                }`}>
+                  <Search className={`w-4 h-4 mr-3 ${
+                    isDarkMode ? 'text-gray-600' : 'text-gray-400'
+                  }`} />
+                  <span className={`text-sm ${
+                    isDarkMode ? 'text-gray-300' : 'text-black'
+                  }`}>{term}</span>
                 </div>
               ))}
             </div>

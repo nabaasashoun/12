@@ -1,7 +1,3 @@
-// HomePage.jsx - FULL FILE (with redundant code repeated exactly as requested)
-// Uses the new clean card.jsx + pure Tailwind dark: mode everywhere
-// Toggle in SettingsPage now controls the entire app perfectly
-
 import { Card, CardContent } from './card';
 import {
   Heart, MessageSquare, Star, Bookmark, Plus, Settings,

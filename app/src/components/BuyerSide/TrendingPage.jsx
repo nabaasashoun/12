@@ -3,8 +3,10 @@ import { Heart, MessageSquare, Star, Bookmark, Plus, Settings, Search, MoreHoriz
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Loader from '../UISkeleton/Loader';
+import { useDarkMode } from '../../utils/DarkModeContext';   // ← Added
 
 const TrendingPage = () => {
+  const { isDarkMode } = useDarkMode();                    // ← Added
   const [searchFocused, setSearchFocused] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState({});
@@ -50,16 +52,13 @@ const TrendingPage = () => {
     setDropdownOpen(null);
   };
 
-
-
   if (loading) {
     return (
-      <div className="p-3 sm:p-4 md:p-6 max-w-4xl mx-auto min-h-screen flex items-center justify-center">
+      <div className={`p-3 sm:p-4 md:p-6 max-w-4xl mx-auto min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <Loader />
       </div>
     );
   }
-
 
   const toggleLike = (postId) => {
     setLikedPosts(prev => ({ ...prev, [postId]: !prev[postId] }));
@@ -80,17 +79,16 @@ const TrendingPage = () => {
     { label: 'Cancel', action: closeDropdown },
   ];
 
-
   const filteredPosts = posts; 
 
   return (
-    <div className="p-3 sm:p-4 md:p-6 max-w-4xl mx-auto">
+    <div className={`p-3 sm:p-4 md:p-6 max-w-4xl mx-auto min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       {/* Header section with combined search bar and dropdown */}
       <div className="flex justify-end items-center mb-4 sm:mb-6 gap-2 sm:gap-3">
         <div className="flex items-center w-full sm:w-auto">
-          <div className="flex w-full sm:w-64 border border-gray-300 rounded-lg overflow-hidden">
+          <div className={`flex w-full sm:w-64 border rounded-lg overflow-hidden ${isDarkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-300 bg-white'}`}>
             <select
-              className="w-1/5 px-3 py-2 bg-white text-black focus:outline-none text-sm border-r border-gray-300"
+              className={`w-1/5 px-3 py-2 focus:outline-none text-sm border-r ${isDarkMode ? 'bg-gray-800 text-gray-200 border-gray-700' : 'bg-white text-black border-gray-300'}`}
               onChange={(e) => {}}
             >
               {['Tech', 'Fitness', 'Home', 'Fashion', 'Food', 'Tech'].map((title, index) => (
@@ -103,19 +101,19 @@ const TrendingPage = () => {
               <input
                 type="text"
                 placeholder="Search products..."
-                className="w-full px-3 py-2 bg-white text-black placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500 ${isDarkMode ? 'bg-gray-800 text-gray-200' : 'bg-white text-black'}`}
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
               />
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className={`absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-400'}`} />
             </div>
           </div>
         </div>
         <div className="relative group">
-          <button className="text-black hover:text-blue-500 p-1">
+          <button className={`p-1 transition-colors ${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-black hover:text-blue-500'}`}>
             <Settings className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
-          <span className="absolute hidden group-hover:block -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2">Settings</span>
+          <span className={`absolute hidden group-hover:block -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2`}>Settings</span>
         </div>
       </div>
 
@@ -129,30 +127,29 @@ const TrendingPage = () => {
           return (            
             <Card key={post.id} variant="elevated" className="overflow-hidden flex flex-col">
               <CardContent className="p-0 flex flex-col">
-                <div className="p-2 sm:p-3 flex flex-col border-b border-gray-100">
+                <div className={`p-2 sm:p-3 flex flex-col border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-2">
                       <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs">
                         {post.name?.charAt(0) || 'P'}
                       </div>
-                      <span className="font-medium text-black text-xs sm:text-sm truncate">
+                      <span className={`font-medium text-xs sm:text-sm truncate ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>
                         {post.name || 'Product'}
                       </span>
                     </div>
                     <button
                       onClick={() => toggleDropdown(post.id)}
-                      className="p-1 rounded hover:bg-gray-100"
+                      className={`p-1 rounded ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
                     >
-                      <MoreHorizontal className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
+                      <MoreHorizontal className={`w-3 h-3 sm:w-4 sm:h-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
                     </button>
                   </div>
                   <div className="flex justify-between items-center mt-1">
-                    <span className="text-xs text-green-600 font-semibold">UGX {post.unit_price || '0'}</span>
-
+                    <span className="text-xs text-green-600 dark:text-green-400 font-semibold">UGX {post.unit_price || '0'}</span>
                   </div>
                 </div>
                 <div
-                  className="relative aspect-square w-full bg-gray-200 flex-1"
+                  className="relative aspect-square w-full bg-gray-200 dark:bg-gray-700 flex-1"
                   onTouchStart={(e) => {
                     const touchStartX = e.touches[0].clientX;
                     setCurrentImageIndex((prev) => ({
@@ -194,9 +191,7 @@ const TrendingPage = () => {
                         <button
                           key={index}
                           onClick={() => goToImage(post.id, index)}
-                          className={`w-1 h-1 rounded-full transition-all ${
-                            index === currentIndex ? 'bg-gray-300' : 'bg-gray-100'
-                          }`}
+                          className={`w-1 h-1 rounded-full transition-all ${index === currentIndex ? (isDarkMode ? 'bg-gray-400' : 'bg-gray-300') : (isDarkMode ? 'bg-gray-600' : 'bg-gray-100')}`}
                         />
                       ))}
                     </div>
@@ -218,24 +213,20 @@ const TrendingPage = () => {
                       <div className="flex space-x-1 sm:space-x-2">
                         <button
                           onClick={() => toggleLike(post.id)}
-                          className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full sm:transition-colors ${
-                            likedPosts[post.id] ? 'text-red-500 bg-red-50' : 'text-gray-600 hover:text-red-500'
-                          }`}
+                          className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full sm:transition-colors ${likedPosts[post.id] ? 'text-red-500 bg-red-50 dark:bg-red-900/30' : isDarkMode ? 'text-gray-400 hover:text-red-400' : 'text-gray-600 hover:text-red-500'}`}
                         >
                           <Heart className="w-3 h-3 sm:w-4 sm:h-4" fill={likedPosts[post.id] ? 'currentColor' : 'none'} />
                         </button>
-                        <button className="p-1 text-gray-600 hover:text-blue-500 rounded-full hover:bg-blue-50 sm:p-1 sm:text-gray-600 sm:hover:text-blue-500 sm:rounded-full sm:hover:bg-blue-50">
+                        <button className={`p-1 rounded-full transition-colors ${isDarkMode ? 'text-gray-400 hover:text-blue-400 hover:bg-blue-900/30' : 'text-gray-600 hover:text-blue-500 hover:bg-blue-50'}`}>
                           <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
                         </button>
-                        <button className="p-1 text-gray-600 hover:text-green-500 rounded-full hover:bg-green-50 sm:p-1 sm:text-gray-600 sm:hover:text-green-500 sm:rounded-full sm:hover:bg-green-50">
+                        <button className={`p-1 rounded-full transition-colors ${isDarkMode ? 'text-gray-400 hover:text-green-400 hover:bg-green-900/30' : 'text-gray-600 hover:text-green-500 hover:bg-green-50'}`}>
                           <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                         </button>
                       </div>
                       <button
                         onClick={() => toggleFavorite(post.id)}
-                        className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full sm:transition-colors ${
-                          favoritedPosts[post.id] ? 'text-blue-500 bg-blue-50' : 'text-gray-600 hover:text-blue-500'
-                        }`}
+                        className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full sm:transition-colors ${favoritedPosts[post.id] ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/30' : isDarkMode ? 'text-gray-400 hover:text-blue-400' : 'text-gray-600 hover:text-blue-500'}`}
                       >
                         <Bookmark className="w-3 h-3 sm:w-4 sm:h-4" fill={favoritedPosts[post.id] ? 'currentColor' : 'none'} />
                       </button>
@@ -245,18 +236,18 @@ const TrendingPage = () => {
                         {[1, 2, 3, 4, 5].map((star) => (
                           <Star
                             key={star}
-                            className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${star <= (post.rating_magnitude || 0) ? 'text-yellow-500' : 'text-gray-300'}`}
+                            className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${star <= (post.rating_magnitude || 0) ? 'text-yellow-500' : isDarkMode ? 'text-gray-600' : 'text-gray-300'}`}
                             fill={star <= (post.rating_magnitude || 0) ? 'currentColor' : 'none'}
                           />
                         ))}
                       </div>
-                      <span className="text-xs text-gray-600">({post.rating_number || 0})</span>
+                      <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>({post.rating_number || 0})</span>
                     </div>
                   </div>
-                  <Link to={`/product/${post.id}`} className="text-black hover:underline text-xs font-medium truncate">
+                  <Link to={`/product/${post.id}`} className={`text-xs font-medium truncate ${isDarkMode ? 'text-gray-200 hover:text-blue-400' : 'text-black hover:underline'}`}>
                     {post.name || 'Product Name'}
                   </Link>
-                  <p className="text-xs text-gray-600 truncate">{post.description || 'No description available'}...</p>
+                  <p className={`text-xs truncate ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{post.description || 'No description available'}...</p>
                 </div>
               </CardContent>
             </Card>
@@ -271,18 +262,21 @@ const TrendingPage = () => {
           onClick={closeDropdown}
         >
           <div
-            className="bg-white rounded-xl"
+            className={`rounded-xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-4 border border-gray-200 text-center">
-              <h3 className="font-semibold text-lg text-black">Post Options</h3>
+            <div className={`p-4 border text-center ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+              <h3 className={`font-semibold text-lg ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Post Options</h3>
             </div>
-            <div className="divide-y divide-gray-100">
+            <div className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
               {dropdownItems.map((item, index) => (
                 <button
                   key={index}
                   onClick={item.action}
-                  className="w-full text-center px-4 py-3 text-sm hover:bg-gray-50 text-black first:rounded-t-lg last:rounded-b-lg transition-colors"
+                  className={`w-full text-center px-4 py-3 text-sm transition-colors first:rounded-t-lg last:rounded-b-lg ${isDarkMode 
+                    ? 'text-gray-300 hover:bg-gray-700' 
+                    : 'text-black hover:bg-gray-50'
+                  }`}
                 >
                   {item.label}
                 </button>
@@ -295,14 +289,14 @@ const TrendingPage = () => {
       {/* Search Results Placeholder */}
       {searchFocused && (
         <div className="mt-4">
-          <p className="text-gray-500 text-center py-8 text-sm">Type to search for products, people, and topics</p>
+          <p className={`text-center py-8 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Type to search for products, people, and topics</p>
           <div className="mt-4">
-            <h3 className="text-sm text-gray-700 mb-3">Recent searches</h3>
+            <h3 className={`text-sm mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Recent searches</h3>
             <div className="space-y-2">
               {['wireless headphones', 'fitness tracker', 'laptop backpack'].map((term, index) => (
-                <div key={index} className="flex items-center p-3 hover:bg-gray-100 rounded-lg cursor-pointer">
-                  <Search className="w-4 h-4 text-gray-400 mr-3" />
-                  <span className="text-black text-sm">{term}</span>
+                <div key={index} className={`flex items-center p-3 rounded-lg cursor-pointer ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}>
+                  <Search className={`w-4 h-4 mr-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-400'}`} />
+                  <span className={`text-sm ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>{term}</span>
                 </div>
               ))}
             </div>

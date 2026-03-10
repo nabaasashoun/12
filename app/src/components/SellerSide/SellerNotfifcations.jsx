@@ -21,8 +21,10 @@ import {
 import { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import { useNavigate } from 'react-router-dom';
+import { useSellerDarkMode } from '../../utils/SellerDarkModeContext';
 
 const SellerNotifications = ({ setHasUnreadNotifications }) => {
+  const { isDarkMode } = useSellerDarkMode();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -107,37 +109,37 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
   const getIconForType = (type) => {
     switch(type) {
       case 'follow':
-        return { icon: Users, color: 'text-blue-500' };
+        return { icon: Users, color: isDarkMode ? 'text-blue-400' : 'text-blue-500' };
       case 'order':
-        return { icon: ShoppingCart, color: 'text-green-500' };
+        return { icon: ShoppingCart, color: isDarkMode ? 'text-green-400' : 'text-green-500' };
       case 'order_received':
-        return { icon: ShoppingCart, color: 'text-orange-500' };
+        return { icon: ShoppingCart, color: isDarkMode ? 'text-orange-400' : 'text-orange-500' };
       case 'order_confirmed':
-        return { icon: CheckCircle, color: 'text-green-600' };
+        return { icon: CheckCircle, color: isDarkMode ? 'text-green-400' : 'text-green-600' };
       case 'payment_received':
-        return { icon: DollarSign, color: 'text-emerald-500' };
+        return { icon: DollarSign, color: isDarkMode ? 'text-emerald-400' : 'text-emerald-500' };
       case 'product_sold':
-        return { icon: Package, color: 'text-purple-500' };
+        return { icon: Package, color: isDarkMode ? 'text-purple-400' : 'text-purple-500' };
       case 'new_review':
-        return { icon: Star, color: 'text-yellow-500' };
+        return { icon: Star, color: isDarkMode ? 'text-yellow-400' : 'text-yellow-500' };
       case 'new_follower':
-        return { icon: Users, color: 'text-blue-500' };
+        return { icon: Users, color: isDarkMode ? 'text-blue-400' : 'text-blue-500' };
       case 'low_stock':
-        return { icon: AlertCircle, color: 'text-red-500' };
+        return { icon: AlertCircle, color: isDarkMode ? 'text-red-400' : 'text-red-500' };
       case 'withdrawal_success':
-        return { icon: CreditCard, color: 'text-green-500' };
+        return { icon: CreditCard, color: isDarkMode ? 'text-green-400' : 'text-green-500' };
       case 'analytics':
-        return { icon: TrendingUp, color: 'text-purple-500' };
+        return { icon: TrendingUp, color: isDarkMode ? 'text-purple-400' : 'text-purple-500' };
       case 'customer':
-        return { icon: MessageSquare, color: 'text-indigo-500' };
+        return { icon: MessageSquare, color: isDarkMode ? 'text-indigo-400' : 'text-indigo-500' };
       case 'system':
-        return { icon: CheckCircle, color: 'text-gray-500' };
+        return { icon: CheckCircle, color: isDarkMode ? 'text-gray-400' : 'text-gray-500' };
       case 'policy':
-        return { icon: AlertCircle, color: 'text-red-500' };
+        return { icon: AlertCircle, color: isDarkMode ? 'text-red-400' : 'text-red-500' };
       case 'profile_update':
-        return { icon: User, color: 'text-teal-500' };
+        return { icon: User, color: isDarkMode ? 'text-teal-400' : 'text-teal-500' };
       default:
-        return { icon: Bell, color: 'text-gray-500' };
+        return { icon: Bell, color: isDarkMode ? 'text-gray-400' : 'text-gray-500' };
     }
   };
 
@@ -315,12 +317,12 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
 
   if (loading) {
     return (
-      <div className="p-6 max-w-2xl mx-auto">
+      <div className={`p-6 max-w-2xl mx-auto min-h-screen ${isDarkMode ? 'bg-gray-900' : ''}`}>
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-48 mb-4"></div>
+          <div className={`h-8 rounded w-48 mb-4 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
           <div className="space-y-3">
             {[1,2,3].map(i => (
-              <div key={i} className="h-24 bg-gray-200 rounded"></div>
+              <div key={i} className={`h-24 rounded ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
             ))}
           </div>
         </div>
@@ -329,22 +331,26 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
   }
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
+    <div className={`p-6 max-w-2xl mx-auto min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[23px] font-bold mb-2 flex items-center text-black">
-              <Bell className="w-6 h-6 mr-2 text-blue-500" />
+            <p className={`text-[23px] font-bold mb-2 flex items-center ${
+              isDarkMode ? 'text-gray-100' : 'text-black'
+            }`}>
+              <Bell className={`w-6 h-6 mr-2 ${isDarkMode ? 'text-blue-400' : 'text-blue-500'}`} />
               Seller Notifications
             </p>
-            <p className="text-black">
+            <p className={isDarkMode ? 'text-gray-300' : 'text-black'}>
               {unreadCount > 0 ? `${unreadCount} unread notifications` : 'All caught up!'}
             </p>
           </div>
           {notifications.length > 0 && (
             <button
               onClick={clearAllNotifications}
-              className="text-sm text-red-600 hover:text-red-700 font-medium"
+              className={`text-sm font-medium ${
+                isDarkMode ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-700'
+              }`}
             >
               Clear All
             </button>
@@ -353,11 +359,17 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
       </div>
 
       {notifications.length === 0 ? (
-        <Card>
+        <Card isDarkMode={isDarkMode}>
           <CardContent className="p-8 text-center">
-            <Bell className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-black mb-2">No notifications</h3>
-            <p className="text-gray-600">You're all caught up! Check back later for updates.</p>
+            <Bell className={`w-12 h-12 mx-auto mb-4 ${
+              isDarkMode ? 'text-gray-600' : 'text-gray-400'
+            }`} />
+            <h3 className={`text-lg font-semibold mb-2 ${
+              isDarkMode ? 'text-gray-200' : 'text-black'
+            }`}>No notifications</h3>
+            <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
+              You're all caught up! Check back later for updates.
+            </p>
           </CardContent>
         </Card>
       ) : (
@@ -367,8 +379,13 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
             return (
               <Card
                 key={notification.id}
+                isDarkMode={isDarkMode}
                 className={`hover:shadow-md transition-shadow cursor-pointer ${
-                  !notification.read ? 'border-l-4 border-blue-500' : ''
+                  !notification.read 
+                    ? isDarkMode 
+                      ? 'border-l-4 border-blue-500' 
+                      : 'border-l-4 border-blue-500'
+                    : ''
                 }`}
                 onClick={() => handleNotificationClick(notification)}
               >
@@ -381,18 +398,32 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
                     <div className="flex-1">
                       <div className="flex items-start justify-between">
                         <div>
-                          <h3 className="font-semibold text-black">{notification.title}</h3>
-                          <p className="text-black mt-1">{notification.message}</p>
-                          <p className="text-sm text-gray-500 mt-2">{notification.time}</p>
+                          <h3 className={`font-semibold ${
+                            isDarkMode ? 'text-gray-200' : 'text-black'
+                          }`}>{notification.title}</h3>
+                          <p className={`mt-1 ${
+                            isDarkMode ? 'text-gray-300' : 'text-black'
+                          }`}>{notification.message}</p>
+                          <p className={`text-sm mt-2 ${
+                            isDarkMode ? 'text-gray-500' : 'text-gray-500'
+                          }`}>{notification.time}</p>
                           
                           {/* Show additional info for specific notification types */}
                           {notification.type === 'order_received' && notification.data?.amount && (
                             <div className="mt-2 flex items-center gap-2">
-                              <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full">
+                              <span className={`text-xs px-2 py-1 rounded-full ${
+                                isDarkMode 
+                                  ? 'bg-orange-900/30 text-orange-400' 
+                                  : 'bg-orange-100 text-orange-700'
+                              }`}>
                                 UGX {notification.data.amount.toLocaleString()}
                               </span>
                               {notification.data?.customer && (
-                                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                                <span className={`text-xs px-2 py-1 rounded-full ${
+                                  isDarkMode 
+                                    ? 'bg-blue-900/30 text-blue-400' 
+                                    : 'bg-blue-100 text-blue-700'
+                                }`}>
                                   {notification.data.customer}
                                 </span>
                               )}
@@ -400,20 +431,32 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
                           )}
                           
                           {notification.type === 'low_stock' && notification.data?.product_name && (
-                            <span className="inline-block mt-2 text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">
+                            <span className={`inline-block mt-2 text-xs px-2 py-1 rounded-full ${
+                              isDarkMode 
+                                ? 'bg-red-900/30 text-red-400' 
+                                : 'bg-red-100 text-red-700'
+                            }`}>
                               {notification.data.product_name} - {notification.data.stock} left
                             </span>
                           )}
                           
                           {notification.type === 'new_review' && notification.data?.rating && (
-                            <span className="inline-block mt-2 text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">
+                            <span className={`inline-block mt-2 text-xs px-2 py-1 rounded-full ${
+                              isDarkMode 
+                                ? 'bg-yellow-900/30 text-yellow-400' 
+                                : 'bg-yellow-100 text-yellow-700'
+                            }`}>
                               {notification.data.rating} ★ Rating
                             </span>
                           )}
                         </div>
                         <button
                           onClick={(e) => deleteNotification(notification.id, e)}
-                          className="p-1 text-gray-400 hover:text-gray-600 ml-2"
+                          className={`p-1 ml-2 ${
+                            isDarkMode 
+                              ? 'text-gray-600 hover:text-gray-400' 
+                              : 'text-gray-400 hover:text-gray-600'
+                          }`}
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -435,8 +478,14 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
 
       {/* Quick Actions */}
       {notifications.length > 0 && (
-        <div className="mt-8 p-4 bg-blue-50 rounded-xl border border-blue-100">
-          <h3 className="font-medium text-black mb-2">Quick Actions</h3>
+        <div className={`mt-8 p-4 rounded-xl border ${
+          isDarkMode 
+            ? 'bg-blue-900/20 border-blue-800' 
+            : 'bg-blue-50 border-blue-100'
+        }`}>
+          <h3 className={`font-medium mb-2 ${
+            isDarkMode ? 'text-gray-200' : 'text-black'
+          }`}>Quick Actions</h3>
           <div className="flex gap-2 flex-wrap">
             <button
               onClick={markAllRead}
@@ -446,19 +495,31 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
             </button>
             <button
               onClick={() => navigate('/seller/orders')}
-              className="px-3 py-1 border border-green-600 text-green-600 rounded-full text-sm hover:bg-green-600 hover:text-white transition-colors"
+              className={`px-3 py-1 border rounded-full text-sm transition-colors ${
+                isDarkMode 
+                  ? 'border-green-600 text-green-400 hover:bg-green-600 hover:text-white' 
+                  : 'border-green-600 text-green-600 hover:bg-green-600 hover:text-white'
+              }`}
             >
               View Orders
             </button>
             <button
               onClick={() => navigate('/seller/products')}
-              className="px-3 py-1 border border-purple-600 text-purple-600 rounded-full text-sm hover:bg-purple-600 hover:text-white transition-colors"
+              className={`px-3 py-1 border rounded-full text-sm transition-colors ${
+                isDarkMode 
+                  ? 'border-purple-600 text-purple-400 hover:bg-purple-600 hover:text-white' 
+                  : 'border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white'
+              }`}
             >
               Manage Products
             </button>
             <button
               onClick={() => navigate('/seller/analytics')}
-              className="px-3 py-1 border border-gray-600 text-gray-600 rounded-full text-sm hover:bg-gray-600 hover:text-white transition-colors"
+              className={`px-3 py-1 border rounded-full text-sm transition-colors ${
+                isDarkMode 
+                  ? 'border-gray-600 text-gray-400 hover:bg-gray-600 hover:text-white' 
+                  : 'border-gray-600 text-gray-600 hover:bg-gray-600 hover:text-white'
+              }`}
             >
               Analytics
             </button>

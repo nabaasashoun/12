@@ -10,6 +10,7 @@ import api from '../../utils/api';
 import { useCart } from '../../utils/CartContext';
 import { useLikeBookmark } from '../../utils/LikeBookmarkContext';
 import AnimatedLoader from '../UISkeleton/Loader';
+import { useDarkMode } from '../../utils/DarkModeContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 const BASE_URL = API_URL.replace('/api', '');
@@ -32,6 +33,7 @@ const DotSpinner = () => (
 );
 
 const AccountPage = () => {
+  const { isDarkMode } = useDarkMode();                   
   const [activeTab, setActiveTab] = useState('profile');
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -102,7 +104,7 @@ const AccountPage = () => {
     { label: 'Cancel', action: closeDropdown },
   ];
 
-  // ==================== RATING FUNCTIONS ====================
+  // rating functions
 
   const openRatingModal = (order) => {
     setSelectedOrder(order);
@@ -130,7 +132,6 @@ const AccountPage = () => {
     setRatingError('');
 
     try {
-      // Prepare rating data
       const ratingData = {
         seller_id: selectedOrder.seller_id,
         rating: trustRating,
@@ -138,17 +139,11 @@ const AccountPage = () => {
         order_id: selectedOrder.id
       };
 
-      console.log('Submitting rating to backend:', ratingData);
-
-      // Call the API
       const response = await api.rateSeller(ratingData);
       
-      console.log('Rating submission response:', response);
-
       if (!response.error && response.data?.success) {
         setRatingSuccess(true);
         
-        // Update the order in local state to show it's been rated
         setOrders(prev => prev.map(order => 
           order.id === selectedOrder.id 
             ? { 
@@ -160,12 +155,10 @@ const AccountPage = () => {
             : order
         ));
 
-        // Auto close after 2 seconds
         setTimeout(() => {
           closeRatingModal();
         }, 2000);
       } else {
-        // Handle error response
         const errorMsg = response.data?.error || response.data?.message || 'Failed to submit rating';
         setRatingError(errorMsg);
         setSubmittingRating(false);
@@ -212,7 +205,7 @@ const AccountPage = () => {
 
             fetchBookmarkCount();
             fetchOrderCount();
-            fetchOrders(); // Fetch orders immediately
+            fetchOrders();
           } else {
             setUserData({
               name: userInfo.username || 'User',
@@ -227,7 +220,7 @@ const AccountPage = () => {
               wishlist: 0,
               isSeller: userInfo.is_seller || false,
             });
-            fetchOrders(); // Fetch orders immediately
+            fetchOrders();
           }
         } catch (error) {
           console.error('Error fetching buyer details:', error);
@@ -244,7 +237,7 @@ const AccountPage = () => {
             wishlist: 0,
             isSeller: userInfo.is_seller || false,
           });
-          fetchOrders(); // Fetch orders immediately
+          fetchOrders();
         }
       }
     } catch (error) {
@@ -386,7 +379,6 @@ const AccountPage = () => {
           }));
 
         setLikedProducts(processed);
-        console.log(`[Liked] Processed ${processed.length} products`);
       }
     } catch (err) {
       console.error("Failed to load liked products:", err);
@@ -394,15 +386,13 @@ const AccountPage = () => {
       setContentLoading(prev => ({ ...prev, liked: false }));
     }
   };
+
   const fetchOrders = async () => {
     setContentLoading(prev => ({ ...prev, orders: true }));
     try {
-      // Try to fetch real orders from API
       const result = await api.request('/orders/');
-      console.log('Orders API response:', result);
       
       if (!result.error && result.data && Array.isArray(result.data) && result.data.length > 0) {
-        // Use real orders from backend
         const processedOrders = result.data.map(order => ({
           id: order.id,
           order_date: order.order_date || new Date().toISOString(),
@@ -410,7 +400,7 @@ const AccountPage = () => {
           status: order.status || 'pending',
           items_count: order.items_count || 1,
           seller_id: order.seller_id || 1,
-          seller_name: order.seller_name || 'Timo', // Updated to match your seller
+          seller_name: order.seller_name || 'Timo',
           product_name: order.product_name || 'Sample Product',
           has_rated: order.has_rated || false,
           trustRating: order.trustRating || null
@@ -418,7 +408,6 @@ const AccountPage = () => {
         setOrders(processedOrders);
         setOrderCount(processedOrders.length);
       } else {
-        // Use enhanced test orders with correct seller_id (1) and name 'Timo'
         const testOrders = [
           {
             id: 1001,
@@ -426,8 +415,8 @@ const AccountPage = () => {
             total_amount: 45000,
             status: 'delivered',
             items_count: 3,
-            seller_id: 1,  // This matches your existing seller
-            seller_name: 'Timo', // Updated to match your seller
+            seller_id: 1,
+            seller_name: 'Timo',
             product_name: 'Wireless Headphones',
             has_rated: false,
             status_badge: 'delivered'
@@ -438,7 +427,7 @@ const AccountPage = () => {
             total_amount: 32500,
             status: 'delivered',
             items_count: 2,
-            seller_id: 1,  // Using same seller for testing
+            seller_id: 1,
             seller_name: 'Timo',
             product_name: 'Leather Wallet',
             has_rated: true,
@@ -487,7 +476,6 @@ const AccountPage = () => {
       }
     } catch (error) {
       console.error('Error fetching orders:', error);
-      // Fallback to test orders
       const testOrders = [
         {
           id: 1001,
@@ -522,13 +510,9 @@ const AccountPage = () => {
     }
   };
 
-  
-  // Listen for like toggles from other components
   useEffect(() => {
     const handleLikeToggle = (event) => {
       const { productId, liked } = event.detail;
-      console.log('🔄 [AccountPage] likeToggled event received:', { productId, liked });
-      
       if (activeTab === 'liked') {
         if (!liked) {
           setLikedProducts(prev => prev.filter(p => p.id !== productId));
@@ -638,53 +622,31 @@ const AccountPage = () => {
     }
   };
 
-  // ==================== INITIAL LOAD ====================
-
   useEffect(() => {
     fetchUserData();
   }, []);
 
-  // ==================== RENDER HELPERS ====================
-
   const getStatusBadgeClass = (status) => {
     const s = status?.toLowerCase() || '';
-    if (s === 'delivered') {
-      return 'bg-green-100 text-green-800';
-    }
-    if (s === 'shipped') {
-      return 'bg-blue-100 text-blue-800';
-    }
-    if (s === 'processing') {
-      return 'bg-yellow-100 text-yellow-800';
-    }
-    if (s === 'cancelled') {
-      return 'bg-red-100 text-red-800';
-    }
+    if (s === 'delivered') return 'bg-green-100 text-green-800';
+    if (s === 'shipped') return 'bg-blue-100 text-blue-800';
+    if (s === 'processing') return 'bg-yellow-100 text-yellow-800';
+    if (s === 'cancelled') return 'bg-red-100 text-red-800';
     return 'bg-gray-100 text-gray-800';
   };
 
   const getStatusIcon = (status) => {
     const s = status?.toLowerCase() || '';
-    if (s === 'delivered') {
-      return <CheckCircle className="w-3 h-3" />;
-    }
-    if (s === 'shipped') {
-      return <Truck className="w-3 h-3" />;
-    }
-    if (s === 'processing') {
-      return <Clock className="w-3 h-3" />;
-    }
-    if (s === 'cancelled') {
-      return <AlertCircle className="w-3 h-3" />;
-    }
+    if (s === 'delivered') return <CheckCircle className="w-3 h-3" />;
+    if (s === 'shipped') return <Truck className="w-3 h-3" />;
+    if (s === 'processing') return <Clock className="w-3 h-3" />;
+    if (s === 'cancelled') return <AlertCircle className="w-3 h-3" />;
     return <Package className="w-3 h-3" />;
   };
 
-  // ==================== RENDER ====================
-
   if (loading) {
     return (
-      <div className="p-6 max-w-6xl mx-auto min-h-screen flex items-center justify-center">
+      <div className={`p-6 max-w-6xl mx-auto min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <AnimatedLoader />
       </div>
     );
@@ -692,10 +654,10 @@ const AccountPage = () => {
 
   if (!userData) {
     return (
-      <div className="p-6 max-w-6xl mx-auto">
+      <div className={`p-6 max-w-6xl mx-auto ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <div className="text-center py-12">
-          <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">Please login to view your account</h3>
+          <User className={`w-16 h-16 mx-auto mb-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+          <h3 className={`text-xl font-semibold mb-2 ${isDarkMode ? 'text-gray-100' : 'text-gray-700'}`}>Please login to view your account</h3>
           <Link to="/login" className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
             Go to Login
           </Link>
@@ -705,9 +667,9 @@ const AccountPage = () => {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className={`p-6 max-w-6xl mx-auto min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       {/* Profile Header */}
-      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-6 text-white mb-8">
+      <div className={`bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-6 text-white mb-8 ${isDarkMode ? 'from-blue-600 to-indigo-700' : ''}`}>
         <div className="flex items-center">
           <div className="w-20 h-20 rounded-full bg-white text-blue-500 bg-opacity-20 flex items-center justify-center text-2xl font-bold mr-4">
             {userData.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
@@ -725,7 +687,7 @@ const AccountPage = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-200 mb-6 overflow-x-auto">
+      <div className={`flex border-b mb-6 overflow-x-auto ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
         {[
           { key: 'profile', label: 'Profile', icon: User },
           { key: 'orders', label: 'Orders', icon: ShoppingCart },
@@ -735,18 +697,13 @@ const AccountPage = () => {
           <button
             key={tab.key}
             onClick={() => handleTabChange(tab.key)}
-            className={`px-4 py-3 font-medium transition-all whitespace-nowrap flex items-center space-x-2 ${
-              activeTab === tab.key
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
+            className={`px-4 py-3 font-medium transition-all whitespace-nowrap flex items-center space-x-2 ${activeTab === tab.key
+              ? `text-blue-600 border-b-2 border-blue-600 ${isDarkMode ? 'text-blue-400 border-blue-400' : ''}`
+              : `${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-900'}`
             }`}
           >
             <tab.icon
-              className={`w-5 h-5 transition-all duration-300 ${
-                activeTab === tab.key
-                  ? 'animate-bounce-forever scale-110'
-                  : 'hover:scale-105'
-              }`}
+              className={`w-5 h-5 transition-all duration-300 ${activeTab === tab.key ? 'animate-bounce-forever scale-110' : 'hover:scale-105'}`}
             />
             <span>{tab.label}</span>
           </button>
@@ -758,26 +715,26 @@ const AccountPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card>
             <CardContent className="p-6">
-              <h2 className="text-lg font-semibold mb-4 text-black">Personal Information</h2>
+              <h2 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Personal Information</h2>
               <div className="space-y-3">
                 <div className="flex items-center">
-                  <User className="w-5 h-5 text-gray-500 mr-3" />
-                  <span className="text-black">{userData.name}</span>
+                  <User className={`w-5 h-5 mr-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                  <span className={isDarkMode ? 'text-gray-200' : 'text-black'}>{userData.name}</span>
                 </div>
                 <div className="flex items-center">
-                  <Mail className="w-5 h-5 text-gray-500 mr-3" />
-                  <span className="text-black">{userData.email}</span>
+                  <Mail className={`w-5 h-5 mr-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                  <span className={isDarkMode ? 'text-gray-200' : 'text-black'}>{userData.email}</span>
                 </div>
                 <div className="flex items-center">
-                  <Phone className="w-5 h-5 text-gray-500 mr-3" />
-                  <span className="text-black">{userData.phone}</span>
+                  <Phone className={`w-5 h-5 mr-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                  <span className={isDarkMode ? 'text-gray-200' : 'text-black'}>{userData.phone}</span>
                 </div>
                 <div className="flex items-center">
-                  <MapPin className="w-5 h-5 text-gray-500 mr-3" />
-                  <span className="text-black">{userData.address}</span>
+                  <MapPin className={`w-5 h-5 mr-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                  <span className={isDarkMode ? 'text-gray-200' : 'text-black'}>{userData.address}</span>
                 </div>
               </div>
-              <Link to="/settings" className="mt-4 flex items-center text-blue-600 hover:text-blue-700">
+              <Link to="/settings" className={`mt-4 flex items-center ${isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'}`}>
                 <Edit className="w-4 h-4 mr-1" />
                 Edit Profile
               </Link>
@@ -786,19 +743,19 @@ const AccountPage = () => {
 
           <Card>
             <CardContent className="p-6">
-              <h2 className="text-lg font-semibold mb-4 text-black">Account Security</h2>
+              <h2 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Account Security</h2>
               <div className="space-y-4">
-                <Link to="/settings" className="block w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                  <h3 className="font-medium text-black">Change Password</h3>
-                  <p className="text-sm text-gray-600">Update your account password</p>
+                <Link to="/settings" className={`block w-full text-left p-3 border rounded-lg hover:bg-gray-50 transition-colors ${isDarkMode ? 'border-gray-700 hover:bg-gray-800' : 'border-gray-200'}`}>
+                  <h3 className={`font-medium ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Change Password</h3>
+                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Update your account password</p>
                 </Link>
-                <button className="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                  <h3 className="font-medium text-black">Two-Factor Authentication</h3>
-                  <p className="text-sm text-gray-600">Add an extra layer of security</p>
+                <button className={`w-full text-left p-3 border rounded-lg hover:bg-gray-50 transition-colors ${isDarkMode ? 'border-gray-700 hover:bg-gray-800' : 'border-gray-200'}`}>
+                  <h3 className={`font-medium ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Two-Factor Authentication</h3>
+                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Add an extra layer of security</p>
                 </button>
-                <button className="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                  <h3 className="font-medium text-black">Connected Devices</h3>
-                  <p className="text-sm text-gray-600">Manage your logged-in devices</p>
+                <button className={`w-full text-left p-3 border rounded-lg hover:bg-gray-50 transition-colors ${isDarkMode ? 'border-gray-700 hover:bg-gray-800' : 'border-gray-200'}`}>
+                  <h3 className={`font-medium ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Connected Devices</h3>
+                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Manage your logged-in devices</p>
                 </button>
               </div>
             </CardContent>
@@ -810,7 +767,7 @@ const AccountPage = () => {
       {activeTab === 'orders' && (
         <div>
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-semibold text-black">Order History</h2>
+            <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Order History</h2>
             <button
               onClick={fetchOrders}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
@@ -826,23 +783,23 @@ const AccountPage = () => {
                   <div className="flex justify-center">
                     <DotSpinner />
                   </div>
-                  <p className="mt-4 text-gray-600">Loading orders...</p>
+                  <p className={`mt-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Loading orders...</p>
                 </div>
               ) : orders.length > 0 ? (
                 <div className="space-y-4">
                   {orders.map((order) => (
-                    <div key={order.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                    <div key={order.id} className={`border rounded-lg p-4 hover:bg-gray-50 transition-colors ${isDarkMode ? 'border-gray-700 hover:bg-gray-800' : ''}`}>
                       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2 flex-wrap">
-                            <h3 className="font-medium text-black">Order #{order.id}</h3>
+                            <h3 className={`font-medium ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Order #{order.id}</h3>
                             <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded ${getStatusBadgeClass(order.status_badge || order.status)}`}>
                               {getStatusIcon(order.status_badge || order.status)}
                               {(order.status_badge || order.status || 'Processing').charAt(0).toUpperCase() + 
                                (order.status_badge || order.status || 'Processing').slice(1)}
                             </span>
                           </div>
-                          <p className="text-sm text-gray-600">
+                          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                             {new Date(order.order_date).toLocaleDateString('en-US', {
                               year: 'numeric',
                               month: 'long',
@@ -850,39 +807,33 @@ const AccountPage = () => {
                             })}
                           </p>
                           <div className="mt-2 space-y-1">
-                            <p className="text-sm text-gray-700">
+                            <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                               <span className="font-medium">Product:</span> {order.product_name || 'Sample Product'}
                             </p>
-                            <p className="text-sm text-gray-700">
+                            <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                               <span className="font-medium">Seller:</span> {order.seller_name || 'Sample Seller'}
                             </p>
-                            <p className="text-sm text-gray-700">
+                            <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                               <span className="font-medium">Items:</span> {order.items_count || 1}
                             </p>
                           </div>
                         </div>
                         
                         <div className="flex flex-col items-end gap-2">
-                          <p className="font-semibold text-black text-lg">{formatCurrency(order.total_amount || 0)}</p>
+                          <p className={`font-semibold text-lg ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>{formatCurrency(order.total_amount || 0)}</p>
                           
-                          {/* Rating Button - Always visible for testing */}
                           <button
                             onClick={() => openRatingModal(order)}
-                            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg transition-colors text-xs ${
-                              order.has_rated 
-                                ? 'bg-green-100 text-green-700 cursor-not-allowed' 
-                                : 'bg-yellow-500 text-white hover:bg-yellow-600'
-                            }`}
+                            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg transition-colors text-xs ${order.has_rated ? 'bg-green-100 text-green-700 cursor-not-allowed' : 'bg-yellow-500 text-white hover:bg-yellow-600'}`}
                             disabled={order.has_rated}
                           >
                             <Award className="w-3 h-3" />
                             {order.has_rated ? `Rated ${order.trustRating}/5` : 'Rate Seller Trust'}
                           </button>
                           
-                          {/* View Details Link */}
                           <Link 
                             to={`/orders/${order.id}`}
-                            className="text-xs text-blue-600 hover:text-blue-800 mt-1"
+                            className={`text-xs ${isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'} mt-1`}
                           >
                             View Details →
                           </Link>
@@ -891,38 +842,25 @@ const AccountPage = () => {
                     </div>
                   ))}
                   
-                  {/* Test Mode Instructions */}
-                  <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className={`mt-6 p-4 rounded-lg border ${isDarkMode ? 'bg-blue-900/30 border-blue-800' : 'bg-blue-50 border-blue-200'}`}>
                     <div className="flex items-start gap-3">
                       <div className="bg-blue-500 rounded-full p-1">
                         <Award className="w-4 h-4 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-blue-800 font-medium mb-1">Rating System Test</p>
-                        <p className="text-xs text-blue-700">
-                          Click the yellow "Rate Seller Trust" button to submit a rating. This will:
-                        </p>
-                        <ul className="text-xs text-blue-700 list-disc ml-4 mt-1">
-                          <li>Send your rating (1-5 stars) to the backend</li>
-                          <li>Update the seller's trust percentage (average × 20)</li>
-                          <li>Create a notification for the seller</li>
-                        </ul>
                       </div>
                     </div>
                   </div>
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                  <p className="text-gray-600 mb-4">No orders yet</p>
+                  <ShoppingCart className={`w-12 h-12 mx-auto mb-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                  <p className={`mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>No orders yet</p>
                   <Link to="/products" className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                     Start Shopping
                   </Link>
                   
-                  {/* Even when no orders, show a demo order for testing */}
-                  <div className="mt-8 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                    <p className="text-sm text-yellow-800 font-medium mb-2">Demo Mode</p>
-                    <p className="text-xs text-yellow-700 mb-3">
+                  <div className={`mt-8 p-4 rounded-lg border ${isDarkMode ? 'bg-yellow-900/30 border-yellow-800' : 'bg-yellow-50 border-yellow-200'}`}>
+                    <p className={`text-sm font-medium mb-2 ${isDarkMode ? 'text-yellow-300' : 'text-yellow-800'}`}>Demo Mode</p>
+                    <p className={`text-xs mb-3 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-700'}`}>
                       Click the button below to test the rating system with a sample order.
                     </p>
                     <button
@@ -948,13 +886,13 @@ const AccountPage = () => {
       {/* Bookmarks Tab */}
       {activeTab === 'Bookmarks' && (
         <div>
-          <h2 className="text-lg font-semibold mb-6 text-black">My Bookmarks ({bookmarkCount})</h2>
+          <h2 className={`text-lg font-semibold mb-6 ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>My Bookmarks ({bookmarkCount})</h2>
           {contentLoading.bookmarks ? (
             <div className="text-center py-8">
               <div className="flex justify-center">
                 <DotSpinner />
               </div>
-              <p className="mt-4 text-gray-600">Loading bookmarks...</p>
+              <p className={`mt-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Loading bookmarks...</p>
             </div>
           ) : bookmarkedProducts.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
@@ -966,17 +904,14 @@ const AccountPage = () => {
                 return (
                   <Card key={post.id} variant="elevated" className="overflow-hidden flex flex-col relative">
                     <CardContent className="p-0 flex flex-col">
-                      <div className="p-0 sm:p-3 flex flex-col border-b border-gray-100">
+                      <div className={`p-0 sm:p-3 flex flex-col border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
                         <div className="flex justify-between items-center">
                           {post.sellerId ? (
-                            <Link
-                              to={`/seller/${post.sellerId}`}
-                              className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
-                            >
+                            <Link to={`/seller/${post.sellerId}`} className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
                               <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs">
                                 {post.authorAvatar}
                               </div>
-                              <span className="font-medium text-black text-xs sm:text-sm truncate">
+                              <span className={`font-medium text-xs sm:text-sm truncate ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>
                                 {post.sellerName}
                               </span>
                             </Link>
@@ -985,134 +920,66 @@ const AccountPage = () => {
                               <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs">
                                 {post.authorAvatar}
                               </div>
-                              <span className="font-medium text-black text-xs sm:text-sm truncate">
+                              <span className={`font-medium text-xs sm:text-sm truncate ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>
                                 {post.sellerName}
                               </span>
                             </div>
                           )}
-                          <button onClick={() => toggleDropdown(post.id)} className="p-1 rounded hover:bg-gray-100">
-                            <MoreHorizontal className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
+                          <button onClick={() => toggleDropdown(post.id)} className={`p-1 rounded ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}>
+                            <MoreHorizontal className={`w-3 h-3 sm:w-4 sm:h-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
                           </button>
                         </div>
                         <div className="flex justify-center items-center mt-0.2">
-                          <span className="text-xs text-green-600 mb-1 font-semibold">{post.price}</span>
+                          <span className="text-xs text-green-600 dark:text-green-400 mb-1 font-semibold">{post.price}</span>
                         </div>
                       </div>
 
-                      {/* Image Carousel */}
-                      <div
-                        className="relative aspect-square w-full bg-gray-200 flex-1"
-                        onTouchStart={(e) => {
-                          const touchStartX = e.touches[0].clientX;
-                          setCurrentImageIndex((prev) => ({ ...prev, touchStartX }));
-                        }}
-                        onTouchMove={(e) => {
-                          const touchEndX = e.touches[0].clientX;
-                          setCurrentImageIndex((prev) => ({ ...prev, touchEndX }));
-                        }}
-                        onTouchEnd={() => {
-                          const startX = currentImageIndex.touchStartX;
-                          const endX = currentImageIndex.touchEndX;
-                          const diff = startX - endX;
-                          if (Math.abs(diff) > 50) {
-                            if (diff > 0 && currentIndex < totalImages - 1) goToImage(post.id, currentIndex + 1);
-                            if (diff < 0 && currentIndex > 0) goToImage(post.id, currentIndex - 1);
-                          }
-                          setCurrentImageIndex((prev) => ({ ...prev, touchStartX: null, touchEndX: null }));
-                        }}
-                      >
+                      <div className="relative aspect-square w-full bg-gray-200 dark:bg-gray-700 flex-1" onTouchStart={(e) => { const touchStartX = e.touches[0].clientX; setCurrentImageIndex((prev) => ({ ...prev, touchStartX })); }} onTouchMove={(e) => { const touchEndX = e.touches[0].clientX; setCurrentImageIndex((prev) => ({ ...prev, touchEndX })); }} onTouchEnd={() => { const startX = currentImageIndex.touchStartX; const endX = currentImageIndex.touchEndX; const diff = startX - endX; if (Math.abs(diff) > 50) { if (diff > 0 && currentIndex < totalImages - 1) goToImage(post.id, currentIndex + 1); if (diff < 0 && currentIndex > 0) goToImage(post.id, currentIndex - 1); } setCurrentImageIndex((prev) => ({ ...prev, touchStartX: null, touchEndX: null })); }}>
                         {totalImages > 1 && (
                           <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-10 flex space-x-1 px-2 py-1">
                             {post.images.map((_, index) => (
-                              <button
-                                key={index}
-                                onClick={() => goToImage(post.id, index)}
-                                className={`w-1 h-1 rounded-full transition-all ${
-                                  index === currentIndex ? 'bg-gray-300' : 'bg-gray-100'
-                                }`}
-                              />
+                              <button key={index} onClick={() => goToImage(post.id, index)} className={`w-1 h-1 rounded-full transition-all ${index === currentIndex ? (isDarkMode ? 'bg-gray-400' : 'bg-gray-300') : (isDarkMode ? 'bg-gray-600' : 'bg-gray-100')}`} />
                             ))}
                           </div>
                         )}
                         <Link to={`/product/${post.id}`}>
-                          <img
-                            src={post.images[currentIndex]}
-                            alt={post.product}
-                            className="absolute inset-0 w-full h-full object-cover select-none"
-                          />
+                          <img src={post.images[currentIndex]} alt={post.product} className="absolute inset-0 w-full h-full object-cover select-none" />
                         </Link>
                       </div>
 
-                      {/* Product Actions */}
                       <div className="p-1 sm:p-3 flex flex-col mt-0">
                         <div className="flex flex-col">
                           <div className="flex justify-between items-center mb-0">
                             <div className="flex space-x-1 sm:space-x-2">
-                              <button
-                                onClick={() => handleToggleLike(post.id)}
-                                className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full ${
-                                  isLiked(post.id) ? 'text-red-500 bg-red-50' : 'text-gray-600 hover:text-red-500'
-                                }`}
-                                style={{
-                                  transform: animatingLike === post.id ? 'scale(1.3)' : 'scale(1)',
-                                  animation: animatingLike === post.id ? 'heartBeat 0.6s ease-in-out' : 'none'
-                                }}
-                              >
+                              <button onClick={() => handleToggleLike(post.id)} className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full ${isLiked(post.id) ? 'text-red-500 bg-red-50 dark:bg-red-900/30' : isDarkMode ? 'text-gray-400 hover:text-red-400' : 'text-gray-600 hover:text-red-500'}`} style={{ transform: animatingLike === post.id ? 'scale(1.3)' : 'scale(1)', animation: animatingLike === post.id ? 'heartBeat 0.6s ease-in-out' : 'none' }}>
                                 <Heart className="w-3 h-3 sm:w-4 sm:h-4" fill={isLiked(post.id) ? 'currentColor' : 'none'} />
                               </button>
-                              <Link
-                                to={`/product/${post.id}/comments`}
-                                className="p-1 text-gray-600 hover:text-blue-500 rounded-full hover:bg-blue-50 flex items-center space-x-1"
-                              >
+                              <Link to={`/product/${post.id}/comments`} className={`p-1 text-gray-600 hover:text-blue-500 rounded-full hover:bg-blue-50 flex items-center space-x-1 ${isDarkMode ? 'text-gray-400 hover:text-blue-400 hover:bg-blue-900/30' : ''}`}>
                                 <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
-                                {post.commentCount > 0 && (
-                                  <span className="text-xs text-gray-500">{post.commentCount}</span>
-                                )}
+                                {post.commentCount > 0 && <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{post.commentCount}</span>}
                               </Link>
-                              <button
-                                onClick={() => toggleCart(post.id)}
-                                className={`p-1 rounded-full transition-colors ${
-                                  cartPosts[post.id] ? 'text-green-500 bg-green-50' : 'text-gray-600 hover:text-green-500'
-                                }`}
-                              >
+                              <button onClick={() => toggleCart(post.id)} className={`p-1 rounded-full transition-colors ${cartPosts[post.id] ? 'text-green-500 bg-green-50 dark:bg-green-900/30' : isDarkMode ? 'text-gray-400 hover:text-green-400' : 'text-gray-600 hover:text-green-500'}`}>
                                 <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                               </button>
                             </div>
-                            <button
-                              onClick={() => handleToggleFavorite(post.id)}
-                              className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full ${
-                                post.is_bookmarked ? 'text-blue-500 bg-blue-50' : 'text-gray-600 hover:text-blue-500'
-                              }`}
-                              style={{
-                                transform: animatingFavorite === post.id ? 'scale(1.2)' : 'scale(1)',
-                                animation: animatingFavorite === post.id ? 'bookmarkPop 0.5s ease-out' : 'none'
-                              }}
-                            >
-                              <Bookmark className="w-3 h-3 sm:w-4 sm:h-4" fill={post.is_bookmarked ? 'currentColor' : 'none'} />
+                            <button onClick={() => handleToggleFavorite(post.id)} className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full ${isBookmarked(post.id) ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/30' : isDarkMode ? 'text-gray-400 hover:text-blue-400' : 'text-gray-600 hover:text-blue-500'}`} style={{ transform: animatingFavorite === post.id ? 'scale(1.2)' : 'scale(1)', animation: animatingFavorite === post.id ? 'bookmarkPop 0.5s ease-out' : 'none' }}>
+                              <Bookmark className="w-3 h-3 sm:w-4 sm:h-4" fill={isBookmarked(post.id) ? 'currentColor' : 'none'} />
                             </button>
                           </div>
-                          
-                          {/* Rating */}
                           <div className="flex items-center space-x-1 sm:justify-end">
                             <div className="flex">
                               {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={star}
-                                  className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${star <= post.rating ? 'text-yellow-500' : 'text-gray-300'}`}
-                                  fill={star <= post.rating ? 'currentColor' : 'none'}
-                                />
+                                <Star key={star} className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${star <= post.rating ? 'text-yellow-500' : isDarkMode ? 'text-gray-600' : 'text-gray-300'}`} fill={star <= post.rating ? 'currentColor' : 'none'} />
                               ))}
                             </div>
-                            <span className="text-xs text-gray-600">({post.ratingCount})</span>
+                            <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>({post.ratingCount})</span>
                           </div>
                         </div>
-                        
-                        {/* Product Info */}
-                        <Link to={`/product/${post.id}`} className="text-black hover:underline text-xs font-medium truncate mb-1">
+                        <Link to={`/product/${post.id}`} className={`hover:underline text-xs font-medium truncate mb-1 ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>
                           {post.product}
                         </Link>
                         <div className="mt-0 relative">
-                          <button className="text-xs text-gray-600 text-left w-full p-1 bg-gray-50 rounded hover:bg-gray-100 transition-colors">
+                          <button className={`text-xs text-left w-full p-1 rounded transition-colors flex items-start ${isDarkMode ? 'text-gray-300 hover:text-blue-400 bg-gray-700 hover:bg-gray-600' : 'text-gray-600 hover:text-blue-500 bg-gray-50 hover:bg-gray-100'}`}>
                             <span className="text-left">{truncatedDescription}</span>
                           </button>
                         </div>
@@ -1124,8 +991,8 @@ const AccountPage = () => {
             </div>
           ) : (
             <div className="text-center py-8">
-              <Bookmark className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 mb-4">No bookmarks yet</p>
+              <Bookmark className={`w-12 h-12 mx-auto mb-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+              <p className={`mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>No bookmarks yet</p>
               <Link to="/products" className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                 Browse Products
               </Link>
@@ -1137,13 +1004,13 @@ const AccountPage = () => {
       {/* Liked Tab */}
       {activeTab === 'liked' && (
         <div>
-          <h2 className="text-lg font-semibold mb-6 text-black">Liked Products ({likedProducts.length})</h2>
+          <h2 className={`text-lg font-semibold mb-6 ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Liked Products ({likedProducts.length})</h2>
           {contentLoading.liked ? (
             <div className="text-center py-8">
               <div className="flex justify-center">
                 <DotSpinner />
               </div>
-              <p className="mt-4 text-gray-600">Loading liked products...</p>
+              <p className={`mt-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Loading liked products...</p>
             </div>
           ) : likedProducts.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
@@ -1155,17 +1022,14 @@ const AccountPage = () => {
                 return (
                   <Card key={post.id} variant="elevated" className="overflow-hidden flex flex-col relative">
                     <CardContent className="p-0 flex flex-col">
-                      <div className="p-0 sm:p-3 flex flex-col border-b border-gray-100">
+                      <div className={`p-0 sm:p-3 flex flex-col border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
                         <div className="flex justify-between items-center">
                           {post.sellerId ? (
-                            <Link
-                              to={`/seller/${post.sellerId}`}
-                              className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
-                            >
+                            <Link to={`/seller/${post.sellerId}`} className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
                               <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs">
                                 {post.authorAvatar}
                               </div>
-                              <span className="font-medium text-black text-xs sm:text-sm truncate">
+                              <span className={`font-medium text-xs sm:text-sm truncate ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>
                                 {post.sellerName}
                               </span>
                             </Link>
@@ -1174,134 +1038,66 @@ const AccountPage = () => {
                               <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs">
                                 {post.authorAvatar}
                               </div>
-                              <span className="font-medium text-black text-xs sm:text-sm truncate">
+                              <span className={`font-medium text-xs sm:text-sm truncate ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>
                                 {post.sellerName}
                               </span>
                             </div>
                           )}
-                          <button onClick={() => toggleDropdown(post.id)} className="p-1 rounded hover:bg-gray-100">
-                            <MoreHorizontal className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
+                          <button onClick={() => toggleDropdown(post.id)} className={`p-1 rounded ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}>
+                            <MoreHorizontal className={`w-3 h-3 sm:w-4 sm:h-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
                           </button>
                         </div>
                         <div className="flex justify-center items-center mt-0.2">
-                          <span className="text-xs text-green-600 mb-1 font-semibold">{post.price}</span>
+                          <span className="text-xs text-green-600 dark:text-green-400 mb-1 font-semibold">{post.price}</span>
                         </div>
                       </div>
 
-                      {/* Image Carousel */}
-                      <div
-                        className="relative aspect-square w-full bg-gray-200 flex-1"
-                        onTouchStart={(e) => {
-                          const touchStartX = e.touches[0].clientX;
-                          setCurrentImageIndex((prev) => ({ ...prev, touchStartX }));
-                        }}
-                        onTouchMove={(e) => {
-                          const touchEndX = e.touches[0].clientX;
-                          setCurrentImageIndex((prev) => ({ ...prev, touchEndX }));
-                        }}
-                        onTouchEnd={() => {
-                          const startX = currentImageIndex.touchStartX;
-                          const endX = currentImageIndex.touchEndX;
-                          const diff = startX - endX;
-                          if (Math.abs(diff) > 50) {
-                            if (diff > 0 && currentIndex < totalImages - 1) goToImage(post.id, currentIndex + 1);
-                            if (diff < 0 && currentIndex > 0) goToImage(post.id, currentIndex - 1);
-                          }
-                          setCurrentImageIndex((prev) => ({ ...prev, touchStartX: null, touchEndX: null }));
-                        }}
-                      >
+                      <div className="relative aspect-square w-full bg-gray-200 dark:bg-gray-700 flex-1" onTouchStart={(e) => { const touchStartX = e.touches[0].clientX; setCurrentImageIndex((prev) => ({ ...prev, touchStartX })); }} onTouchMove={(e) => { const touchEndX = e.touches[0].clientX; setCurrentImageIndex((prev) => ({ ...prev, touchEndX })); }} onTouchEnd={() => { const startX = currentImageIndex.touchStartX; const endX = currentImageIndex.touchEndX; const diff = startX - endX; if (Math.abs(diff) > 50) { if (diff > 0 && currentIndex < totalImages - 1) goToImage(post.id, currentIndex + 1); if (diff < 0 && currentIndex > 0) goToImage(post.id, currentIndex - 1); } setCurrentImageIndex((prev) => ({ ...prev, touchStartX: null, touchEndX: null })); }}>
                         {totalImages > 1 && (
                           <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-10 flex space-x-1 px-2 py-1">
                             {post.images.map((_, index) => (
-                              <button
-                                key={index}
-                                onClick={() => goToImage(post.id, index)}
-                                className={`w-1 h-1 rounded-full transition-all ${
-                                  index === currentIndex ? 'bg-gray-300' : 'bg-gray-100'
-                                }`}
-                              />
+                              <button key={index} onClick={() => goToImage(post.id, index)} className={`w-1 h-1 rounded-full transition-all ${index === currentIndex ? (isDarkMode ? 'bg-gray-400' : 'bg-gray-300') : (isDarkMode ? 'bg-gray-600' : 'bg-gray-100')}`} />
                             ))}
                           </div>
                         )}
                         <Link to={`/product/${post.id}`}>
-                          <img
-                            src={post.images[currentIndex]}
-                            alt={post.product}
-                            className="absolute inset-0 w-full h-full object-cover select-none"
-                          />
+                          <img src={post.images[currentIndex]} alt={post.product} className="absolute inset-0 w-full h-full object-cover select-none" />
                         </Link>
                       </div>
 
-                      {/* Actions & info */}
                       <div className="p-1 sm:p-3 flex flex-col mt-0">
                         <div className="flex flex-col">
                           <div className="flex justify-between items-center mb-0">
                             <div className="flex space-x-1 sm:space-x-2">
-                              <button
-                                onClick={() => handleToggleLike(post.id)}
-                                className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full ${
-                                  isLiked(post.id) ? 'text-red-500 bg-red-50' : 'text-gray-600 hover:text-red-500'
-                                }`}
-                                style={{
-                                  transform: animatingLike === post.id ? 'scale(1.3)' : 'scale(1)',
-                                  animation: animatingLike === post.id ? 'heartBeat 0.6s ease-in-out' : 'none'
-                                }}
-                              >
+                              <button onClick={() => handleToggleLike(post.id)} className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full ${isLiked(post.id) ? 'text-red-500 bg-red-50 dark:bg-red-900/30' : isDarkMode ? 'text-gray-400 hover:text-red-400' : 'text-gray-600 hover:text-red-500'}`} style={{ transform: animatingLike === post.id ? 'scale(1.3)' : 'scale(1)', animation: animatingLike === post.id ? 'heartBeat 0.6s ease-in-out' : 'none' }}>
                                 <Heart className="w-3 h-3 sm:w-4 sm:h-4" fill={isLiked(post.id) ? 'currentColor' : 'none'} />
                               </button>
-                              <Link
-                                to={`/product/${post.id}/comments`}
-                                className="p-1 text-gray-600 hover:text-blue-500 rounded-full hover:bg-blue-50 flex items-center space-x-1"
-                              >
+                              <Link to={`/product/${post.id}/comments`} className={`p-1 text-gray-600 hover:text-blue-500 rounded-full hover:bg-blue-50 flex items-center space-x-1 ${isDarkMode ? 'text-gray-400 hover:text-blue-400 hover:bg-blue-900/30' : ''}`}>
                                 <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
-                                {post.commentCount > 0 && (
-                                  <span className="text-xs text-gray-500">{post.commentCount}</span>
-                                )}
+                                {post.commentCount > 0 && <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{post.commentCount}</span>}
                               </Link>
-                              <button
-                                onClick={() => toggleCart(post.id)}
-                                className={`p-1 rounded-full transition-colors ${
-                                  cartPosts[post.id] ? 'text-green-500 bg-green-50' : 'text-gray-600 hover:text-green-500'
-                                }`}
-                              >
+                              <button onClick={() => toggleCart(post.id)} className={`p-1 rounded-full transition-colors ${cartPosts[post.id] ? 'text-green-500 bg-green-50 dark:bg-green-900/30' : isDarkMode ? 'text-gray-400 hover:text-green-400' : 'text-gray-600 hover:text-green-500'}`}>
                                 <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                               </button>
                             </div>
-                            <button
-                              onClick={() => handleToggleFavorite(post.id)}
-                              className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full ${
-                                isBookmarked(post.id) ? 'text-blue-500 bg-blue-50' : 'text-gray-600 hover:text-blue-500'
-                              }`}
-                              style={{
-                                transform: animatingFavorite === post.id ? 'scale(1.2)' : 'scale(1)',
-                                animation: animatingFavorite === post.id ? 'bookmarkPop 0.5s ease-out' : 'none'
-                              }}
-                            >
+                            <button onClick={() => handleToggleFavorite(post.id)} className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full ${isBookmarked(post.id) ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/30' : isDarkMode ? 'text-gray-400 hover:text-blue-400' : 'text-gray-600 hover:text-blue-500'}`} style={{ transform: animatingFavorite === post.id ? 'scale(1.2)' : 'scale(1)', animation: animatingFavorite === post.id ? 'bookmarkPop 0.5s ease-out' : 'none' }}>
                               <Bookmark className="w-3 h-3 sm:w-4 sm:h-4" fill={isBookmarked(post.id) ? 'currentColor' : 'none'} />
                             </button>
                           </div>
-
-                          {/* Rating */}
                           <div className="flex items-center space-x-1 sm:justify-end">
                             <div className="flex">
                               {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={star}
-                                  className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${star <= post.rating ? 'text-yellow-500' : 'text-gray-300'}`}
-                                  fill={star <= post.rating ? 'currentColor' : 'none'}
-                                />
+                                <Star key={star} className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${star <= post.rating ? 'text-yellow-500' : isDarkMode ? 'text-gray-600' : 'text-gray-300'}`} fill={star <= post.rating ? 'currentColor' : 'none'} />
                               ))}
                             </div>
-                            <span className="text-xs text-gray-600">({post.ratingCount})</span>
+                            <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>({post.ratingCount})</span>
                           </div>
                         </div>
-
-                        {/* Product name & description */}
-                        <Link to={`/product/${post.id}`} className="text-black hover:underline text-xs font-medium truncate mb-1">
+                        <Link to={`/product/${post.id}`} className={`hover:underline text-xs font-medium truncate mb-1 ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>
                           {post.product}
                         </Link>
                         <div className="mt-0 relative">
-                          <button className="text-xs text-gray-600 text-left w-full p-1 bg-gray-50 rounded hover:bg-gray-100 transition-colors">
+                          <button className={`text-xs text-left w-full p-1 rounded transition-colors flex items-start ${isDarkMode ? 'text-gray-300 hover:text-blue-400 bg-gray-700 hover:bg-gray-600' : 'text-gray-600 hover:text-blue-500 bg-gray-50 hover:bg-gray-100'}`}>
                             <span className="text-left">{truncatedDescription}</span>
                           </button>
                         </div>
@@ -1313,8 +1109,8 @@ const AccountPage = () => {
             </div>
           ) : (
             <div className="text-center py-8">
-              <Heart className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 mb-4">No liked products yet</p>
+              <Heart className={`w-12 h-12 mx-auto mb-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+              <p className={`mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>No liked products yet</p>
               <Link to="/products" className="inline-flex items-center px-6 py-3 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors">
                 Discover Products
               </Link>
@@ -1326,23 +1122,23 @@ const AccountPage = () => {
       {/* Rating Modal */}
       {showRatingModal && selectedOrder && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeRatingModal}>
-          <div className="bg-white rounded-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+          <div className={`rounded-xl max-w-md w-full p-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`} onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-black">Rate Your Experience</h3>
-              <button onClick={closeRatingModal} className="p-1 hover:bg-gray-100 rounded-full">
-                <X className="w-5 h-5 text-gray-500" />
+              <h3 className={`text-xl font-bold ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Rate Your Experience</h3>
+              <button onClick={closeRatingModal} className={`p-1 hover:bg-gray-100 rounded-full ${isDarkMode ? 'hover:bg-gray-700' : ''}`}>
+                <X className={`w-5 h-5 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
               </button>
             </div>
 
             {ratingSuccess ? (
               <div className="text-center py-8">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <ThumbsUp className="w-8 h-8 text-green-600" />
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${isDarkMode ? 'bg-green-900/30' : 'bg-green-100'}`}>
+                  <ThumbsUp className={`w-8 h-8 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
                 </div>
-                <h4 className="text-lg font-semibold text-black mb-2">Thank You!</h4>
-                <p className="text-gray-600">Your rating has been submitted successfully.</p>
+                <h4 className={`text-lg font-semibold mb-2 ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Thank You!</h4>
+                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Your rating has been submitted successfully.</p>
                 {updatedTrustScore && (
-                  <p className="text-sm text-green-600 mt-2 font-medium">
+                  <p className={`text-sm font-medium mt-2 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>
                     Seller trust score updated to {updatedTrustScore.toFixed(1)}%
                   </p>
                 )}
@@ -1350,43 +1146,32 @@ const AccountPage = () => {
             ) : (
               <>
                 <div className="mb-6">
-                  <div className="bg-gray-50 p-3 rounded-lg mb-4">
-                    <p className="text-sm text-gray-700">
+                  <div className={`p-3 rounded-lg mb-4 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                    <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                       <span className="font-medium">Order:</span> #{selectedOrder.id}
                     </p>
-                    <p className="text-sm text-gray-700">
+                    <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                       <span className="font-medium">Product:</span> {selectedOrder.product_name || 'Sample Product'}
                     </p>
-                    <p className="text-sm text-gray-700">
+                    <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                       <span className="font-medium">Seller:</span> {selectedOrder.seller_name || 'Sample Seller'}
                     </p>
                   </div>
                   
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                     How would you rate your experience with this seller?
                   </label>
                   
-                  {/* Star Rating */}
                   <div className="flex justify-center gap-2 mb-4">
                     {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        onClick={() => setTrustRating(star)}
-                        className="focus:outline-none transform hover:scale-110 transition-transform"
-                      >
-                        <Star
-                          className={`w-8 h-8 transition-all ${
-                            star <= trustRating 
-                              ? 'text-yellow-500 fill-yellow-500' 
-                              : 'text-gray-300 hover:text-yellow-400'
-                          }`}
-                        />
+                      <button key={star} onClick={() => setTrustRating(star)} className="focus:outline-none transform hover:scale-110 transition-transform">
+                        <Star className={`w-8 h-8 transition-all ${star <= trustRating ? 'text-yellow-400 fill-yellow-400' : isDarkMode ? 'text-gray-600' : 'text-gray-300'}`} />
                       </button>
                     ))}
                   </div>
                   
                   <div className="text-center mb-4">
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                       {trustRating === 1 && 'Poor'}
                       {trustRating === 2 && 'Fair'}
                       {trustRating === 3 && 'Good'}
@@ -1395,34 +1180,25 @@ const AccountPage = () => {
                     </span>
                   </div>
                   
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                     Additional Comments (Optional)
                   </label>
                   <textarea
                     value={ratingComment}
                     onChange={(e) => setRatingComment(e.target.value)}
                     rows="3"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-black"
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent ${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'border-gray-300 text-black'}`}
                     placeholder="Share your experience with this seller..."
                   />
                   
-                  {ratingError && (
-                    <p className="mt-2 text-sm text-red-600">{ratingError}</p>
-                  )}
+                  {ratingError && <p className="mt-2 text-sm text-red-600">{ratingError}</p>}
                 </div>
 
                 <div className="flex gap-3">
-                  <button
-                    onClick={closeRatingModal}
-                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
+                  <button onClick={closeRatingModal} className={`flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50 transition-colors ${isDarkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700'}`}>
                     Cancel
                   </button>
-                  <button
-                    onClick={submitTrustRating}
-                    disabled={submittingRating}
-                    className="flex-1 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors disabled:bg-yellow-300 flex items-center justify-center gap-2"
-                  >
+                  <button onClick={submitTrustRating} disabled={submittingRating} className={`flex-1 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors disabled:bg-yellow-300 flex items-center justify-center gap-2`}>
                     {submittingRating ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -1442,17 +1218,13 @@ const AccountPage = () => {
       {/* Dropdown Modal */}
       {dropdownOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeDropdown}>
-          <div className="bg-white rounded-xl max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
-            <div className="p-4 border-b border-gray-200 text-center">
-              <h3 className="font-semibold text-lg text-black">Post Options</h3>
+          <div className={`rounded-xl max-w-sm w-full ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`} onClick={(e) => e.stopPropagation()}>
+            <div className={`p-4 border-b text-center ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+              <h3 className={`font-semibold text-lg ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Post Options</h3>
             </div>
-            <div className="divide-y divide-gray-100">
+            <div className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
               {dropdownItems.map((item, index) => (
-                <button
-                  key={index}
-                  onClick={item.action}
-                  className="w-full text-center px-4 py-3 text-sm hover:bg-gray-50 text-black first:rounded-t-lg last:rounded-b-lg transition-colors"
-                >
+                <button key={index} onClick={item.action} className={`w-full text-center px-4 py-3 text-sm transition-colors first:rounded-t-lg last:rounded-b-lg ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-black hover:bg-gray-50'}`}>
                   {item.label}
                 </button>
               ))}
@@ -1492,18 +1264,8 @@ const AccountPage = () => {
           animation: spinner-rotate 1.25s infinite backwards;
         }
         @keyframes spinner-rotate {
-          0% {
-            transform: rotate(0deg) translateY(-200%);
-          }
-          60%, 100% {
-            transform: rotate(360deg) translateY(-200%);
-          }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .animate-bounce-forever,
-          [style*="animation"] {
-            animation: none !important;
-          }
+          0% { transform: rotate(0deg) translateY(-200%); }
+          60%, 100% { transform: rotate(360deg) translateY(-200%); }
         }
       `}</style>
     </div>
