@@ -248,154 +248,139 @@ const App = () => {
     setUserRole(null);
   };
 
+  const AuthenticatedContent = () => {
+    if (!isAuthenticated) {
+      return (
+        <Routes>
+          <Route path="/login" element={<LoginPage setIsAuthenticated={setIsAuthenticated} setUserRole={setUserRole} />} />
+          <Route path="/register" element={<RegisterPage setIsAuthenticated={setIsAuthenticated} setUserRole={setUserRole} />} />
+          <Route path="/seller/login" element={<SellerLoginPage setIsAuthenticated={setIsAuthenticated} setUserRole={setUserRole} />} />
+          <Route path="/seller/register" element={<SellerRegisterPage setIsAuthenticated={setIsAuthenticated} setUserRole={setUserRole} />} />
+          <Route path="*" element={<Navigate to="/login" />} />
+        </Routes>
+      );
+    }
+
+    if (userRole === 'buyer') {
+      return (
+        <DarkModeProvider>
+          <div className="flex min-h-screen bg-gray-100">
+            <SidebarNav onLogout={handleLogout} />
+            <div className="flex-1 overflow-y-auto pb-16 md:pb-0">
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/cart" element={<CartPage />} />
+                <Route path="/trending" element={<TrendingPage />} />
+                <Route path="/search" element={<SearchBar />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/notifications" element={<NotificationsPage />} />
+                <Route path="/account" element={<AccountPage />} />
+                <Route path="/product/:productId" element={<Product />} />
+                <Route path="/seller/:sellerId" element={<SellerPage />} />
+                <Route path="/product/:productId/comments" element={<ProductCommentsPage />} />
+                <Route path="*" element={<Navigate to="/" />} />
+              </Routes>
+            </div>
+            <BottomNav />
+          </div>
+        </DarkModeProvider>
+      );
+    }
+
+    if (userRole === 'seller') {
+      return (
+        <SellerDarkModeProvider>
+          <div className="flex min-h-screen bg-gray-100">
+            <div className="hidden md:block w-64 bg-white border-r border-gray-200">
+              <div className="p-4">
+                <h2 className="text-xl font-bold text-gray-800">Seller Dashboard</h2>
+                <nav className="mt-8 space-y-2">
+                  <NavLink 
+                    to="/seller-home" 
+                    className={({ isActive }) => `block py-2 px-4 ${isActive ? 'bg-green-50 text-green-600' : 'text-gray-600 hover:bg-gray-50'} rounded-lg font-medium`}
+                  >
+                    Dashboard
+                  </NavLink>
+                  <NavLink 
+                    to="/seller/products" 
+                    className={({ isActive }) => `block py-2 px-4 ${isActive ? 'bg-green-50 text-green-600' : 'text-gray-600 hover:bg-gray-50'} rounded-lg`}
+                  >
+                    My Products
+                  </NavLink>
+                  <NavLink 
+                    to="/seller/orders" 
+                    className={({ isActive }) => `block py-2 px-4 ${isActive ? 'bg-green-50 text-green-600' : 'text-gray-600 hover:bg-gray-50'} rounded-lg`}
+                  >
+                    Orders
+                  </NavLink>
+                  <NavLink 
+                    to="/seller/add-product/step1" 
+                    className={({ isActive }) => `block py-2 px-4 ${isActive ? 'bg-green-50 text-green-600' : 'text-gray-600 hover:bg-gray-50'} rounded-lg`}
+                  >
+                    Add Product
+                  </NavLink>
+                  <NavLink 
+                    to="/seller/analytics" 
+                    className={({ isActive }) => `block py-2 px-4 ${isActive ? 'bg-green-50 text-green-600' : 'text-gray-600 hover:bg-gray-50'} rounded-lg`}
+                  >
+                    Analytics
+                  </NavLink>
+                  <button 
+                    onClick={handleLogout} 
+                    className="w-full text-left py-2 px-4 text-gray-600 hover:bg-gray-50 rounded-lg"
+                  >
+                    Logout
+                  </button>
+                </nav>
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto pb-16 md:pb-0">
+              <Routes>
+                <Route path="/seller-home" element={<SellerHomePage />} />
+                <Route path="/seller/products" element={
+                  <div className="p-8">
+                    <h1 className="text-2xl font-bold">My Products</h1>
+                    <p>Products management page</p>
+                  </div>
+                } />
+                <Route path="/seller/orders" element={
+                  <div className="p-8">
+                    <h1 className="text-2xl font-bold">Orders</h1>
+                    <p>Orders management page</p>
+                  </div>
+                } />
+                <Route path="/seller/account" element={<SellerAccountPage />} />
+                <Route path="/seller/analytics" element={
+                  <div className="p-8">
+                    <h1 className="text-2xl font-bold">Analytics</h1>
+                    <p>Analytics dashboard</p>
+                  </div>
+                } />
+                <Route path="/seller/add-product/step1" element={<AddProduct1 />} />
+                <Route path="/seller/add-product/step2" element={<AddProduct2 />} />
+                <Route path="/seller/add-product/step3" element={<AddProduct3 />} />
+                <Route path="/seller/add-product" element={<Navigate to="/seller/add-product/step1" />} />
+                <Route path="/seller/notifications" element={<SellerNotifications />} />
+                <Route path="/seller/settings" element={<SellerSettings />} />
+                <Route path="/seller/trending2" element={<SellerTrendingPage />} />
+                <Route path="*" element={<Navigate to="/seller-home" />} />
+              </Routes>
+            </div>
+            <SellerBottomNav />
+          </div>
+        </SellerDarkModeProvider>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <AddProductProvider>
       <PageLoadingProvider>
         <LikeBookmarkProvider> 
           <BrowserRouter>
-            <div className="flex min-h-screen bg-gray-100">
-              {isAuthenticated && userRole === 'buyer' && <SidebarNav onLogout={handleLogout} />}
-              
-              {isAuthenticated && userRole === 'seller' && (
-                <div className="hidden md:block w-64 bg-white border-r border-gray-200">
-                  <div className="p-4">
-                    <h2 className="text-xl font-bold text-gray-800">Seller Dashboard</h2>
-                    <nav className="mt-8 space-y-2">
-                      <NavLink 
-                        to="/seller-home" 
-                        className={({ isActive }) => `block py-2 px-4 ${isActive ? 'bg-green-50 text-green-600' : 'text-gray-600 hover:bg-gray-50'} rounded-lg font-medium`}
-                      >
-                        Dashboard
-                      </NavLink>
-                      <NavLink 
-                        to="/seller/products" 
-                        className={({ isActive }) => `block py-2 px-4 ${isActive ? 'bg-green-50 text-green-600' : 'text-gray-600 hover:bg-gray-50'} rounded-lg`}
-                      >
-                        My Products
-                      </NavLink>
-                      <NavLink 
-                        to="/seller/orders" 
-                        className={({ isActive }) => `block py-2 px-4 ${isActive ? 'bg-green-50 text-green-600' : 'text-gray-600 hover:bg-gray-50'} rounded-lg`}
-                      >
-                        Orders
-                      </NavLink>
-                      <NavLink 
-                        to="/seller/add-product/step1" 
-                        className={({ isActive }) => `block py-2 px-4 ${isActive ? 'bg-green-50 text-green-600' : 'text-gray-600 hover:bg-gray-50'} rounded-lg`}
-                      >
-                        Add Product
-                      </NavLink>
-                      <NavLink 
-                        to="/seller/analytics" 
-                        className={({ isActive }) => `block py-2 px-4 ${isActive ? 'bg-green-50 text-green-600' : 'text-gray-600 hover:bg-gray-50'} rounded-lg`}
-                      >
-                        Analytics
-                      </NavLink>
-                      <button 
-                        onClick={handleLogout} 
-                        className="w-full text-left py-2 px-4 text-gray-600 hover:bg-gray-50 rounded-lg"
-                      >
-                        Logout
-                      </button>
-                    </nav>
-                  </div>
-                </div>
-              )}
-              
-              <div className={`flex-1 overflow-y-auto ${isAuthenticated ? 'pb-16 md:pb-0' : ''}`}>
-                <Routes>
-                  <Route 
-                    path="/login" 
-                    element={
-                      isAuthenticated ? 
-                        <Navigate to={userRole === 'seller' ? "/seller-home" : "/"} /> : 
-                        <LoginPage setIsAuthenticated={setIsAuthenticated} setUserRole={setUserRole} />
-                    } 
-                  />
-                  <Route 
-                    path="/register" 
-                    element={
-                      isAuthenticated ? 
-                        <Navigate to={userRole === 'seller' ? "/seller-home" : "/"} /> : 
-                        <RegisterPage setIsAuthenticated={setIsAuthenticated} setUserRole={setUserRole} />
-                    } 
-                  />
-                  <Route 
-                    path="/seller/login" 
-                    element={
-                      isAuthenticated ? 
-                        <Navigate to={userRole === 'seller' ? "/seller-home" : "/"} /> : 
-                        <SellerLoginPage setIsAuthenticated={setIsAuthenticated} setUserRole={setUserRole} />
-                    } 
-                  />
-                  <Route 
-                    path="/seller/register" 
-                    element={
-                      isAuthenticated ? 
-                        <Navigate to={userRole === 'seller' ? "/seller-home" : "/"} /> : 
-                        <SellerRegisterPage setIsAuthenticated={setIsAuthenticated} setUserRole={setUserRole} />
-                    } 
-                  />
-
-                  <Route path="/" element={<BuyerRoute><DarkModeProvider><HomePage /></DarkModeProvider></BuyerRoute>} />
-                  <Route path="/cart" element={<BuyerRoute><DarkModeProvider><CartPage /></DarkModeProvider></BuyerRoute>} />
-                  <Route path="/trending" element={<BuyerRoute><DarkModeProvider><TrendingPage /></DarkModeProvider></BuyerRoute>} />
-                  <Route path="/search" element={<BuyerRoute><DarkModeProvider><SearchBar /></DarkModeProvider></BuyerRoute>} />
-                  <Route path="/settings" element={<BuyerRoute><DarkModeProvider><SettingsPage /></DarkModeProvider></BuyerRoute>} />
-                  <Route path="/notifications" element={<BuyerRoute><DarkModeProvider><NotificationsPage /></DarkModeProvider></BuyerRoute>} />
-                  <Route path="/account" element={<BuyerRoute><DarkModeProvider><AccountPage /></DarkModeProvider></BuyerRoute>} />
-                  <Route path="/product/:productId" element={<BuyerRoute><DarkModeProvider><Product /></DarkModeProvider></BuyerRoute>} />
-                  <Route path="/seller/:sellerId" element={<BuyerRoute><DarkModeProvider><SellerPage /></DarkModeProvider></BuyerRoute>} />
-                  <Route path="/product/:productId/comments" element={<BuyerRoute><DarkModeProvider><ProductCommentsPage /></DarkModeProvider></BuyerRoute>} />
-
-                  <Route path="/seller-home" element={<SellerRoute><SellerDarkModeProvider><SellerHomePage /></SellerDarkModeProvider></SellerRoute>} />
-                  <Route path="/seller/products" element={
-                    <SellerRoute><SellerDarkModeProvider>
-                      <div className="p-8">
-                        <h1 className="text-2xl font-bold">My Products</h1>
-                        <p>Products management page</p>
-                      </div>
-                    </SellerDarkModeProvider></SellerRoute>
-                  } />
-                  <Route path="/seller/orders" element={
-                    <SellerRoute><SellerDarkModeProvider>
-                      <div className="p-8">
-                        <h1 className="text-2xl font-bold">Orders</h1>
-                        <p>Orders management page</p>
-                      </div>
-                    </SellerDarkModeProvider></SellerRoute>
-                  } />
-                  <Route path="/seller/account" element={<SellerRoute><SellerDarkModeProvider><SellerAccountPage /></SellerDarkModeProvider></SellerRoute>} />
-                  <Route path="/seller/analytics" element={
-                    <SellerRoute><SellerDarkModeProvider>
-                      <div className="p-8">
-                        <h1 className="text-2xl font-bold">Analytics</h1>
-                        <p>Analytics dashboard</p>
-                      </div>
-                    </SellerDarkModeProvider></SellerRoute>
-                  } />
-                  
-                  <Route path="/seller/add-product/step1" element={<SellerRoute><SellerDarkModeProvider><AddProduct1 /></SellerDarkModeProvider></SellerRoute>} />
-                  <Route path="/seller/add-product/step2" element={<SellerRoute><SellerDarkModeProvider><AddProduct2 /></SellerDarkModeProvider></SellerRoute>} />
-                  <Route path="/seller/add-product/step3" element={<SellerRoute><SellerDarkModeProvider><AddProduct3 /></SellerDarkModeProvider></SellerRoute>} />
-                  <Route path="/seller/add-product" element={<Navigate to="/seller/add-product/step1" />} />
-                  
-                  <Route path="/seller/notifications" element={<SellerRoute><SellerDarkModeProvider><SellerNotifications /></SellerDarkModeProvider></SellerRoute>} />
-                  <Route path="/seller/settings" element={<SellerRoute><SellerDarkModeProvider><SellerSettings /></SellerDarkModeProvider></SellerRoute>} />
-                  <Route path="/seller/trending2" element={<SellerRoute><SellerDarkModeProvider><SellerTrendingPage /></SellerDarkModeProvider></SellerRoute>} />
-
-                  <Route 
-                    path="*" 
-                    element={
-                      <Navigate to={isAuthenticated ? (userRole === 'seller' ? "/seller-home" : "/") : "/login"} />
-                    } 
-                  />
-                </Routes>
-              </div>
-              
-              {isAuthenticated && userRole === 'buyer' && <BottomNav />}
-              {isAuthenticated && userRole === 'seller' && <SellerBottomNav />}
-            </div>
+            <AuthenticatedContent />
           </BrowserRouter>
         </LikeBookmarkProvider>  
       </PageLoadingProvider>
