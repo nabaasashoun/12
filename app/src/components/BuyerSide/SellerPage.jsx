@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { MapPin, Plus, Check, MessageCircle, MessageSquare, Heart, Star, Bookmark, MoreHorizontal, Settings, Search } from 'lucide-react';
-import { Card, CardContent } from './card';
+import { BuyerCard, BuyerCardContent } from './BuyerCard';
 import api from '../../utils/api';
 import { useCart } from '../../utils/CartContext';
 import { useLikeBookmark } from '../../utils/LikeBookmarkContext';
@@ -387,7 +387,7 @@ const SellerPage = () => {
               const totalImages = post.images.length;
 
               return (
-                <Card
+                <BuyerCard
                   key={post.id}
                   variant="elevated"
                   className="overflow-hidden flex flex-col transition-all duration-500 hover:scale-[1.02] hover:shadow-xl group bg-white border-0"
@@ -396,7 +396,7 @@ const SellerPage = () => {
                     animationFillMode: 'both'
                   }}
                 >
-                  <CardContent className="p-0 flex flex-col">
+                  <BuyerCardContent className="p-0 flex flex-col">
                     {/* Top section */}
                     <div className="p-3 flex flex-col border-b border-gray-100">
                       <div className="flex justify-between items-center">
@@ -523,8 +523,8 @@ const SellerPage = () => {
                         {post.content.length > 40 ? post.content.substring(0, 40) + '...' : post.content}
                       </p>
                     </div>
-                  </CardContent>
-                </Card>
+                  </BuyerCardContent>
+                </BuyerCard>
               );
             })}
           </div>

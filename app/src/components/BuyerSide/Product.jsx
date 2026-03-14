@@ -1,6 +1,3 @@
-// Product.jsx - FULLY UPDATED WITH SIMPLEST DARK MODE
-// Follows exact same pattern as card.jsx + BottomNav.jsx + HomePage.jsx
-
 import { useState, useEffect, useRef } from 'react'; 
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -9,10 +6,10 @@ import {
 } from 'lucide-react';
 import { useLikeBookmark } from '../../utils/LikeBookmarkContext';
 import { useCart } from '../../utils/CartContext';
-import { useDarkMode } from '../../utils/DarkModeContext';   // ← Added
+import { useDarkMode } from '../../utils/BuyerDarkModeContext';   
 
 const Product = () => {
-  const { isDarkMode } = useDarkMode();                    // ← Added
+  const { isDarkMode } = useDarkMode();                   
   const { productId } = useParams();
   const [product, setProduct] = useState(null);
   const [comments, setComments] = useState([]);
@@ -560,7 +557,6 @@ const Product = () => {
             <div className={`mt-3 space-y-3 p-5 rounded-2xl ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
               {product.questions.map((q, idx) => (
                 <div key={q.id} className={`border rounded-2xl overflow-hidden ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                  {/* ... question content with conditional colors ... */}
                 </div>
               ))}
               <button onClick={saveAnswers} className="mt-4 w-full bg-blue-600 text-white py-3 rounded-2xl font-medium">

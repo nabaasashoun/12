@@ -1,4 +1,4 @@
-import { Card, CardContent } from '../BuyerSide/card';
+import { SellerCard, SellerCardContent } from './SellerCard';
 import { 
   Bell, 
   CheckCircle, 
@@ -359,8 +359,8 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
       </div>
 
       {notifications.length === 0 ? (
-        <Card isDarkMode={isDarkMode}>
-          <CardContent className="p-8 text-center">
+        <SellerCard isDarkMode={isDarkMode}>
+          <SellerCardContent className="p-8 text-center">
             <Bell className={`w-12 h-12 mx-auto mb-4 ${
               isDarkMode ? 'text-gray-600' : 'text-gray-400'
             }`} />
@@ -370,14 +370,14 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
             <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
               You're all caught up! Check back later for updates.
             </p>
-          </CardContent>
-        </Card>
+          </SellerCardContent>
+        </SellerCard>
       ) : (
         <div className="space-y-3">
           {notifications.map((notification) => {
             const { icon: IconComponent, color } = getIconForType(notification.type);
             return (
-              <Card
+              <SellerCard
                 key={notification.id}
                 isDarkMode={isDarkMode}
                 className={`hover:shadow-md transition-shadow cursor-pointer ${
@@ -389,7 +389,7 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
                 }`}
                 onClick={() => handleNotificationClick(notification)}
               >
-                <CardContent className="p-4">
+                <SellerCardContent className="p-4">
                   <div className="flex items-start">
                     <div className={`p-2 rounded-full ${color} bg-opacity-20 mr-4`}>
                       <IconComponent className="w-5 h-5" />
@@ -469,8 +469,8 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
                       </div>
                     )}
                   </div>
-                </CardContent>
-              </Card>
+                </SellerCardContent>
+              </SellerCard>
             );
           })}
         </div>

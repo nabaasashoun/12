@@ -1,4 +1,4 @@
-import { Card, CardContent } from '../BuyerSide/card';
+import { SellerCard, SellerCardContent } from './SellerCard';
 import { Heart, MessageSquare, Star, Bookmark, Edit, Settings, Search, MoreHorizontal, X, Plus, ChevronUp, ChevronDown, Camera } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -375,9 +375,11 @@ const SellerHomePage = () => {
 
   if (isLoading) {
     return (
-      <div className={`p-6 max-w-4xl mx-auto text-center ${isDarkMode ? 'bg-gray-900' : ''}`}>
-        <div className={`animate-spin rounded-full h-12 w-12 border-b-2 mx-auto ${isDarkMode ? 'border-green-400' : 'border-green-500'}`}></div>
-        <p className={`mt-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Loading your products...</p>
+      <div className={`p-6 max-w-4xl mx-auto text-center min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <div>
+          <div className={`animate-spin rounded-full h-12 w-12 border-b-2 mx-auto ${isDarkMode ? 'border-green-400' : 'border-green-500'}`}></div>
+          <p className={`mt-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Loading your products...</p>
+        </div>
       </div>
     );
   }
@@ -554,8 +556,8 @@ const SellerHomePage = () => {
             const truncatedDescription = post.content.length > 40 ? post.content.substring(0, 40) + '...' : post.content;
 
             return (
-              <Card key={post.id} variant="elevated" className="overflow-hidden flex flex-col relative" isDarkMode={isDarkMode}>
-                <CardContent className="p-0 flex flex-col">
+              <SellerCard key={post.id} variant="elevated" className="overflow-hidden flex flex-col relative">
+                <SellerCardContent className="p-0 flex flex-col">
                   <div className={`p-0 sm:p-3 flex flex-col border-b ${
                     isDarkMode ? 'border-gray-700' : 'border-gray-100'
                   }`}>
@@ -642,7 +644,7 @@ const SellerHomePage = () => {
                             onClick={() => toggleLike(post.id)}
                             className={`p-1 rounded-full transition-colors ${
                               likedPosts[post.id] 
-                                ? 'text-red-500 bg-red-50' 
+                                ? 'text-red-500 bg-red-50 dark:bg-red-900/30' 
                                 : isDarkMode 
                                   ? 'text-gray-400 hover:text-red-400' 
                                   : 'text-gray-600 hover:text-red-500'
@@ -676,7 +678,7 @@ const SellerHomePage = () => {
                           onClick={() => toggleFavorite(post.id)}
                           className={`p-1 rounded-full transition-colors ${
                             favoritedPosts[post.id] 
-                              ? 'text-blue-500 bg-blue-50' 
+                              ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/30' 
                               : isDarkMode 
                                 ? 'text-gray-400 hover:text-blue-400' 
                                 : 'text-gray-600 hover:text-blue-500'
@@ -722,8 +724,8 @@ const SellerHomePage = () => {
                       </button>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </SellerCardContent>
+              </SellerCard>
             );
           })}
         </div>

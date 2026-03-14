@@ -34252,3 +34252,1244 @@ INFO 2026-03-11 01:11:54,726 log 28148 19808 "GET /api/simple-notifications/ HTT
 INFO 2026-03-11 01:11:57,794 log 28148 19808 "GET /api/quick-deals/ HTTP/1.1" 200 41
 INFO 2026-03-11 01:12:24,709 log 28148 19808 "GET /api/simple-notifications/ HTTP/1.1" 200 47
 INFO 2026-03-11 01:12:27,791 log 28148 19808 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:12:55,642 log 28148 19808 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-11 01:12:58,650 log 28148 19808 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:13:25,647 log 28148 19808 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-11 01:13:28,676 log 28148 19808 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:13:55,638 log 28148 19808 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-11 01:13:58,649 log 28148 19808 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:14:25,650 log 28148 19808 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-11 01:14:28,652 log 28148 19808 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:14:57,650 log 28148 19808 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-11 01:15:13,991 log 28148 19808 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:15:24,709 log 28148 19808 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-11 01:15:27,787 log 28148 19808 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:15:54,706 log 28148 19808 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-11 01:15:57,796 log 28148 19808 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:15:57,914 log 28148 19808 "GET /api/buyer/profile/ HTTP/1.1" 200 158
+INFO 2026-03-11 01:15:57,926 log 28148 19808 "GET /api/buyer/profile/ HTTP/1.1" 200 158
+INFO 2026-03-11 01:15:57,937 log 28148 19808 "GET /api/verify-token/ HTTP/1.1" 200 68
+INFO 2026-03-11 01:15:57,947 log 28148 19808 "GET /api/verify-token/ HTTP/1.1" 200 68
+INFO 2026-03-11 01:16:10,842 log 28148 19808 "GET /api/verify-token/ HTTP/1.1" 200 68
+INFO 2026-03-11 01:16:10,848 log 28148 19808 "GET /api/verify-token/ HTTP/1.1" 200 68
+INFO 2026-03-11 01:16:10,917 log 28148 19808 "GET /api/buyer/profile/ HTTP/1.1" 200 158
+INFO 2026-03-11 01:16:10,937 log 28148 19808 "GET /api/buyer/profile/ HTTP/1.1" 200 158
+INFO 2026-03-11 01:16:10,953 log 28148 19808 "OPTIONS /api/orders/count/ HTTP/1.1" 200 0
+INFO 2026-03-11 01:16:10,964 log 28148 19808 "OPTIONS /api/orders/ HTTP/1.1" 200 0
+INFO 2026-03-11 01:16:10,982 log 28148 19808 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-11 01:16:10,992 log 28148 19808 "GET /api/orders/ HTTP/1.1" 200 2
+INFO 2026-03-11 01:16:10,999 log 28148 26116 "GET /api/wishlist/ HTTP/1.1" 200 1580
+INFO 2026-03-11 01:16:11,044 log 28148 26116 "GET /api/orders/ HTTP/1.1" 200 2
+INFO 2026-03-11 01:16:11,044 log 28148 19808 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-11 01:16:11,078 log 28148 19808 "GET /api/wishlist/ HTTP/1.1" 200 1580
+INFO 2026-03-11 01:16:13,978 log 28148 19808 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-11 01:16:13,982 log 28148 19064 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:16:14,016 log 28148 19808 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-11 01:16:14,018 log 28148 19064 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:16:14,037 log 28148 26116 "GET /api/products/ HTTP/1.1" 200 2206
+INFO 2026-03-11 01:16:14,079 log 28148 26116 "GET /api/products/ HTTP/1.1" 200 2206
+INFO 2026-03-11 01:16:14,739 log 28148 10688 "GET /api/products/?ordering=-like_count HTTP/1.1" 200 2209
+INFO 2026-03-11 01:16:14,777 log 28148 23976 "GET /api/products/?ordering=-like_count HTTP/1.1" 200 2209
+INFO 2026-03-11 01:16:14,913 log 28148 26564 "GET /media/products/0a967922e19eb7d22aae18f1c2b98afe.jpg HTTP/1.1" 200 108899
+INFO 2026-03-11 01:16:15,145 log 28148 20256 "GET /media/products/IMG-20240318-WA0008.jpg HTTP/1.1" 200 92336
+INFO 2026-03-11 01:16:17,069 log 28148 22156 "GET /media/products/backiee-326245.jpg HTTP/1.1" 200 6420439
+INFO 2026-03-11 01:16:18,102 log 28148 26116 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-11 01:16:18,106 log 28148 19808 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:16:18,253 log 28148 19808 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:16:18,255 log 28148 26116 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-11 01:16:18,266 log 28148 19064 "GET /api/products/ HTTP/1.1" 200 2206
+INFO 2026-03-11 01:16:18,301 log 28148 19064 "GET /api/products/ HTTP/1.1" 200 2206
+INFO 2026-03-11 01:16:24,707 log 28148 19064 "GET /api/simple-notifications/ HTTP/1.1" 200 47
+INFO 2026-03-11 01:16:30,071 log 28148 26116 "OPTIONS /api/sellers/1/ HTTP/1.1" 200 0
+INFO 2026-03-11 01:16:30,071 log 28148 19064 "OPTIONS /api/sellers/1/ HTTP/1.1" 200 0
+INFO 2026-03-11 01:16:30,194 log 28148 26116 "GET /api/sellers/1/ HTTP/1.1" 200 1023
+INFO 2026-03-11 01:16:30,221 log 28148 26116 "GET /api/sellers/1/ HTTP/1.1" 200 1023
+INFO 2026-03-11 01:16:32,075 log 28148 26116 "OPTIONS /api/sellers/1/follow/ HTTP/1.1" 200 0
+INFO 2026-03-11 01:16:32,468 log 28148 26116 "POST /api/sellers/1/follow/ HTTP/1.1" 200 81
+INFO 2026-03-11 01:16:41,981 log 28148 26116 "GET /api/simple-notifications/ HTTP/1.1" 200 258
+INFO 2026-03-11 01:16:41,989 log 28148 26116 "GET /api/simple-notifications/ HTTP/1.1" 200 258
+INFO 2026-03-11 01:16:54,738 log 28148 26116 "GET /api/simple-notifications/ HTTP/1.1" 200 258
+INFO 2026-03-11 01:17:11,999 log 28148 26116 "GET /api/simple-notifications/ HTTP/1.1" 200 258
+INFO 2026-03-11 01:17:24,722 log 28148 26116 "GET /api/simple-notifications/ HTTP/1.1" 200 258
+INFO 2026-03-11 01:17:39,043 log 28148 26116 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-11 01:17:39,046 log 28148 19808 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:17:39,074 log 28148 26116 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-11 01:17:39,090 log 28148 19808 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:17:39,096 log 28148 19064 "GET /api/products/ HTTP/1.1" 200 2206
+INFO 2026-03-11 01:17:39,186 log 28148 19064 "GET /api/products/ HTTP/1.1" 200 2206
+INFO 2026-03-11 01:17:40,931 log 28148 19064 "GET /api/buyer/profile/ HTTP/1.1" 200 158
+INFO 2026-03-11 01:17:40,947 log 28148 19808 "GET /api/verify-token/ HTTP/1.1" 200 68
+INFO 2026-03-11 01:17:40,946 log 28148 19064 "GET /api/buyer/profile/ HTTP/1.1" 200 158
+INFO 2026-03-11 01:17:40,957 log 28148 19808 "GET /api/verify-token/ HTTP/1.1" 200 68
+WARNING 2026-03-11 01:18:19,740 log 28148 19808 Unauthorized: /api/login/
+WARNING 2026-03-11 01:18:19,741 log 28148 19808 "POST /api/login/ HTTP/1.1" 401 31
+INFO 2026-03-11 01:22:22,776 log 28148 19808 "POST /api/register/seller/ HTTP/1.1" 201 54
+INFO 2026-03-11 01:23:57,609 log 28148 19808 "POST /api/login/ HTTP/1.1" 200 595
+INFO 2026-03-11 01:23:57,718 log 28148 21232 "GET /api/seller/products/ HTTP/1.1" 200 2
+INFO 2026-03-11 01:23:58,675 log 28148 8312 "GET /api/seller/products/ HTTP/1.1" 200 2
+INFO 2026-03-11 01:24:00,923 log 28148 19808 "GET /api/cart/items/ HTTP/1.1" 200 876
+ERROR 2026-03-11 01:24:00,907 log 28148 3512 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-11 01:24:00,923 log 28148 28368 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-11 01:24:01,040 log 28148 3512 "GET /api/wishlist/ HTTP/1.1" 500 111292
+ERROR 2026-03-11 01:24:01,044 log 28148 28368 "GET /api/liked-products/ HTTP/1.1" 500 114837
+INFO 2026-03-11 01:24:04,026 log 28148 3512 "OPTIONS /api/seller/profile/ HTTP/1.1" 200 0
+INFO 2026-03-11 01:24:04,026 log 28148 28368 "OPTIONS /api/seller/profile/ HTTP/1.1" 200 0
+INFO 2026-03-11 01:24:04,044 log 28148 28368 "GET /api/seller/profile/ HTTP/1.1" 200 462
+INFO 2026-03-11 01:24:04,055 log 28148 28368 "GET /api/seller/profile/ HTTP/1.1" 200 462
+INFO 2026-03-11 01:24:15,657 log 28148 24560 "GET /api/seller/products/ HTTP/1.1" 200 2
+INFO 2026-03-11 01:24:15,678 log 28148 14780 "GET /api/seller/products/ HTTP/1.1" 200 2
+INFO 2026-03-11 01:24:36,970 log 28148 20472 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-11 01:24:36,990 log 28148 22116 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-11 01:25:13,337 log 28148 13756 "POST /api/products/ HTTP/1.1" 201 704
+INFO 2026-03-11 01:25:16,958 log 28148 22320 "GET /api/seller/products/ HTTP/1.1" 200 706
+INFO 2026-03-11 01:25:16,989 log 28148 18996 "GET /api/seller/products/ HTTP/1.1" 200 706
+INFO 2026-03-11 01:25:17,014 log 28148 15024 "GET /media/products/backiee-130807.jpg HTTP/1.1" 200 1257315
+INFO 2026-03-11 01:25:26,825 log 28148 28368 "POST /api/login/ HTTP/1.1" 200 582
+INFO 2026-03-11 01:25:26,893 log 28148 28368 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-11 01:25:27,364 log 28148 19808 "GET /api/cart/items/ HTTP/1.1" 200 78
+INFO 2026-03-11 01:25:27,370 log 28148 3512 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-11 01:25:27,384 log 28148 19808 "GET /api/cart/items/ HTTP/1.1" 200 78
+INFO 2026-03-11 01:25:27,393 log 28148 19808 "GET /api/cart/items/ HTTP/1.1" 200 78
+WARNING 2026-03-11 01:25:34,818 log 28148 19808 Unauthorized: /api/login/
+WARNING 2026-03-11 01:25:34,820 log 28148 19808 "POST /api/login/ HTTP/1.1" 401 31
+INFO 2026-03-11 01:25:34,826 log 28148 19808 "OPTIONS /api/token/refresh/ HTTP/1.1" 200 0
+WARNING 2026-03-11 01:25:34,869 log 28148 19808 Not Found: /api/token/refresh/
+WARNING 2026-03-11 01:25:34,874 log 28148 19808 "POST /api/token/refresh/ HTTP/1.1" 404 28660
+WARNING 2026-03-11 01:25:39,463 log 28148 19808 Unauthorized: /api/login/
+WARNING 2026-03-11 01:25:39,465 log 28148 19808 "POST /api/login/ HTTP/1.1" 401 31
+INFO 2026-03-11 01:25:47,177 log 28148 19808 "POST /api/login/ HTTP/1.1" 200 592
+INFO 2026-03-11 01:25:49,025 log 28148 19808 "GET /api/cart/items/ HTTP/1.1" 200 78
+INFO 2026-03-11 01:25:49,345 log 28148 19808 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:25:49,346 log 28148 9512 "GET /api/simple-notifications/ HTTP/1.1" 200 258
+INFO 2026-03-11 01:25:49,475 log 28148 21528 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-11 01:25:49,858 log 28148 28368 "GET /api/wishlist/ HTTP/1.1" 200 1580
+INFO 2026-03-11 01:25:49,907 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 258
+INFO 2026-03-11 01:25:49,911 log 28148 9512 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:25:49,923 log 28148 3512 "GET /api/liked-products/ HTTP/1.1" 200 2206
+INFO 2026-03-11 01:25:49,927 log 28148 19808 "GET /api/cart/items/ HTTP/1.1" 200 78
+INFO 2026-03-11 01:25:49,928 log 28148 28368 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-11 01:25:49,960 log 28148 20668 "GET /api/products/ HTTP/1.1" 200 2911
+INFO 2026-03-11 01:25:50,061 log 28148 3512 "GET /api/cart/items/ HTTP/1.1" 200 78
+INFO 2026-03-11 01:25:50,064 log 28148 21528 "GET /api/wishlist/ HTTP/1.1" 200 1580
+INFO 2026-03-11 01:25:50,076 log 28148 28368 "GET /api/products/ HTTP/1.1" 200 2911
+INFO 2026-03-11 01:25:50,086 log 28148 9512 "GET /api/liked-products/ HTTP/1.1" 200 2206
+INFO 2026-03-11 01:25:50,094 log 28148 3512 "GET /api/cart/items/ HTTP/1.1" 200 78
+INFO 2026-03-11 01:25:50,546 log 28148 10376 "GET /media/products/backiee-130807.jpg HTTP/1.1" 200 1257315
+INFO 2026-03-11 01:25:57,045 log 28148 3512 "GET /api/sellers/1/ HTTP/1.1" 200 1022
+INFO 2026-03-11 01:25:57,082 log 28148 3512 "GET /api/sellers/1/ HTTP/1.1" 200 1022
+INFO 2026-03-11 01:25:59,313 log 28148 3512 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-11 01:25:59,319 log 28148 28368 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:25:59,340 log 28148 21528 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-11 01:25:59,353 log 28148 3512 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:25:59,376 log 28148 9512 "GET /api/products/ HTTP/1.1" 200 2911
+INFO 2026-03-11 01:25:59,418 log 28148 9512 "GET /api/products/ HTTP/1.1" 200 2911
+INFO 2026-03-11 01:26:04,871 log 28148 3512 "OPTIONS /api/sellers/6/ HTTP/1.1" 200 0
+INFO 2026-03-11 01:26:04,871 log 28148 9512 "OPTIONS /api/sellers/6/ HTTP/1.1" 200 0
+INFO 2026-03-11 01:26:04,897 log 28148 3512 "GET /api/sellers/6/ HTTP/1.1" 200 1148
+INFO 2026-03-11 01:26:04,915 log 28148 3512 "GET /api/sellers/6/ HTTP/1.1" 200 1148
+INFO 2026-03-11 01:26:05,860 log 28148 10376 "GET /media/sellers/backiee-118198.jpg HTTP/1.1" 200 4015347
+INFO 2026-03-11 01:26:19,532 log 28148 3512 "GET /api/simple-notifications/ HTTP/1.1" 200 258
+INFO 2026-03-11 01:26:47,269 log 28148 3512 "GET /api/simple-notifications/ HTTP/1.1" 200 258
+INFO 2026-03-11 01:26:52,344 log 28148 3512 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-11 01:26:52,530 log 28148 21528 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:26:52,873 log 28148 3512 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-11 01:26:52,876 log 28148 21528 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:26:53,151 log 28148 9512 "GET /api/products/ HTTP/1.1" 200 2911
+INFO 2026-03-11 01:26:53,199 log 28148 9512 "GET /api/products/ HTTP/1.1" 200 2911
+INFO 2026-03-11 01:27:17,264 log 28148 9512 "GET /api/simple-notifications/ HTTP/1.1" 200 258
+INFO 2026-03-11 01:27:22,360 log 28148 9512 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:27:47,268 log 28148 9512 "GET /api/simple-notifications/ HTTP/1.1" 200 258
+INFO 2026-03-11 01:27:52,367 log 28148 9512 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:28:17,265 log 28148 9512 "GET /api/simple-notifications/ HTTP/1.1" 200 258
+INFO 2026-03-11 01:28:18,355 log 28148 9512 "GET /api/sellers/6/ HTTP/1.1" 200 1148
+INFO 2026-03-11 01:28:18,371 log 28148 9512 "GET /api/sellers/6/ HTTP/1.1" 200 1148
+INFO 2026-03-11 01:28:18,572 log 28148 10376 "GET /media/sellers/backiee-118198.jpg HTTP/1.1" 304 0
+INFO 2026-03-11 01:28:24,853 log 28148 9512 "OPTIONS /api/sellers/6/follow/ HTTP/1.1" 200 0
+INFO 2026-03-11 01:28:25,808 log 28148 9512 "POST /api/sellers/6/follow/ HTTP/1.1" 200 81
+ERROR 2026-03-11 01:28:26,026 log 28148 21528 Internal Server Error: /api/sellers/6/follow/
+ERROR 2026-03-11 01:28:26,027 log 28148 21528 "POST /api/sellers/6/follow/ HTTP/1.1" 500 143
+INFO 2026-03-11 01:28:28,626 log 28148 21528 "POST /api/sellers/6/follow/ HTTP/1.1" 200 84
+INFO 2026-03-11 01:28:32,173 log 28148 21528 "POST /api/sellers/6/follow/ HTTP/1.1" 200 81
+INFO 2026-03-11 01:28:36,605 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 702
+INFO 2026-03-11 01:28:36,613 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 702
+INFO 2026-03-11 01:28:46,336 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 702
+INFO 2026-03-11 01:28:46,347 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 702
+INFO 2026-03-11 01:28:47,270 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 702
+INFO 2026-03-11 01:29:06,611 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 702
+INFO 2026-03-11 01:29:16,335 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 702
+INFO 2026-03-11 01:29:16,791 log 28148 21528 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-11 01:29:16,812 log 28148 3512 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:29:16,823 log 28148 21528 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-11 01:29:16,828 log 28148 28368 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:29:16,847 log 28148 9512 "GET /api/products/ HTTP/1.1" 200 2911
+INFO 2026-03-11 01:29:16,886 log 28148 9512 "GET /api/products/ HTTP/1.1" 200 2911
+INFO 2026-03-11 01:29:17,256 log 28148 9512 "GET /api/simple-notifications/ HTTP/1.1" 200 702
+INFO 2026-03-11 01:29:19,561 log 28148 9512 "GET /api/verify-token/ HTTP/1.1" 200 68
+INFO 2026-03-11 01:29:19,573 log 28148 9512 "GET /api/verify-token/ HTTP/1.1" 200 68
+INFO 2026-03-11 01:29:19,577 log 28148 28368 "GET /api/buyer/profile/ HTTP/1.1" 200 158
+INFO 2026-03-11 01:29:19,647 log 28148 3512 "GET /api/orders/ HTTP/1.1" 200 2
+INFO 2026-03-11 01:29:19,645 log 28148 21528 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-11 01:29:19,697 log 28148 28368 "GET /api/buyer/profile/ HTTP/1.1" 200 158
+INFO 2026-03-11 01:29:19,726 log 28148 9512 "GET /api/wishlist/ HTTP/1.1" 200 1580
+INFO 2026-03-11 01:29:19,728 log 28148 3512 "GET /api/orders/ HTTP/1.1" 200 2
+INFO 2026-03-11 01:29:19,731 log 28148 28368 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-11 01:29:19,763 log 28148 21528 "GET /api/wishlist/ HTTP/1.1" 200 1580
+INFO 2026-03-11 01:29:22,123 log 28148 21528 "GET /api/orders/ HTTP/1.1" 200 2
+INFO 2026-03-11 01:29:46,335 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 702
+INFO 2026-03-11 01:29:47,271 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 702
+INFO 2026-03-11 01:30:07,561 log 28148 21528 "OPTIONS /api/sellers/rate/ HTTP/1.1" 200 0
+INFO 2026-03-11 01:30:08,352 log 28148 21528 "POST /api/sellers/rate/ HTTP/1.1" 200 96
+INFO 2026-03-11 01:30:16,341 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:30:17,266 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:30:19,985 log 28148 2744 "GET /admin/trendsync/product/ HTTP/1.1" 200 21176
+INFO 2026-03-11 01:30:26,760 log 28148 2744 "GET /admin/trendsync/seller/ HTTP/1.1" 200 19355
+INFO 2026-03-11 01:30:26,809 log 28148 2744 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-03-11 01:30:32,775 log 28148 2744 "GET /admin/trendsync/seller/ HTTP/1.1" 200 19355
+INFO 2026-03-11 01:30:32,790 log 28148 2744 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-03-11 01:30:34,579 log 28148 2744 "GET /admin/trendsync/seller/ HTTP/1.1" 200 19355
+INFO 2026-03-11 01:30:34,599 log 28148 2744 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-03-11 01:30:35,469 log 28148 2744 "GET /admin/trendsync/seller/ HTTP/1.1" 200 19355
+INFO 2026-03-11 01:30:35,501 log 28148 2744 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-03-11 01:30:37,199 log 28148 2744 "GET /admin/trendsync/seller/6/change/ HTTP/1.1" 200 24510
+INFO 2026-03-11 01:30:37,220 log 28148 26240 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-03-11 01:30:37,267 log 28148 2744 "GET /static/admin/js/change_form.js HTTP/1.1" 200 606
+INFO 2026-03-11 01:30:37,279 log 28148 23956 "GET /static/admin/js/prepopulate_init.js HTTP/1.1" 200 586
+INFO 2026-03-11 01:30:46,337 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:30:47,265 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:30:53,273 log 28148 23956 "GET /admin/trendsync/seller/ HTTP/1.1" 200 19355
+INFO 2026-03-11 01:30:53,290 log 28148 23956 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-03-11 01:30:58,392 log 28148 23956 "GET /admin/trendsync/seller/ HTTP/1.1" 200 19355
+INFO 2026-03-11 01:30:58,415 log 28148 23956 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-03-11 01:30:59,143 log 28148 23956 "GET /admin/trendsync/seller/ HTTP/1.1" 200 19355
+INFO 2026-03-11 01:30:59,159 log 28148 23956 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-03-11 01:30:59,336 log 28148 23956 "GET /admin/trendsync/seller/ HTTP/1.1" 200 19355
+INFO 2026-03-11 01:30:59,359 log 28148 23956 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-03-11 01:30:59,515 log 28148 23956 "GET /admin/trendsync/seller/ HTTP/1.1" 200 19355
+INFO 2026-03-11 01:30:59,533 log 28148 23956 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-03-11 01:30:59,760 log 28148 23956 "GET /admin/trendsync/seller/ HTTP/1.1" 200 19355
+INFO 2026-03-11 01:30:59,779 log 28148 23956 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-03-11 01:31:00,074 log 28148 23956 "GET /admin/trendsync/seller/ HTTP/1.1" 200 19355
+INFO 2026-03-11 01:31:00,092 log 28148 23956 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-03-11 01:31:00,683 log 28148 23956 "GET /admin/trendsync/seller/ HTTP/1.1" 200 19355
+INFO 2026-03-11 01:31:00,712 log 28148 23956 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2026-03-11 01:31:16,330 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:31:17,282 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:31:46,337 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:31:47,267 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:32:16,347 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:32:17,263 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:32:43,463 log 28148 21528 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-11 01:32:43,469 log 28148 3512 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:32:43,483 log 28148 21528 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-11 01:32:43,506 log 28148 3512 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:32:43,520 log 28148 28368 "GET /api/products/ HTTP/1.1" 200 2911
+INFO 2026-03-11 01:32:43,570 log 28148 28368 "GET /api/products/ HTTP/1.1" 200 2911
+INFO 2026-03-11 01:32:43,629 log 28148 10376 "GET /media/products/backiee-130807.jpg HTTP/1.1" 304 0
+INFO 2026-03-11 01:32:45,393 log 28148 28368 "GET /api/sellers/1/ HTTP/1.1" 200 1022
+INFO 2026-03-11 01:32:45,421 log 28148 28368 "GET /api/sellers/1/ HTTP/1.1" 200 1022
+INFO 2026-03-11 01:32:46,338 log 28148 28368 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:32:47,256 log 28148 28368 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:32:48,296 log 28148 28368 "POST /api/sellers/1/follow/ HTTP/1.1" 200 84
+INFO 2026-03-11 01:32:56,030 log 28148 28368 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-11 01:32:56,030 log 28148 21528 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:32:56,058 log 28148 28368 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-11 01:32:56,083 log 28148 21528 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:32:56,113 log 28148 3512 "GET /api/products/ HTTP/1.1" 200 2911
+INFO 2026-03-11 01:32:56,154 log 28148 3512 "GET /api/products/ HTTP/1.1" 200 2911
+INFO 2026-03-11 01:33:16,343 log 28148 3512 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:33:17,264 log 28148 3512 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:33:26,043 log 28148 3512 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:33:40,505 log 28148 3512 "GET /api/sellers/1/ HTTP/1.1" 200 1023
+INFO 2026-03-11 01:33:40,524 log 28148 3512 "GET /api/sellers/1/ HTTP/1.1" 200 1023
+INFO 2026-03-11 01:33:46,341 log 28148 3512 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:33:47,272 log 28148 3512 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:34:12,161 log 28148 3512 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:34:12,177 log 28148 3512 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:34:16,342 log 28148 3512 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:34:17,263 log 28148 3512 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:34:22,049 log 28148 3512 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-11 01:34:22,049 log 28148 28368 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:34:22,099 log 28148 3512 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:34:22,107 log 28148 28368 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-11 01:34:22,129 log 28148 21528 "GET /api/products/ HTTP/1.1" 200 2911
+INFO 2026-03-11 01:34:22,172 log 28148 21528 "GET /api/products/ HTTP/1.1" 200 2911
+INFO 2026-03-11 01:34:46,637 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:34:47,638 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:34:52,648 log 28148 21528 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:35:16,345 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:35:17,272 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:35:22,044 log 28148 21528 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:35:46,650 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:35:47,646 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:35:52,702 log 28148 21528 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:36:16,658 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:36:17,658 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:36:22,637 log 28148 21528 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:36:52,662 log 28148 21528 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:36:57,646 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:36:57,652 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:37:22,663 log 28148 21528 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:37:57,655 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:37:57,657 log 28148 28368 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:37:57,666 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:38:57,660 log 28148 28368 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:38:57,661 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:38:57,676 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:39:57,647 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:39:57,648 log 28148 28368 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:39:57,661 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:40:22,405 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:40:22,414 log 28148 28368 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:40:22,427 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:40:46,356 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:40:47,276 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:40:52,058 log 28148 21528 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-11 01:40:59,016 log 28148 21528 "GET /api/sellers/6/ HTTP/1.1" 200 1147
+INFO 2026-03-11 01:40:59,034 log 28148 21528 "GET /api/sellers/6/ HTTP/1.1" 200 1147
+INFO 2026-03-11 01:40:59,362 log 28148 20956 "GET /media/sellers/backiee-118198.jpg HTTP/1.1" 304 0
+INFO 2026-03-11 01:41:16,353 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:41:17,470 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+WARNING 2026-03-11 01:41:44,537 log 28148 21164 Forbidden: /api/seller/products/
+WARNING 2026-03-11 01:41:44,546 log 28148 21164 "GET /api/seller/products/ HTTP/1.1" 403 63
+WARNING 2026-03-11 01:41:44,557 log 28148 27540 Forbidden: /api/seller/products/
+WARNING 2026-03-11 01:41:44,557 log 28148 27540 "GET /api/seller/products/ HTTP/1.1" 403 63
+INFO 2026-03-11 01:41:47,263 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:42:16,342 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:42:16,354 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:42:17,277 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:42:46,652 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:42:47,653 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:43:16,638 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:43:17,658 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:43:46,654 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:43:57,698 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:44:16,658 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:44:46,662 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:44:57,646 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:45:16,652 log 28148 21528 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:45:57,981 log 28148 16272 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:45:58,013 log 28148 16272 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:46:57,648 log 28148 16272 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:46:57,660 log 28148 16272 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:47:57,969 log 28148 25080 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:47:57,986 log 28148 25080 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:48:57,666 log 28148 25080 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:48:57,690 log 28148 25080 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:49:57,668 log 28148 25080 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:49:57,689 log 28148 25080 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:50:57,664 log 28148 25080 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:50:57,697 log 28148 25080 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:51:57,963 log 28148 27564 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:51:57,981 log 28148 27564 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:52:57,673 log 28148 27564 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:52:57,718 log 28148 27564 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:53:57,972 log 28148 21828 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:53:57,989 log 28148 21828 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:54:57,969 log 28148 28504 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:54:57,998 log 28148 28504 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:55:57,970 log 28148 25120 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:55:57,983 log 28148 25120 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:56:57,969 log 28148 15112 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:56:57,985 log 28148 15112 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:57:57,970 log 28148 8464 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:57:57,987 log 28148 8464 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:58:57,661 log 28148 8464 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:58:57,687 log 28148 8464 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:59:57,663 log 28148 8464 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 01:59:57,679 log 28148 8464 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 02:00:57,669 log 28148 8464 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 02:00:57,703 log 28148 8464 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 02:01:57,650 log 28148 8464 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 02:01:57,680 log 28148 8464 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 02:02:57,657 log 28148 8464 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 02:02:57,690 log 28148 8464 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 02:03:57,980 log 28148 18584 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 02:03:58,019 log 28148 18584 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 02:04:57,988 log 28148 9584 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 02:04:58,013 log 28148 9584 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 02:05:57,671 log 28148 9584 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 02:05:57,696 log 28148 9584 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 02:06:57,972 log 28148 24728 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 02:06:57,995 log 28148 24728 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 02:07:57,669 log 28148 24728 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 02:07:57,696 log 28148 24728 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 02:08:57,671 log 28148 24728 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 02:08:57,706 log 28148 24728 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 02:09:57,676 log 28148 24728 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 02:09:57,712 log 28148 24728 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 02:10:57,664 log 28148 24728 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 02:10:57,707 log 28148 24728 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 02:11:57,660 log 28148 24728 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-11 02:11:57,689 log 28148 24728 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-14 12:00:55,850 autoreload 7188 6520 Watching for file changes with StatReloader
+INFO 2026-03-14 12:02:17,130 log 7188 16352 "GET /admin HTTP/1.1" 301 0
+INFO 2026-03-14 12:02:17,925 log 7188 16352 "GET /admin/ HTTP/1.1" 200 15657
+INFO 2026-03-14 12:02:18,268 log 7188 15440 "GET /static/admin/css/dashboard.css HTTP/1.1" 200 441
+INFO 2026-03-14 12:02:18,292 log 7188 10228 "GET /static/admin/css/dark_mode.css HTTP/1.1" 200 3538
+INFO 2026-03-14 12:02:18,295 log 7188 10224 "GET /static/admin/css/nav_sidebar.css HTTP/1.1" 200 2810
+INFO 2026-03-14 12:02:18,301 log 7188 15304 "GET /static/admin/js/theme.js HTTP/1.1" 200 1653
+INFO 2026-03-14 12:02:18,334 log 7188 16352 "GET /static/admin/css/base.css HTTP/1.1" 200 23100
+INFO 2026-03-14 12:02:18,360 log 7188 9096 "GET /static/admin/css/responsive.css HTTP/1.1" 200 16273
+INFO 2026-03-14 12:02:18,378 log 7188 16352 "GET /static/admin/js/nav_sidebar.js HTTP/1.1" 200 3063
+INFO 2026-03-14 12:02:18,389 log 7188 15304 "GET /static/admin/img/icon-changelink.svg HTTP/1.1" 200 978
+INFO 2026-03-14 12:02:18,412 log 7188 9096 "GET /static/admin/img/icon-addlink.svg HTTP/1.1" 200 593
+WARNING 2026-03-14 12:02:18,805 log 7188 9096 Not Found: /favicon.ico
+WARNING 2026-03-14 12:02:18,807 log 7188 9096 "GET /favicon.ico HTTP/1.1" 404 2828
+INFO 2026-03-14 12:02:51,531 log 7188 10700 "OPTIONS /api/cart/items/ HTTP/1.1" 200 0
+INFO 2026-03-14 12:02:51,531 log 7188 5336 "OPTIONS /api/cart/items/ HTTP/1.1" 200 0
+WARNING 2026-03-14 12:02:52,855 log 7188 5336 Unauthorized: /api/cart/items/
+WARNING 2026-03-14 12:02:52,855 log 7188 14872 Unauthorized: /api/verify-token/
+WARNING 2026-03-14 12:02:52,873 log 7188 5336 "GET /api/cart/items/ HTTP/1.1" 401 172
+WARNING 2026-03-14 12:02:52,876 log 7188 14872 "GET /api/verify-token/ HTTP/1.1" 401 172
+WARNING 2026-03-14 12:02:52,890 log 7188 5336 Unauthorized: /api/cart/items/
+INFO 2026-03-14 12:02:52,892 log 7188 10700 "OPTIONS /api/token/refresh/ HTTP/1.1" 200 0
+WARNING 2026-03-14 12:02:52,894 log 7188 5336 "GET /api/cart/items/ HTTP/1.1" 401 172
+WARNING 2026-03-14 12:02:52,899 log 7188 8844 Unauthorized: /api/verify-token/
+WARNING 2026-03-14 12:02:52,921 log 7188 10700 Not Found: /api/token/refresh/
+WARNING 2026-03-14 12:02:52,935 log 7188 15252 Not Found: /api/token/refresh/
+WARNING 2026-03-14 12:02:52,943 log 7188 5336 Not Found: /api/token/refresh/
+WARNING 2026-03-14 12:02:52,949 log 7188 10700 "POST /api/token/refresh/ HTTP/1.1" 404 28660
+WARNING 2026-03-14 12:02:52,943 log 7188 8844 "GET /api/verify-token/ HTTP/1.1" 401 172
+WARNING 2026-03-14 12:02:52,953 log 7188 5336 "POST /api/token/refresh/ HTTP/1.1" 404 28660
+WARNING 2026-03-14 12:02:52,950 log 7188 15252 "POST /api/token/refresh/ HTTP/1.1" 404 28660
+INFO 2026-03-14 12:03:27,109 log 7188 5336 "OPTIONS /api/login/ HTTP/1.1" 200 0
+INFO 2026-03-14 12:03:29,894 log 7188 5336 "POST /api/login/ HTTP/1.1" 200 592
+INFO 2026-03-14 12:03:29,902 log 7188 10700 "OPTIONS /api/liked-products/ HTTP/1.1" 200 0
+INFO 2026-03-14 12:03:29,903 log 7188 15184 "OPTIONS /api/wishlist/ HTTP/1.1" 200 0
+INFO 2026-03-14 12:03:30,250 log 7188 2884 "OPTIONS /api/simple-notifications/ HTTP/1.1" 200 0
+INFO 2026-03-14 12:03:30,253 log 7188 14412 "OPTIONS /api/categories/ HTTP/1.1" 200 0
+INFO 2026-03-14 12:03:30,263 log 7188 2884 "OPTIONS /api/simple-notifications/ HTTP/1.1" 200 0
+INFO 2026-03-14 12:03:30,264 log 7188 14412 "OPTIONS /api/products/ HTTP/1.1" 200 0
+INFO 2026-03-14 12:03:30,266 log 7188 2884 "OPTIONS /api/quick-deals/ HTTP/1.1" 200 0
+INFO 2026-03-14 12:03:30,267 log 7188 14412 "OPTIONS /api/categories/ HTTP/1.1" 200 0
+INFO 2026-03-14 12:03:30,270 log 7188 2884 "OPTIONS /api/products/ HTTP/1.1" 200 0
+INFO 2026-03-14 12:03:30,270 log 7188 14412 "OPTIONS /api/quick-deals/ HTTP/1.1" 200 0
+INFO 2026-03-14 12:03:30,450 log 7188 5336 "GET /api/cart/items/ HTTP/1.1" 200 78
+INFO 2026-03-14 12:03:30,913 log 7188 14412 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:03:30,931 log 7188 2884 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-14 12:03:30,947 log 7188 5336 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:03:30,962 log 7188 10700 "GET /api/wishlist/ HTTP/1.1" 200 1580
+INFO 2026-03-14 12:03:30,967 log 7188 14412 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:03:30,980 log 7188 15184 "GET /api/liked-products/ HTTP/1.1" 200 2206
+INFO 2026-03-14 12:03:30,999 log 7188 2884 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-14 12:03:31,003 log 7188 5336 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:03:31,004 log 7188 16324 "GET /api/products/ HTTP/1.1" 200 2911
+INFO 2026-03-14 12:03:31,069 log 7188 16324 "GET /api/products/ HTTP/1.1" 200 2911
+INFO 2026-03-14 12:03:32,196 log 7188 8576 "GET /media/products/0a967922e19eb7d22aae18f1c2b98afe.jpg HTTP/1.1" 200 108899
+INFO 2026-03-14 12:03:32,210 log 7188 4888 "GET /media/products/IMG-20240318-WA0008.jpg HTTP/1.1" 200 92336
+INFO 2026-03-14 12:03:32,483 log 7188 6280 "GET /media/products/backiee-130807.jpg HTTP/1.1" 200 1257315
+INFO 2026-03-14 12:03:33,003 log 7188 11320 "GET /media/products/backiee-326245.jpg HTTP/1.1" 200 6420439
+INFO 2026-03-14 12:03:37,946 log 7188 16324 "OPTIONS /api/wishlist/toggle/1/ HTTP/1.1" 200 0
+INFO 2026-03-14 12:03:42,186 log 7188 16324 "POST /api/wishlist/toggle/1/ HTTP/1.1" 200 81
+INFO 2026-03-14 12:03:45,914 log 7188 16324 "OPTIONS /api/wishlist/toggle/2/ HTTP/1.1" 200 0
+INFO 2026-03-14 12:03:46,073 log 7188 16324 "POST /api/wishlist/toggle/2/ HTTP/1.1" 200 81
+INFO 2026-03-14 12:03:47,865 log 7188 16324 "OPTIONS /api/wishlist/toggle/3/ HTTP/1.1" 200 0
+INFO 2026-03-14 12:03:48,040 log 7188 16324 "POST /api/wishlist/toggle/3/ HTTP/1.1" 200 77
+INFO 2026-03-14 12:03:49,539 log 7188 16324 "OPTIONS /api/wishlist/toggle/4/ HTTP/1.1" 200 0
+INFO 2026-03-14 12:03:49,742 log 7188 16324 "POST /api/wishlist/toggle/4/ HTTP/1.1" 200 77
+INFO 2026-03-14 12:04:00,014 log 7188 16324 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-14 12:04:00,094 log 7188 5336 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:04:12,254 log 7188 15540 "GET /api/verify-token/ HTTP/1.1" 200 68
+INFO 2026-03-14 12:04:12,275 log 7188 5336 "GET /api/cart/items/ HTTP/1.1" 200 78
+INFO 2026-03-14 12:04:12,276 log 7188 15604 "GET /api/verify-token/ HTTP/1.1" 200 68
+INFO 2026-03-14 12:04:12,287 log 7188 16324 "GET /api/cart/items/ HTTP/1.1" 200 78
+INFO 2026-03-14 12:04:12,491 log 7188 16324 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:04:12,498 log 7188 15184 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-14 12:04:12,521 log 7188 2884 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:04:12,539 log 7188 16324 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:04:12,548 log 7188 15184 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-14 12:04:12,568 log 7188 10700 "GET /api/wishlist/ HTTP/1.1" 200 1332
+INFO 2026-03-14 12:04:12,567 log 7188 14412 "GET /api/liked-products/ HTTP/1.1" 200 2206
+INFO 2026-03-14 12:04:12,570 log 7188 2884 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:04:12,585 log 7188 5336 "GET /api/products/ HTTP/1.1" 200 2911
+INFO 2026-03-14 12:04:12,612 log 7188 5336 "GET /api/products/ HTTP/1.1" 200 2911
+INFO 2026-03-14 12:04:29,971 log 7188 5336 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-14 12:04:30,002 log 7188 5336 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:04:32,050 log 7188 5336 "POST /api/wishlist/toggle/1/ HTTP/1.1" 200 77
+INFO 2026-03-14 12:04:33,473 log 7188 5336 "POST /api/wishlist/toggle/2/ HTTP/1.1" 200 77
+INFO 2026-03-14 12:04:42,558 log 7188 2884 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-14 12:04:42,558 log 7188 5336 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:04:48,155 log 7188 14680 "GET /api/products/?ordering=-like_count HTTP/1.1" 200 2914
+INFO 2026-03-14 12:04:48,185 log 7188 15228 "GET /api/products/?ordering=-like_count HTTP/1.1" 200 2914
+INFO 2026-03-14 12:04:48,293 log 7188 15772 "GET /media/products/0a967922e19eb7d22aae18f1c2b98afe.jpg HTTP/1.1" 200 108899
+INFO 2026-03-14 12:04:48,322 log 7188 7368 "GET /media/products/IMG-20240318-WA0008.jpg HTTP/1.1" 200 92336
+INFO 2026-03-14 12:04:48,412 log 7188 16096 "GET /media/products/backiee-130807.jpg HTTP/1.1" 200 1257315
+INFO 2026-03-14 12:04:48,585 log 7188 13436 "GET /media/products/backiee-326245.jpg HTTP/1.1" 200 6420439
+INFO 2026-03-14 12:04:54,731 log 7188 5336 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-14 12:04:54,741 log 7188 5336 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-14 12:04:59,966 log 7188 5336 "GET /api/simple-notifications/ HTTP/1.1" 200 931
+INFO 2026-03-14 12:05:00,693 log 7188 5336 "OPTIONS /api/simple-notifications/75/delete/ HTTP/1.1" 200 0
+INFO 2026-03-14 12:05:01,421 log 7188 5336 "DELETE /api/simple-notifications/75/delete/ HTTP/1.1" 200 20
+INFO 2026-03-14 12:05:01,433 log 7188 5336 "GET /api/simple-notifications/ HTTP/1.1" 200 702
+INFO 2026-03-14 12:05:05,385 log 7188 2884 "OPTIONS /api/buyer/profile/ HTTP/1.1" 200 0
+INFO 2026-03-14 12:05:05,385 log 7188 5336 "OPTIONS /api/buyer/profile/ HTTP/1.1" 200 0
+INFO 2026-03-14 12:05:05,392 log 7188 5336 "GET /api/buyer/profile/ HTTP/1.1" 200 158
+INFO 2026-03-14 12:05:05,397 log 7188 2884 "OPTIONS /api/verify-token/ HTTP/1.1" 200 0
+INFO 2026-03-14 12:05:05,404 log 7188 2884 "GET /api/verify-token/ HTTP/1.1" 200 68
+INFO 2026-03-14 12:05:05,404 log 7188 5336 "GET /api/buyer/profile/ HTTP/1.1" 200 158
+INFO 2026-03-14 12:05:05,409 log 7188 2884 "GET /api/verify-token/ HTTP/1.1" 200 68
+INFO 2026-03-14 12:05:07,814 log 7188 2884 "GET /api/cart/items/ HTTP/1.1" 200 78
+INFO 2026-03-14 12:05:23,895 log 7188 2884 "POST /api/login/ HTTP/1.1" 200 595
+INFO 2026-03-14 12:05:25,035 log 7188 14412 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+ERROR 2026-03-14 12:05:25,640 log 7188 5336 Internal Server Error: /api/liked-products/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 398, in get_queryset
+    buyer = self.request.user.buyer_profile
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-14 12:05:25,645 log 7188 10700 Internal Server Error: /api/wishlist/
+Traceback (most recent call last):
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\trendsync\views.py", line 180, in get_queryset
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Wor Joshi\Documents\GitHub\trendsync\.venv\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 520, in __get__
+    raise self.RelatedObjectDoesNotExist(
+django.contrib.auth.models.User.buyer_profile.RelatedObjectDoesNotExist: User has no buyer_profile.. Did you mean: 'seller_profile'?
+ERROR 2026-03-14 12:05:25,687 log 7188 5336 "GET /api/liked-products/ HTTP/1.1" 500 114829
+ERROR 2026-03-14 12:05:25,690 log 7188 10700 "GET /api/wishlist/ HTTP/1.1" 500 111284
+INFO 2026-03-14 12:05:26,532 log 7188 3852 "GET /api/seller/products/ HTTP/1.1" 200 706
+INFO 2026-03-14 12:05:26,797 log 7188 720 "GET /api/seller/products/ HTTP/1.1" 200 706
+INFO 2026-03-14 12:05:27,907 log 7188 2884 "GET /api/cart/items/ HTTP/1.1" 200 876
+INFO 2026-03-14 12:05:29,965 log 7188 2884 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:05:32,734 log 7188 2884 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:05:32,736 log 7188 5336 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:05:32,752 log 7188 2884 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:05:32,756 log 7188 5336 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:05:32,763 log 7188 10700 "GET /api/products/ HTTP/1.1" 200 2914
+INFO 2026-03-14 12:05:32,784 log 7188 10700 "GET /api/products/ HTTP/1.1" 200 2914
+INFO 2026-03-14 12:05:35,304 log 7188 10700 "GET /api/buyer/profile/ HTTP/1.1" 200 79
+INFO 2026-03-14 12:05:35,316 log 7188 10700 "GET /api/buyer/profile/ HTTP/1.1" 200 79
+INFO 2026-03-14 12:05:35,316 log 7188 5336 "GET /api/verify-token/ HTTP/1.1" 200 71
+INFO 2026-03-14 12:05:35,323 log 7188 5336 "GET /api/verify-token/ HTTP/1.1" 200 71
+INFO 2026-03-14 12:06:46,656 log 7188 14072 "POST /api/login/ HTTP/1.1" 200 592
+INFO 2026-03-14 12:06:47,696 log 7188 14072 "GET /api/cart/items/ HTTP/1.1" 200 78
+INFO 2026-03-14 12:06:47,699 log 7188 14072 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:06:47,720 log 7188 14072 "GET /api/cart/items/ HTTP/1.1" 200 78
+INFO 2026-03-14 12:06:47,736 log 7188 7036 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:06:47,748 log 7188 14072 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:06:47,754 log 7188 14216 "GET /api/liked-products/ HTTP/1.1" 200 2206
+INFO 2026-03-14 12:06:47,777 log 7188 14072 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:06:47,782 log 7188 15188 "GET /api/simple-notifications/ HTTP/1.1" 200 702
+INFO 2026-03-14 12:06:47,797 log 7188 7036 "GET /api/cart/items/ HTTP/1.1" 200 78
+INFO 2026-03-14 12:06:47,828 log 7188 14072 "GET /api/simple-notifications/ HTTP/1.1" 200 702
+INFO 2026-03-14 12:06:47,860 log 7188 15864 "GET /api/wishlist/ HTTP/1.1" 200 2911
+INFO 2026-03-14 12:06:47,850 log 7188 14216 "GET /api/liked-products/ HTTP/1.1" 200 2206
+INFO 2026-03-14 12:06:47,831 log 7188 7764 "GET /api/products/ HTTP/1.1" 200 2911
+INFO 2026-03-14 12:06:47,864 log 7188 7036 "GET /api/cart/items/ HTTP/1.1" 200 78
+INFO 2026-03-14 12:06:47,901 log 7188 7764 "GET /api/products/ HTTP/1.1" 200 2911
+INFO 2026-03-14 12:06:47,922 log 7188 15864 "GET /api/wishlist/ HTTP/1.1" 200 2911
+WARNING 2026-03-14 12:07:04,736 log 7188 9380 Forbidden: /api/seller/products/
+WARNING 2026-03-14 12:07:04,737 log 7188 9380 "GET /api/seller/products/ HTTP/1.1" 403 63
+WARNING 2026-03-14 12:07:04,752 log 7188 6708 Forbidden: /api/seller/products/
+WARNING 2026-03-14 12:07:04,755 log 7188 6708 "GET /api/seller/products/ HTTP/1.1" 403 63
+INFO 2026-03-14 12:07:07,387 log 7188 1976 "OPTIONS /api/seller/profile/ HTTP/1.1" 200 0
+INFO 2026-03-14 12:07:07,388 log 7188 7536 "OPTIONS /api/seller/profile/ HTTP/1.1" 200 0
+WARNING 2026-03-14 12:07:07,412 log 7188 7536 Forbidden: /api/seller/profile/
+WARNING 2026-03-14 12:07:07,417 log 7188 7536 "GET /api/seller/profile/ HTTP/1.1" 403 63
+WARNING 2026-03-14 12:07:07,577 log 7188 7536 Forbidden: /api/seller/profile/
+WARNING 2026-03-14 12:07:07,581 log 7188 7536 "GET /api/seller/profile/ HTTP/1.1" 403 63
+INFO 2026-03-14 12:07:09,448 log 7188 7536 "GET /api/cart/items/ HTTP/1.1" 200 78
+INFO 2026-03-14 12:07:16,713 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:46,719 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:49,928 log 7188 1192 "GET /api/products/?ordering=-like_count HTTP/1.1" 200 2914
+INFO 2026-03-14 12:07:49,953 log 7188 9436 "GET /api/products/?ordering=-like_count HTTP/1.1" 200 2914
+INFO 2026-03-14 12:07:52,012 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,015 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,023 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,027 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,037 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,041 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,048 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,051 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,066 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,068 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,076 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,082 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,097 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,099 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,102 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,113 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,128 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,131 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,138 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,143 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,155 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,158 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,167 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,168 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,183 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,185 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,189 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,196 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,206 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,208 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,214 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,219 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,227 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,229 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,240 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,242 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,256 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,259 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,269 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,272 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,286 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,289 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,295 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,400 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,400 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,411 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,412 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,422 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,424 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,432 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,434 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,442 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,445 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,453 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,460 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,465 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,472 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,475 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,486 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,485 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,495 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,500 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,507 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,514 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,518 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,524 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,531 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,538 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,542 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,552 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,553 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,568 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,569 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,576 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,582 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,588 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,596 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,601 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,611 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,615 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,627 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,629 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,639 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,646 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,651 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,664 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,664 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,675 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,680 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,689 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,691 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,703 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,704 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,719 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,719 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,733 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,735 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,745 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,749 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,757 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,759 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,771 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,771 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,783 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,783 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,794 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,795 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,808 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,808 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,818 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,825 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,831 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,837 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,844 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,849 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,857 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,863 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,870 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,879 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,880 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,886 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,896 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,901 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,907 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,912 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,919 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,925 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,931 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,937 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,943 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,951 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,951 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,961 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,963 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,975 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,975 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:52,987 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:52,987 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,000 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,001 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,011 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,013 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,021 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,028 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,033 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,047 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,047 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,057 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,063 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,068 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,073 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,076 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,088 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,088 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,100 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,107 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,114 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,122 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,125 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,137 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,138 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,142 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,152 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,152 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,162 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,162 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,175 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,177 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,181 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,190 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,191 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,203 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,266 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,260 log 7188 1976 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,276 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,281 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,290 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,291 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,304 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,304 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,312 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,316 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,323 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,328 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,331 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,343 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,343 log 7188 14376 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,348 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,353 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,361 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,361 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,371 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,371 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,382 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,383 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,390 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,394 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,401 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,407 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,412 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,421 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,421 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,432 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,433 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,442 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,444 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,447 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,456 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,457 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,467 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,467 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,477 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,480 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,487 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,494 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,498 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,508 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,509 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,514 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,519 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,526 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,532 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,536 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,541 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,547 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,549 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,558 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,560 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,568 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,579 log 7188 7536 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,581 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,585 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,590 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,595 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,603 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,610 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,610 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,619 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,620 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,629 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,635 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,641 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,649 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,652 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,663 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,663 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,675 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,675 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,690 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,691 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,702 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,704 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,708 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,716 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,719 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,729 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,732 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,742 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,743 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,756 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,758 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,761 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,771 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,771 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,781 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,784 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,792 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,798 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,800 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,812 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,811 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,822 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,822 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,834 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,839 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,844 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,851 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,856 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,859 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,869 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,869 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,881 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,881 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,890 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,894 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,900 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,904 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,911 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,916 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,918 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,927 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,927 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,937 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,938 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,947 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,949 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,953 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,959 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,961 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,969 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,969 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,977 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,978 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,987 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,988 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:53,996 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:53,998 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,004 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,008 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,013 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,019 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,019 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,029 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,028 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,037 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,038 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,045 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,049 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,053 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,058 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,063 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,068 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,072 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,078 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,081 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,089 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,090 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,100 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,100 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,108 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,111 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,119 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,120 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,129 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,130 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,138 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,139 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,149 log 7188 7536 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,150 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,153 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,161 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,162 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,171 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,171 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,180 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,181 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,188 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,194 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,195 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,205 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,205 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,215 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,215 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,224 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,225 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,234 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,234 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,243 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,245 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,253 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,254 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,262 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,264 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,271 log 7188 14376 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:07:54,275 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,282 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,289 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,298 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,305 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,315 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,322 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,330 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,337 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,344 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,351 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,359 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,366 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,373 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,381 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,388 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,396 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,403 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,410 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,418 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,426 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,434 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,441 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,450 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,457 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,464 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,470 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,479 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,486 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,493 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,501 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:07:54,509 log 7188 1976 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:08:24,240 log 7188 12512 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:10:14,267 log 7188 17296 "POST /api/login/ HTTP/1.1" 200 592
+INFO 2026-03-14 12:10:14,293 log 7188 17296 "GET /api/cart/items/ HTTP/1.1" 200 78
+INFO 2026-03-14 12:10:14,333 log 7188 17356 "GET /api/liked-products/ HTTP/1.1" 200 2206
+INFO 2026-03-14 12:10:14,392 log 7188 17356 "GET /api/cart/items/ HTTP/1.1" 200 78
+INFO 2026-03-14 12:10:14,407 log 7188 17296 "GET /api/wishlist/ HTTP/1.1" 200 2911
+INFO 2026-03-14 12:10:14,423 log 7188 17356 "GET /api/simple-notifications/ HTTP/1.1" 200 702
+INFO 2026-03-14 12:10:14,453 log 7188 17356 "GET /api/cart/items/ HTTP/1.1" 200 78
+INFO 2026-03-14 12:10:14,462 log 7188 17296 "GET /api/liked-products/ HTTP/1.1" 200 2206
+INFO 2026-03-14 12:10:14,467 log 7188 17356 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:10:14,480 log 7188 17356 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:10:14,505 log 7188 17296 "GET /api/products/ HTTP/1.1" 200 2911
+INFO 2026-03-14 12:10:14,521 log 7188 17296 "GET /api/simple-notifications/ HTTP/1.1" 200 702
+INFO 2026-03-14 12:10:14,535 log 7188 17356 "GET /api/wishlist/ HTTP/1.1" 200 2911
+INFO 2026-03-14 12:10:14,545 log 7188 17296 "GET /api/cart/items/ HTTP/1.1" 200 78
+INFO 2026-03-14 12:10:14,545 log 7188 17356 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:10:14,589 log 7188 16108 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:10:14,625 log 7188 17316 "GET /api/products/ HTTP/1.1" 200 2911
+INFO 2026-03-14 12:10:19,404 log 7188 17316 "POST /api/login/ HTTP/1.1" 200 594
+INFO 2026-03-14 12:10:19,434 log 7188 16108 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-14 12:10:20,715 log 7188 17356 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-14 12:10:21,652 log 7188 17316 "GET /api/cart/items/ HTTP/1.1" 200 78
+INFO 2026-03-14 12:10:21,664 log 7188 16424 "GET /api/seller/products/ HTTP/1.1" 200 706
+INFO 2026-03-14 12:10:21,683 log 7188 16572 "GET /api/seller/products/ HTTP/1.1" 200 706
+INFO 2026-03-14 12:10:40,095 log 7188 16692 "GET /api/seller/products/ HTTP/1.1" 200 706
+INFO 2026-03-14 12:10:40,117 log 7188 16748 "GET /api/seller/products/ HTTP/1.1" 200 706
+INFO 2026-03-14 12:10:45,951 log 7188 2936 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:10:45,952 log 7188 13764 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:11:15,293 log 7188 16580 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:11:15,294 log 7188 8828 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:11:41,312 log 7188 8828 "GET /api/products/ HTTP/1.1" 200 2914
+INFO 2026-03-14 12:11:43,703 log 7188 8828 "GET /api/buyer/profile/ HTTP/1.1" 200 79
+INFO 2026-03-14 12:11:43,713 log 7188 8828 "GET /api/buyer/profile/ HTTP/1.1" 200 79
+INFO 2026-03-14 12:11:43,714 log 7188 16580 "GET /api/verify-token/ HTTP/1.1" 200 71
+INFO 2026-03-14 12:11:43,722 log 7188 16580 "GET /api/verify-token/ HTTP/1.1" 200 71
+INFO 2026-03-14 12:11:44,354 log 7188 16580 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:11:47,699 log 7188 16580 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:11:47,702 log 7188 3728 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:11:47,726 log 7188 16580 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:11:47,728 log 7188 3728 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:11:47,728 log 7188 8828 "GET /api/products/ HTTP/1.1" 200 2914
+INFO 2026-03-14 12:11:47,756 log 7188 8828 "GET /api/products/ HTTP/1.1" 200 2914
+INFO 2026-03-14 12:11:48,882 log 7188 17176 "GET /api/products/?ordering=-like_count HTTP/1.1" 200 2914
+INFO 2026-03-14 12:11:48,903 log 7188 16552 "GET /api/products/?ordering=-like_count HTTP/1.1" 200 2914
+INFO 2026-03-14 12:11:50,949 log 7188 8828 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:11:50,952 log 7188 16580 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:11:50,971 log 7188 8828 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:11:50,984 log 7188 3728 "GET /api/products/ HTTP/1.1" 200 2914
+INFO 2026-03-14 12:11:50,988 log 7188 16580 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:11:51,238 log 7188 16580 "GET /api/products/ HTTP/1.1" 200 2914
+INFO 2026-03-14 12:11:55,391 log 7188 9696 "GET /api/products/?ordering=-like_count HTTP/1.1" 200 2914
+INFO 2026-03-14 12:11:55,421 log 7188 17128 "GET /api/products/?ordering=-like_count HTTP/1.1" 200 2914
+INFO 2026-03-14 12:11:57,780 log 7188 16580 "GET /api/cart/items/ HTTP/1.1" 200 78
+INFO 2026-03-14 12:12:00,066 log 7188 15532 "GET /api/cart/items/ HTTP/1.1" 200 78
+INFO 2026-03-14 12:12:00,149 log 7188 15532 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:12:00,185 log 7188 15532 "GET /api/products/ HTTP/1.1" 200 2914
+INFO 2026-03-14 12:12:00,194 log 7188 15532 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:12:00,201 log 7188 15532 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:12:00,234 log 7188 15532 "GET /api/products/ HTTP/1.1" 200 2914
+INFO 2026-03-14 12:12:00,242 log 7188 15532 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:12:02,311 log 7188 15532 "OPTIONS /api/cart/add/ HTTP/1.1" 200 0
+INFO 2026-03-14 12:12:03,021 log 7188 15532 "POST /api/cart/add/ HTTP/1.1" 200 64
+INFO 2026-03-14 12:12:14,356 log 7188 15532 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:12:15,191 log 7188 15532 "POST /api/cart/add/ HTTP/1.1" 200 64
+INFO 2026-03-14 12:12:26,092 log 7188 15532 "POST /api/cart/add/ HTTP/1.1" 200 64
+INFO 2026-03-14 12:12:28,691 log 7188 15532 "POST /api/cart/add/ HTTP/1.1" 200 64
+INFO 2026-03-14 12:12:29,512 log 7188 15532 "POST /api/cart/add/ HTTP/1.1" 200 64
+INFO 2026-03-14 12:12:30,177 log 7188 15532 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:12:39,426 log 7188 16564 "GET /api/verify-token/ HTTP/1.1" 200 71
+INFO 2026-03-14 12:12:39,461 log 7188 16428 "GET /api/verify-token/ HTTP/1.1" 200 71
+INFO 2026-03-14 12:12:39,584 log 7188 10668 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:12:39,587 log 7188 15532 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:12:39,597 log 7188 16620 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:12:39,660 log 7188 16280 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-14 12:12:39,684 log 7188 7772 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-14 12:12:39,696 log 7188 15532 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:12:39,696 log 7188 16620 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:12:39,703 log 7188 10668 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:12:39,713 log 7188 16388 "GET /api/products/ HTTP/1.1" 200 2914
+INFO 2026-03-14 12:12:39,747 log 7188 16388 "GET /api/products/ HTTP/1.1" 200 2914
+INFO 2026-03-14 12:13:02,411 log 7188 16388 "POST /api/cart/add/ HTTP/1.1" 200 64
+INFO 2026-03-14 12:13:05,799 log 7188 16388 "POST /api/cart/add/ HTTP/1.1" 200 64
+INFO 2026-03-14 12:13:06,462 log 7188 10668 "POST /api/cart/add/ HTTP/1.1" 200 64
+INFO 2026-03-14 12:13:09,585 log 7188 10668 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:13:09,587 log 7188 16388 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:13:39,585 log 7188 10668 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:13:39,585 log 7188 16388 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:14:09,594 log 7188 10668 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:14:09,595 log 7188 16388 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:14:39,959 log 7188 16388 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:14:39,961 log 7188 10668 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:15:09,982 log 7188 10668 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:15:09,996 log 7188 16388 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:15:38,034 log 7188 16388 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:15:38,045 log 7188 16620 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:15:38,055 log 7188 16388 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:15:38,060 log 7188 15532 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:15:38,063 log 7188 7772 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:15:38,078 log 7188 16388 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:15:38,083 log 7188 10668 "GET /api/products/ HTTP/1.1" 200 2914
+INFO 2026-03-14 12:15:38,120 log 7188 10668 "GET /api/products/ HTTP/1.1" 200 2914
+INFO 2026-03-14 12:16:06,010 log 7188 10668 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:16:06,016 log 7188 7772 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:16:06,022 log 7188 15532 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:16:06,023 log 7188 16620 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:16:06,040 log 7188 7772 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:16:06,043 log 7188 15532 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:16:06,052 log 7188 16388 "GET /api/products/ HTTP/1.1" 200 2914
+INFO 2026-03-14 12:16:06,112 log 7188 16388 "GET /api/products/ HTTP/1.1" 200 2914
+INFO 2026-03-14 12:16:36,965 log 7188 16388 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:16:36,965 log 7188 15532 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:17:06,960 log 7188 16388 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:17:06,960 log 7188 15532 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:17:36,974 log 7188 15532 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:17:36,977 log 7188 16388 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:18:06,963 log 7188 16388 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:18:06,963 log 7188 15532 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:18:36,958 log 7188 15532 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:18:36,958 log 7188 16388 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:19:58,977 log 7188 16388 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:19:58,978 log 7188 15532 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:20:55,049 log 7188 16388 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:20:55,069 log 7188 15532 "GET /api/products/ HTTP/1.1" 200 2914
+INFO 2026-03-14 12:20:58,970 log 7188 15532 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:54:24,027 log 7188 16992 "GET /api/verify-token/ HTTP/1.1" 200 71
+INFO 2026-03-14 12:54:24,078 log 7188 16408 "GET /api/verify-token/ HTTP/1.1" 200 71
+INFO 2026-03-14 12:54:24,520 log 7188 16108 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:54:24,549 log 7188 10452 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:54:24,557 log 7188 11160 "GET /api/liked-products/ HTTP/1.1" 200 2
+INFO 2026-03-14 12:54:24,564 log 7188 15800 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:54:24,570 log 7188 16912 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-14 12:54:24,589 log 7188 16108 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:54:24,599 log 7188 10452 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:54:24,619 log 7188 15800 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:54:24,624 log 7188 16524 "GET /api/products/ HTTP/1.1" 200 2914
+INFO 2026-03-14 12:54:24,684 log 7188 16524 "GET /api/products/ HTTP/1.1" 200 2914
+INFO 2026-03-14 12:54:35,867 log 7188 16240 "GET /api/products/?ordering=-like_count HTTP/1.1" 200 2914
+INFO 2026-03-14 12:54:35,893 log 7188 16592 "GET /api/products/?ordering=-like_count HTTP/1.1" 200 2914
+INFO 2026-03-14 12:54:37,437 log 7188 16524 "GET /api/cart/items/ HTTP/1.1" 200 2450
+INFO 2026-03-14 12:54:37,472 log 7188 16524 "GET /api/cart/items/ HTTP/1.1" 200 2450
+INFO 2026-03-14 12:54:39,153 log 7188 16524 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:54:39,161 log 7188 16524 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:54:40,282 log 7188 16524 "GET /api/verify-token/ HTTP/1.1" 200 71
+INFO 2026-03-14 12:54:40,807 log 7188 16524 "GET /api/verify-token/ HTTP/1.1" 200 71
+INFO 2026-03-14 12:54:40,814 log 7188 15800 "GET /api/buyer/profile/ HTTP/1.1" 200 79
+INFO 2026-03-14 12:54:40,825 log 7188 16108 "OPTIONS /api/orders/ HTTP/1.1" 200 0
+INFO 2026-03-14 12:54:41,409 log 7188 10452 "OPTIONS /api/orders/count/ HTTP/1.1" 200 0
+INFO 2026-03-14 12:54:41,416 log 7188 15800 "GET /api/buyer/profile/ HTTP/1.1" 200 79
+INFO 2026-03-14 12:54:41,428 log 7188 16524 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-14 12:54:41,429 log 7188 16108 "GET /api/orders/ HTTP/1.1" 200 2
+INFO 2026-03-14 12:54:41,431 log 7188 10452 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-14 12:54:42,076 log 7188 16108 "GET /api/orders/count/ HTTP/1.1" 200 11
+INFO 2026-03-14 12:54:42,077 log 7188 16524 "GET /api/orders/ HTTP/1.1" 200 2
+INFO 2026-03-14 12:54:42,077 log 7188 10452 "GET /api/wishlist/ HTTP/1.1" 200 2
+INFO 2026-03-14 12:54:43,970 log 7188 10452 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:54:43,985 log 7188 10452 "GET /api/categories/ HTTP/1.1" 200 267
+INFO 2026-03-14 12:54:43,986 log 7188 16108 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:54:44,004 log 7188 16108 "GET /api/quick-deals/ HTTP/1.1" 200 41
+INFO 2026-03-14 12:54:44,004 log 7188 16524 "GET /api/products/ HTTP/1.1" 200 2914
+INFO 2026-03-14 12:54:44,031 log 7188 16524 "GET /api/products/ HTTP/1.1" 200 2914
+INFO 2026-03-14 12:54:46,205 log 7188 16524 "GET /api/buyer/profile/ HTTP/1.1" 200 79
+INFO 2026-03-14 12:54:46,214 log 7188 16524 "GET /api/buyer/profile/ HTTP/1.1" 200 79
+INFO 2026-03-14 12:54:46,216 log 7188 16108 "GET /api/verify-token/ HTTP/1.1" 200 71
+INFO 2026-03-14 12:54:46,225 log 7188 16108 "GET /api/verify-token/ HTTP/1.1" 200 71
+INFO 2026-03-14 12:54:54,209 log 7188 16108 "GET /api/simple-notifications/ HTTP/1.1" 200 446
+INFO 2026-03-14 12:55:09,812 log 7188 16108 "POST /api/login/ HTTP/1.1" 200 594
+INFO 2026-03-14 12:55:10,470 log 7188 2916 "GET /api/seller/products/ HTTP/1.1" 200 706
+INFO 2026-03-14 12:55:10,505 log 7188 5464 "GET /api/seller/products/ HTTP/1.1" 200 706
+INFO 2026-03-14 12:55:14,639 log 7188 12604 "GET /api/seller/profile/ HTTP/1.1" 200 462
+INFO 2026-03-14 12:55:14,679 log 7188 6668 "GET /api/seller/profile/ HTTP/1.1" 200 462
+INFO 2026-03-14 12:55:15,069 log 7188 12836 "GET /api/seller/stats/ HTTP/1.1" 200 115
+INFO 2026-03-14 12:55:15,084 log 7188 2472 "GET /api/seller/stats/ HTTP/1.1" 200 115
+INFO 2026-03-14 12:55:16,537 log 7188 8768 "GET /api/seller/products/ HTTP/1.1" 200 706
+INFO 2026-03-14 12:55:16,558 log 7188 12256 "GET /api/seller/products/ HTTP/1.1" 200 706
+INFO 2026-03-14 12:55:20,152 log 7188 16108 "GET /api/seller/profile/ HTTP/1.1" 200 462
+INFO 2026-03-14 12:55:20,162 log 7188 16108 "GET /api/seller/profile/ HTTP/1.1" 200 462
+INFO 2026-03-14 12:55:27,605 log 7188 6412 "GET /api/seller/products/ HTTP/1.1" 200 706
+INFO 2026-03-14 12:55:27,634 log 7188 4028 "GET /api/seller/products/ HTTP/1.1" 200 706
+INFO 2026-03-14 12:55:43,875 log 7188 16724 "GET /api/products/?ordering=-like_count HTTP/1.1" 200 2914
+INFO 2026-03-14 12:55:43,913 log 7188 3728 "GET /api/products/?ordering=-like_count HTTP/1.1" 200 2914
+INFO 2026-03-14 12:55:46,129 log 7188 7384 "GET /api/seller/products/ HTTP/1.1" 200 706
+INFO 2026-03-14 12:55:46,150 log 7188 17040 "GET /api/seller/products/ HTTP/1.1" 200 706

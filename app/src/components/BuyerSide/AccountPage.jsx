@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent } from './card';
+import { BuyerCard, BuyerCardContent } from './BuyerCard';
 import { 
   User, Mail, Phone, MapPin, Edit, Heart, ShoppingCart, Bookmark, 
   MessageSquare, Star, MoreHorizontal, Plus, Award, ThumbsUp, X,
@@ -10,7 +10,7 @@ import api from '../../utils/api';
 import { useCart } from '../../utils/CartContext';
 import { useLikeBookmark } from '../../utils/LikeBookmarkContext';
 import AnimatedLoader from '../UISkeleton/Loader';
-import { useDarkMode } from '../../utils/DarkModeContext';
+import { useDarkMode } from '../../utils/BuyerDarkModeContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 const BASE_URL = API_URL.replace('/api', '');
@@ -713,8 +713,8 @@ const AccountPage = () => {
       {/* Profile Tab */}
       {activeTab === 'profile' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardContent className="p-6">
+          <BuyerCard>
+            <BuyerCardContent className="p-6">
               <h2 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Personal Information</h2>
               <div className="space-y-3">
                 <div className="flex items-center">
@@ -738,11 +738,11 @@ const AccountPage = () => {
                 <Edit className="w-4 h-4 mr-1" />
                 Edit Profile
               </Link>
-            </CardContent>
-          </Card>
+            </BuyerCardContent>
+          </BuyerCard>
 
-          <Card>
-            <CardContent className="p-6">
+          <BuyerCard>
+            <BuyerCardContent className="p-6">
               <h2 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Account Security</h2>
               <div className="space-y-4">
                 <Link to="/settings" className={`block w-full text-left p-3 border rounded-lg hover:bg-gray-50 transition-colors ${isDarkMode ? 'border-gray-700 hover:bg-gray-800' : 'border-gray-200'}`}>
@@ -758,8 +758,8 @@ const AccountPage = () => {
                   <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Manage your logged-in devices</p>
                 </button>
               </div>
-            </CardContent>
-          </Card>
+            </BuyerCardContent>
+          </BuyerCard>
         </div>
       )}
 
@@ -776,8 +776,8 @@ const AccountPage = () => {
             </button>
           </div>
           
-          <Card>
-            <CardContent className="p-6">
+          <BuyerCard>
+            <BuyerCardContent className="p-6">
               {contentLoading.orders ? (
                 <div className="text-center py-8">
                   <div className="flex justify-center">
@@ -878,8 +878,8 @@ const AccountPage = () => {
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </BuyerCardContent>
+          </BuyerCard>
         </div>
       )}
 
@@ -902,8 +902,8 @@ const AccountPage = () => {
                 const truncatedDescription = post.content.length > 40 ? post.content.substring(0, 40) + '...' : post.content;
 
                 return (
-                  <Card key={post.id} variant="elevated" className="overflow-hidden flex flex-col relative">
-                    <CardContent className="p-0 flex flex-col">
+                  <BuyerCard key={post.id} variant="elevated" className="overflow-hidden flex flex-col relative">
+                    <BuyerCardContent className="p-0 flex flex-col">
                       <div className={`p-0 sm:p-3 flex flex-col border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
                         <div className="flex justify-between items-center">
                           {post.sellerId ? (
@@ -984,8 +984,8 @@ const AccountPage = () => {
                           </button>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </BuyerCardContent>
+                  </BuyerCard>
                 );
               })}
             </div>
@@ -1020,8 +1020,8 @@ const AccountPage = () => {
                 const truncatedDescription = post.content?.length > 40 ? post.content.substring(0, 40) + '...' : post.content || '';
                 
                 return (
-                  <Card key={post.id} variant="elevated" className="overflow-hidden flex flex-col relative">
-                    <CardContent className="p-0 flex flex-col">
+                  <BuyerCard key={post.id} variant="elevated" className="overflow-hidden flex flex-col relative">
+                    <BuyerCardContent className="p-0 flex flex-col">
                       <div className={`p-0 sm:p-3 flex flex-col border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
                         <div className="flex justify-between items-center">
                           {post.sellerId ? (
@@ -1102,8 +1102,8 @@ const AccountPage = () => {
                           </button>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </BuyerCardContent>
+                  </BuyerCard>
                 );
               })}
             </div>

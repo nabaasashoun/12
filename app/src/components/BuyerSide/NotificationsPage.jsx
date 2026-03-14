@@ -1,4 +1,4 @@
-import { Card, CardContent } from './card';
+import { BuyerCard, BuyerCardContent } from './BuyerCard';
 import { 
   Bell, 
   CheckCircle, 
@@ -18,7 +18,7 @@ import {
 import { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import { useNavigate } from 'react-router-dom';
-import { useDarkMode } from '../../utils/DarkModeContext';   
+import { useDarkMode } from '../../utils/BuyerDarkModeContext';   
 
 const NotificationsPage = ({ setHasUnreadNotifications }) => {
   const { isDarkMode } = useDarkMode();                  
@@ -326,24 +326,24 @@ const NotificationsPage = ({ setHasUnreadNotifications }) => {
       </div>
 
       {notifications.length === 0 ? (
-        <Card>
-          <CardContent className="p-8 text-center">
+        <BuyerCard>
+          <BuyerCardContent className="p-8 text-center">
             <Bell className={`w-12 h-12 mx-auto mb-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
             <h3 className={`text-lg font-semibold mb-2 ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>No notifications</h3>
             <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>You're all caught up! Check back later for updates.</p>
-          </CardContent>
-        </Card>
+          </BuyerCardContent>
+        </BuyerCard>
       ) : (
         <div className="space-y-3">
           {notifications.map((notification) => {
             const { icon: IconComponent, color } = getIconForType(notification.type);
             return (
-              <Card
+              <BuyerCard
                 key={notification.id}
                 className={`hover:shadow-md transition-shadow cursor-pointer ${!notification.read ? 'border-l-4 border-blue-500' : ''}`}
                 onClick={() => handleNotificationClick(notification)}
               >
-                <CardContent className="p-4">
+                <BuyerCardContent className="p-4">
                   <div className="flex items-start">
                     <div className={`p-2 rounded-full bg-opacity-20 mr-4 ${color} ${isDarkMode ? 'bg-gray-700' : ''}`}>
                       <IconComponent className="w-5 h-5" />
@@ -384,8 +384,8 @@ const NotificationsPage = ({ setHasUnreadNotifications }) => {
                       </div>
                     )}
                   </div>
-                </CardContent>
-              </Card>
+                </BuyerCardContent>
+              </BuyerCard>
             );
           })}
         </div>

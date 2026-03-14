@@ -1,9 +1,5 @@
-// SellerSettings.jsx - FULLY UPDATED WITH SEPARATE SELLER DARK MODE
-// Uses SellerDarkModeContext (completely independent from buyer)
-// All redundant code, functions, state, validation, UI structure kept 100% intact
-
 import { useState, useEffect } from 'react';
-import { Card, CardContent } from '../BuyerSide/card';
+import { SellerCard, SellerCardContent } from './SellerCard';
 import { 
   User, Moon, LogOut, Save, ArrowLeft, 
   Mail, Lock, Eye, EyeOff, CheckCircle, XCircle,
@@ -13,11 +9,11 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
-import { useSellerDarkMode } from '../../utils/SellerDarkModeContext';   // ← Separate seller context
+import { useSellerDarkMode } from '../../utils/SellerDarkModeContext';
 
 const SellerSettings = () => {
   const navigate = useNavigate();
-  const { isDarkMode, toggleDarkMode } = useSellerDarkMode();   // ← Seller-specific dark mode only
+  const { isDarkMode, toggleDarkMode } = useSellerDarkMode();  
   
   const [expandedGroups, setExpandedGroups] = useState({
     account: true,

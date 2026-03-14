@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent } from './card';
+import { BuyerCard, BuyerCardContent } from './BuyerCard';
 import { 
   ShoppingCart, Trash2, Plus, Minus, ArrowLeft, AlertCircle, 
   Package, CreditCard, Truck, X, HelpCircle, CheckCircle, Save, Loader2 
@@ -8,7 +8,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from  '../../utils/api';
 import styled from 'styled-components';
 import Loader from '../UISkeleton/Loader';
-import { useDarkMode } from '../../utils/DarkModeContext';
+import { useDarkMode } from '../../utils/BuyerDarkModeContext';
 
 const CustomCheckbox = ({ checked, onChange, id, value, isDarkMode }) => {
   return (
@@ -534,8 +534,8 @@ const CartPage = () => {
                   const allRequiredAnswered = areAllRequiredQuestionsAnswered(item.product);
                   
                   return (
-                    <Card key={item.id} className="overflow-hidden">
-                      <CardContent className="p-4">
+                    <BuyerCard key={item.id} className="overflow-hidden">
+                      <BuyerCardContent className="p-4">
                         <div className="flex">
                           {/* Product Image */}
                           <div className="w-24 h-24 flex-shrink-0 mr-4">
@@ -640,8 +640,8 @@ const CartPage = () => {
                             </div>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
+                      </BuyerCardContent>
+                    </BuyerCard>
                   );
                 })}
               </div>
@@ -649,8 +649,8 @@ const CartPage = () => {
 
             {/* Order Summary */}
             <div>
-              <Card className="sticky top-6">
-                <CardContent className="p-6">
+              <BuyerCard className="sticky top-6">
+                <BuyerCardContent className="p-6">
                   <h2 className={`text-lg font-semibold mb-6 ${
                     isDarkMode ? 'text-gray-100' : 'text-gray-900'
                   }`}>Order Summary</h2>
@@ -780,8 +780,8 @@ const CartPage = () => {
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </BuyerCardContent>
+              </BuyerCard>
             </div>
           </div>
         ) : (

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent } from './card';
+import { BuyerCard, BuyerCardContent } from './BuyerCard';
 import { ArrowLeft, Star, Send, Edit, Trash2, User, AlertCircle, ThumbsUp, MessageSquare, Clock, Shield } from 'lucide-react';
 import api from '../../utils/api';  
 
@@ -297,8 +297,8 @@ const ProductCommentsPage = () => {
       </div>
 
       {product && (
-        <Card className="mb-6">
-          <CardContent className="p-4">
+        <BuyerCard className="mb-6">
+          <BuyerCardContent className="p-4">
             <div className="flex flex-col md:flex-row items-start md:items-center">
               <div className="w-20 h-20 flex-shrink-0 mr-4 mb-4 md:mb-0">
                 <img
@@ -339,14 +339,14 @@ const ProductCommentsPage = () => {
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </BuyerCardContent>
+        </BuyerCard>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 space-y-6">
-          <Card>
-            <CardContent className="p-4">
+          <BuyerCard>
+            <BuyerCardContent className="p-4">
               <h3 className="font-semibold text-black mb-4">Rating Summary</h3>
               <div className="space-y-3">
                 {[5, 4, 3, 2, 1].map((star) => {
@@ -397,11 +397,11 @@ const ProductCommentsPage = () => {
                   </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </BuyerCardContent>
+          </BuyerCard>
 
-          <Card>
-            <CardContent className="p-4">
+          <BuyerCard>
+            <BuyerCardContent className="p-4">
               <h3 className="font-semibold text-black mb-4">
                 {userComment ? 'Your Review' : 'Write a Review'}
               </h3>
@@ -491,8 +491,8 @@ const ProductCommentsPage = () => {
                   </div>
                 </form>
               )}
-            </CardContent>
-          </Card>
+            </BuyerCardContent>
+          </BuyerCard>
         </div>
 
         <div className="lg:col-span-2">
@@ -519,8 +519,8 @@ const ProductCommentsPage = () => {
           {comments.length > 0 ? (
             <div className="space-y-2">
               {comments.map((comment) => (
-                <Card key={comment.id}>
-                  <CardContent className="p-4">
+                <BuyerCard key={comment.id}>
+                  <BuyerCardContent className="p-4">
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex items-center">
                         <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mr-3">
@@ -576,13 +576,13 @@ const ProductCommentsPage = () => {
                     </div>
 
                     <p className="text-gray-700 mb-1">{comment.comment}</p>
-                  </CardContent>
-                </Card>
+                  </BuyerCardContent>
+                </BuyerCard>
               ))}
             </div>
           ) : (
-            <Card>
-              <CardContent className="p-8 text-center">
+            <BuyerCard>
+              <BuyerCardContent className="p-8 text-center">
                 <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-700 mb-2">
                   No Reviews Yet
@@ -596,8 +596,8 @@ const ProductCommentsPage = () => {
                 >
                   Write a Review
                 </button>
-              </CardContent>
-            </Card>
+              </BuyerCardContent>
+            </BuyerCard>
           )}
         </div>
       </div>

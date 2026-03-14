@@ -1,12 +1,12 @@
-import { Card, CardContent } from './card';
+import { BuyerCard, BuyerCardContent } from './BuyerCard';
 import { Heart, MessageSquare, Star, Bookmark, Plus, Settings, Search, MoreHorizontal } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Loader from '../UISkeleton/Loader';
-import { useDarkMode } from '../../utils/DarkModeContext';   // ← Added
+import { useDarkMode } from '../../utils/BuyerDarkModeContext';   
 
 const TrendingPage = () => {
-  const { isDarkMode } = useDarkMode();                    // ← Added
+  const { isDarkMode } = useDarkMode();                    
   const [searchFocused, setSearchFocused] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState({});
@@ -125,8 +125,8 @@ const TrendingPage = () => {
           const totalImages = images.length;
 
           return (            
-            <Card key={post.id} variant="elevated" className="overflow-hidden flex flex-col">
-              <CardContent className="p-0 flex flex-col">
+            <BuyerCard key={post.id} variant="elevated" className="overflow-hidden flex flex-col">
+              <BuyerCardContent className="p-0 flex flex-col">
                 <div className={`p-2 sm:p-3 flex flex-col border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-2">
@@ -249,8 +249,8 @@ const TrendingPage = () => {
                   </Link>
                   <p className={`text-xs truncate ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{post.description || 'No description available'}...</p>
                 </div>
-              </CardContent>
-            </Card>
+              </BuyerCardContent>
+            </BuyerCard>
           );
         })}
       </div>

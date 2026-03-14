@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AddProductProvider } from "./utils/AddProductContext";
-import HomePage from "./components/BuyerSide/HomePage";
+import HomePage from "./components/BuyerSide/BuyerHomePage";
 import SellerHomePage from "./components/SellerSide/SellerHomePage";
 import LoginPage from "./components/BuyerSide/LoginPage";
 import SellerLoginPage from "./components/SellerSide/SellerLoginPage"; 
@@ -9,7 +9,7 @@ import RegisterPage from "./components/BuyerSide/RegisterPage";
 import SellerRegisterPage from "./components/SellerSide/SellerRegisterPage"; 
 import TrendingPage from "./components/BuyerSide/TrendingPage";
 import SearchBar from "./components/BuyerSide/SearchBar";
-import SettingsPage from "./components/BuyerSide/SettingsPage";
+import SettingsPage from "./components/BuyerSide/BuyerSettingsPage";
 import AccountPage from "./components/BuyerSide/AccountPage";
 import NotificationsPage from "./components/BuyerSide/NotificationsPage";
 import Product from "./components/BuyerSide/Product";
@@ -28,7 +28,7 @@ import SellerNotifications from "./components/SellerSide/SellerNotfifcations";
 import SellerSettings from "./components/SellerSide/SellerSettings";
 import SellerTrendingPage from "./components/SellerSide/SellerTrendingPage";
 import { PageLoadingProvider } from "./utils/PageLoadingContext";
-import { DarkModeProvider } from "./utils/DarkModeContext";
+import { DarkModeProvider } from "./utils/BuyerDarkModeContext";
 import { SellerDarkModeProvider } from "./utils/SellerDarkModeContext";
 import { LikeBookmarkProvider } from "./utils/LikeBookmarkContext";
 

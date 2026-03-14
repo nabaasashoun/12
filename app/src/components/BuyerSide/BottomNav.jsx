@@ -8,7 +8,7 @@ import { useCart } from "../../utils/CartContext";
 import { usePageLoading } from "../../utils/PageLoadingContext";
 import BottomNavSkeleton from "../UISkeleton/BottomNavSkeleton";
 import api from "../../utils/api";
-import { useDarkMode } from "../../utils/DarkModeContext";   // ← Added
+import { useDarkMode } from "../../utils/BuyerDarkModeContext";   // ← Added
 
 const BottomNav = () => {
   const { isDarkMode } = useDarkMode();                    // ← Added

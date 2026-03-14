@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { Home, TrendingUp, ShoppingCart, Search, User, Menu } from "lucide-react";
-import { useDarkMode } from "../../utils/DarkModeContext";
+import { useDarkMode } from "../../utils/BuyerDarkModeContext";
 
 const SidebarNav = () => {
   const { isDarkMode } = useDarkMode();

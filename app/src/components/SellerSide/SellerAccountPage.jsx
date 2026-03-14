@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent } from '../BuyerSide/card';
+import { SellerCard, SellerCardContent } from './SellerCard';
 import { User, Mail, Phone, MapPin, Edit, ShoppingCart, DollarSign, Package, TrendingUp, Wallet, Settings } from 'lucide-react';
 
 const SellerAccountPage = () => {
@@ -152,8 +152,8 @@ const SellerAccountPage = () => {
             <>
               {/* Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <Card>
-                  <CardContent className="p-6">
+                <SellerCard>
+                  <SellerCardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-gray-500 text-sm">Total Sales</p>
@@ -163,11 +163,11 @@ const SellerAccountPage = () => {
                         <ShoppingCart className="text-blue-600 w-5 h-5" />
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  </SellerCardContent>
+                </SellerCard>
 
-                <Card>
-                  <CardContent className="p-6">
+                <SellerCard>
+                  <SellerCardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-gray-500 text-sm">Products Listed</p>
@@ -177,11 +177,11 @@ const SellerAccountPage = () => {
                         <Package className="text-purple-600 w-5 h-5" />
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  </SellerCardContent>
+                </SellerCard>
 
-                <Card>
-                  <CardContent className="p-6">
+                <SellerCard>
+                  <SellerCardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-gray-500 text-sm">Followers</p>
@@ -191,13 +191,13 @@ const SellerAccountPage = () => {
                         <TrendingUp className="text-green-600 w-5 h-5" />
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  </SellerCardContent>
+                </SellerCard>
               </div>
 
               {/* Business Performance (dummy for now) */}
-              <Card>
-                <CardContent className="p-6">
+              <SellerCard>
+                <SellerCardContent className="p-6">
                   <h2 className="text-lg font-semibold mb-4 text-black">Business Performance</h2>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
@@ -219,35 +219,35 @@ const SellerAccountPage = () => {
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </SellerCardContent>
+              </SellerCard>
             </>
           )}
 
           {activeTab === 'payments' && (
-            <Card>
-              <CardContent className="p-6">
+            <SellerCard>
+              <SellerCardContent className="p-6">
                 <h2 className="text-lg font-semibold mb-4 text-black">Payment History</h2>
                 <p className="text-gray-500">Payment data not available yet.</p>
-              </CardContent>
-            </Card>
+              </SellerCardContent>
+            </SellerCard>
           )}
 
           {activeTab === 'orders' && (
-            <Card>
-              <CardContent className="p-6">
+            <SellerCard>
+              <SellerCardContent className="p-6">
                 <h2 className="text-lg font-semibold mb-4 text-black">Recent Orders</h2>
                 <p className="text-gray-500">Order data not available yet.</p>
-              </CardContent>
-            </Card>
+              </SellerCardContent>
+            </SellerCard>
           )}
         </div>
 
         {/* Right Column - Business Info  */}
         {activeTab === 'summary' && (
           <div className="space-y-6">
-            <Card>
-              <CardContent className="p-6">
+            <SellerCard>
+              <SellerCardContent className="p-6">
                 <h2 className="text-lg font-semibold mb-4 text-black">Business Information</h2>
                 <div className="space-y-3">
                   <div className="flex items-center">
@@ -271,11 +271,11 @@ const SellerAccountPage = () => {
                   <Edit className="w-4 h-4 mr-1" />
                   Edit Business Info
                 </button>
-              </CardContent>
-            </Card>
+              </SellerCardContent>
+            </SellerCard>
 
-            <Card>
-              <CardContent className="p-6">
+            <SellerCard>
+              <SellerCardContent className="p-6">
                 <h2 className="text-lg font-semibold mb-4 text-black">Quick Actions</h2>
                 <div className="space-y-3">
                   <button className="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center">
@@ -300,8 +300,8 @@ const SellerAccountPage = () => {
                     </div>
                   </button>
                 </div>
-              </CardContent>
-            </Card>
+              </SellerCardContent>
+            </SellerCard>
           </div>
         )}
       </div>
