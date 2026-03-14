@@ -1,63 +1,17 @@
-// BottomNav.jsx - SIMPLEST DARK MODE IMPLEMENTATION
-// Now follows the exact same light/dark mode as the rest of the page (no Tailwind dark: needed)
-
 import { NavLink } from "react-router-dom";
 import { Home, TrendingUp, ShoppingCart, Bell, User } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useCart } from "../../utils/CartContext";
+import { useNotifications } from "../../utils/NotificationContext";
 import { usePageLoading } from "../../utils/PageLoadingContext";
 import BottomNavSkeleton from "../UISkeleton/BottomNavSkeleton";
-import api from "../../utils/api";
-import { useDarkMode } from "../../utils/BuyerDarkModeContext";   // ← Added
+import { useDarkMode } from "../../utils/BuyerDarkModeContext";
 
 const BottomNav = () => {
-  const { isDarkMode } = useDarkMode();                    // ← Added
+  const { isDarkMode } = useDarkMode();
   const { cartCount } = useCart();
-  const [unreadCount, setUnreadCount] = useState(0);
+  const { unreadCount } = useNotifications(); 
   const { isPageLoading } = usePageLoading();
-
-  const fetchUnreadCount = async () => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        setUnreadCount(0);
-        return;
-      }
-      
-      const result = await api.getSimpleNotifications();
-      if (result.data?.unread_count > 0) {
-        setUnreadCount(result.data.unread_count);
-      } else {
-        setUnreadCount(0);
-      }
-    } catch (error) {
-      console.error('Error checking notifications:', error);
-      setUnreadCount(0);
-    }
-  };
-
-  useEffect(() => {
-    fetchUnreadCount();
-    
-    const refreshNotifications = () => {
-      fetchUnreadCount();
-    };
-    
-    window.addEventListener('notificationsRead', refreshNotifications);
-    window.addEventListener('notificationRead', refreshNotifications);
-    window.addEventListener('newNotification', refreshNotifications);
-    window.addEventListener('followCompleted', refreshNotifications);
-    
-    const interval = setInterval(fetchUnreadCount, 30000);
-    
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('notificationsRead', refreshNotifications);
-      window.removeEventListener('notificationRead', refreshNotifications);
-      window.removeEventListener('newNotification', refreshNotifications);
-      window.removeEventListener('followCompleted', refreshNotifications);
-    };
-  }, []);
 
   if (isPageLoading) {
     return <BottomNavSkeleton />;

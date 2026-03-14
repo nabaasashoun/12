@@ -1228,10 +1228,18 @@ def toggle_follow_seller(request, seller_id):
                 buyer = Buyer.objects.get(user=request.user)
                 print(f"Found buyer via direct query: {buyer}")
                 print("The user has a buyer profile but the reverse relation might not be set up correctly")
+                # Attach it to the user for this request
+                request.user.buyer_profile = buyer
             except Buyer.DoesNotExist:
                 print("No buyer profile found in database for this user")
+                return Response({
+                    'error': 'Only buyers can follow sellers. No buyer profile found for this user.'
+                }, status=status.HTTP_403_FORBIDDEN)
             except Exception as e:
                 print(f"Error querying buyer: {e}")
+                return Response({
+                    'error': 'Error checking buyer profile'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         # Check if user has seller profile (they shouldn't)
         print(f"Has seller_profile: {hasattr(request.user, 'seller_profile')}")
@@ -1241,20 +1249,6 @@ def toggle_follow_seller(request, seller_id):
             print("WARNING: User has both buyer and seller profiles!")
         
         print("=" * 50)
-        
-        # Check if user has buyer profile
-        if not hasattr(request.user, 'buyer_profile'):
-            # Try to find the buyer profile directly as a fallback
-            from .models import Buyer
-            try:
-                buyer = Buyer.objects.get(user=request.user)
-                print(f"Found buyer via direct query, attaching to user")
-                # Attach it to the user for this request
-                request.user.buyer_profile = buyer
-            except Buyer.DoesNotExist:
-                return Response({
-                    'error': 'Only buyers can follow sellers. No buyer profile found for this user.'
-                }, status=status.HTTP_403_FORBIDDEN)
         
         # Get the seller
         try:
@@ -1270,6 +1264,7 @@ def toggle_follow_seller(request, seller_id):
                 'error': 'You cannot follow yourself'
             }, status=status.HTTP_400_BAD_REQUEST)
         
+        # Get buyer (now should be attached)
         buyer = request.user.buyer_profile
         print(f"Buyer: {buyer.name} (ID: {buyer.id})")
         print(f"Seller: {seller.name} (ID: {seller.id})")
@@ -1287,6 +1282,14 @@ def toggle_follow_seller(request, seller_id):
                 following = False
                 message = 'Unfollowed seller'
                 print("Unfollowed")
+                
+                # Return response for unfollow
+                return Response({
+                    'success': True,
+                    'following': following,
+                    'followers_count': seller.followers,
+                    'message': message
+                }, status=status.HTTP_200_OK)
             else:
                 # Follow
                 SellerFollow.objects.create(buyer=buyer, seller=seller)
@@ -1307,26 +1310,30 @@ def toggle_follow_seller(request, seller_id):
                         message=f"{buyer.name} started following you",
                         type='follow'
                     )
+                    print(f"✓ Notification created for seller")
                     
                     # Notification for BUYER (confirmation)
                     SimpleNotification.objects.create(
-                        recipient=request.user,  # The buyer
+                        recipient=request.user,
                         sender_name=seller.name,
                         message=f"You are now following {seller.name}",
                         type='follow_confirmation'
                     )
+                    print(f"✓ Notification created for buyer")
                     
-                    print(f"✓ Notifications created for seller and buyer")
                 except Exception as e:
                     print(f"⚠️ Could not create notifications: {e}")
-        
-        return Response({
-            'success': True,
-            'following': following,
-            'followers_count': seller.followers,
-            'message': message
-        }, status=status.HTTP_200_OK)
-        
+                    import traceback
+                    traceback.print_exc()
+                
+                # Return response for follow
+                return Response({
+                    'success': True,
+                    'following': following,
+                    'followers_count': seller.followers,
+                    'message': message
+                }, status=status.HTTP_200_OK)
+
     except Exception as e:
         print(f"Error in toggle_follow_seller: {str(e)}")
         import traceback
@@ -1335,7 +1342,7 @@ def toggle_follow_seller(request, seller_id):
             'error': 'An unexpected error occurred',
             'detail': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_notifications(request):

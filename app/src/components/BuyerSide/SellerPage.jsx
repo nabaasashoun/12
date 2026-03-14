@@ -7,9 +7,11 @@ import { useCart } from '../../utils/CartContext';
 import { useLikeBookmark } from '../../utils/LikeBookmarkContext';
 import Loader from '../UISkeleton/Loader';
 import { useDarkMode } from '../../utils/BuyerDarkModeContext';
+import { useNotifications } from '../../utils/NotificationContext'; // Add this
 
 const SellerPage = () => {
   const { isDarkMode } = useDarkMode();
+  const { fetchNotifications } = useNotifications(); // Add this to refresh notifications
   const { sellerId } = useParams();
   const [searchFocused, setSearchFocused] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(null);
@@ -20,6 +22,7 @@ const SellerPage = () => {
   const [animatingLike, setAnimatingLike] = useState(null);
   const [animatingFavorite, setAnimatingFavorite] = useState(null);
   const [followMessage, setFollowMessage] = useState(''); 
+  const [followMessageType, setFollowMessageType] = useState('success'); // 'success' or 'error'
   const [seller, setSeller] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -96,10 +99,19 @@ const SellerPage = () => {
           followers: result.data.followers_count
         }));
         
+        // Show success message
+        setFollowMessageType('success');
+       
+        
+        // Refresh notifications to update the badge
+        fetchNotifications();
+        
+        // Clear message after 3 seconds
         setTimeout(() => setFollowMessage(''), 3000);
       }
     } catch (error) {
       console.error('Error toggling follow:', error);
+      setFollowMessageType('error');
       setFollowMessage('Failed to follow. Please try again.');
       setTimeout(() => setFollowMessage(''), 3000);
     }
@@ -269,8 +281,14 @@ const SellerPage = () => {
           {/* Follow Notification Message - FLOATING STYLE */}
           {followMessage && (
             <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 animate-slideDown">
-              <div className="bg-green-600 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2">
-                <Check className="w-5 h-5" />
+              <div className={`px-6 py-3 rounded-full shadow-lg flex items-center gap-2 ${
+                followMessageType === 'success' ? 'bg-green-600' : 'bg-red-600'
+              } text-white`}>
+                {followMessageType === 'success' ? (
+                  <Check className="w-5 h-5" />
+                ) : (
+                  <span className="text-lg">⚠️</span>
+                )}
                 <span className="font-medium">{followMessage}</span>
               </div>
             </div>

@@ -16,6 +16,7 @@ import Product from "./components/BuyerSide/Product";
 import CartPage from "./components/BuyerSide/CartPage";
 import SellerPage from "./components/BuyerSide/SellerPage";
 import BottomNav from "./components/BuyerSide/BottomNav";
+import { NotificationProvider } from "./utils/NotificationContext";
 import SellerBottomNav from "./components/SellerSide/SellerBottomNav";
 import SidebarNav from "./components/BuyerSide/SidebarNav";
 import ProductCommentsPage from "./components/BuyerSide/ProductCommentsPage";
@@ -379,9 +380,11 @@ const App = () => {
     <AddProductProvider>
       <PageLoadingProvider>
         <LikeBookmarkProvider> 
-          <BrowserRouter>
-            <AuthenticatedContent />
-          </BrowserRouter>
+          <NotificationProvider> 
+            <BrowserRouter>
+              <AuthenticatedContent />
+            </BrowserRouter>
+          </NotificationProvider> 
         </LikeBookmarkProvider>  
       </PageLoadingProvider>
     </AddProductProvider>
