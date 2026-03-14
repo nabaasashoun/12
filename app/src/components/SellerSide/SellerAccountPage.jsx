@@ -229,7 +229,7 @@ const SellerAccountPage = () => {
                         <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Seller reliability</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-xl font-bold text-green-600">{stats.trustPercentage}%</p>
+                        <p className="text-xl font-bold text-green-600">{Math.round(stats.trustPercentage)}%</p>
                       </div>
                     </div>
                     <div className={`flex items-center justify-between p-4 rounded-lg ${

@@ -696,6 +696,96 @@ class Api {
       return { error: true, message: error.message };
     }
   }
+
+  // Get seller's quick deals
+  async getSellerQuickDeals() {
+    return this.request('/seller/quick-deals/');
+  }
+
+  // Create a quick deal
+  async createQuickDeal(dealData) {
+    const token = this.getToken();
+    
+    // If there's a file (picture), use FormData
+    if (dealData.picture instanceof File) {
+      const formData = new FormData();
+      formData.append('product_id', dealData.product_id);
+      formData.append('caption', dealData.caption || '');
+      formData.append('priority', dealData.priority || 0);
+      if (dealData.picture) {
+        formData.append('picture', dealData.picture);
+      }
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/seller/quick-deals/`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+          body: formData,
+        });
+        
+        const data = await response.json();
+        if (!response.ok) {
+          return { error: true, status: response.status, data };
+        }
+        return { data, status: response.status };
+      } catch (error) {
+        console.error('Create quick deal error:', error);
+        return { error: true, message: error.message };
+      }
+    } else {
+      // No file, use regular JSON request
+      return this.request('/seller/quick-deals/', {
+        method: 'POST',
+        body: JSON.stringify(dealData),
+      });
+    }
+  }
+
+
+  async deleteQuickDeal(dealId) {
+    return this.request(`/seller/quick-deals/${dealId}/`, {
+      method: 'DELETE',
+    });
+  }
+
+  async updateQuickDeal(dealId, dealData) {
+    const token = this.getToken();
+    
+    if (dealData.picture instanceof File) {
+      const formData = new FormData();
+      if (dealData.product_id) formData.append('product_id', dealData.product_id);
+      if (dealData.caption !== undefined) formData.append('caption', dealData.caption);
+      if (dealData.priority !== undefined) formData.append('priority', dealData.priority);
+      if (dealData.picture) formData.append('picture', dealData.picture);
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/seller/quick-deals/${dealId}/`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+          body: formData,
+        });
+        
+        const data = await response.json();
+        if (!response.ok) {
+          return { error: true, status: response.status, data };
+        }
+        return { data, status: response.status };
+      } catch (error) {
+        console.error('Update quick deal error:', error);
+        return { error: true, message: error.message };
+      }
+    } else {
+      return this.request(`/seller/quick-deals/${dealId}/`, {
+        method: 'PUT',
+        body: JSON.stringify(dealData),
+      });
+    }
+  }
+  
 }
 
 const api = new Api();

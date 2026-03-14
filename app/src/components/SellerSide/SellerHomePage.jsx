@@ -103,7 +103,10 @@ const SellerHomePage = () => {
   const fetchQuickDeals = async () => {
     try {
       const result = await api.getSellerQuickDeals();
-      if (Array.isArray(result.data)) {
+      console.log('Quick deals result:', result); 
+      
+      // Check if result.data exists and is an array
+      if (result.data && Array.isArray(result.data)) {
         const transformed = result.data
           .map(deal => ({
             id: deal.id,
@@ -115,10 +118,28 @@ const SellerHomePage = () => {
             views: deal.views,
             timestamp: deal.timestamp,
             productId: deal.product?.id,
-            is_expired: deal.is_expired,  
+            is_expired: deal.is_expired,
             time_remaining: deal.time_remaining,
           }))
-          .filter(deal => !deal.is_expired);   
+          .filter(deal => !deal.is_expired);
+        setQuickDeals(transformed);
+      } else if (result.deals && Array.isArray(result.deals)) {
+        // Handle case where response is nested in a 'deals' property
+        const transformed = result.deals
+          .map(deal => ({
+            id: deal.id,
+            title: deal.product?.category?.name || 'Category',
+            product: deal.product?.name || 'Product',
+            image: deal.picture || deal.product?.product_photo || '/placeholder.jpg',
+            color: getRandomColor(),
+            caption: deal.caption,
+            views: deal.views,
+            timestamp: deal.timestamp,
+            productId: deal.product?.id,
+            is_expired: deal.is_expired,
+            time_remaining: deal.time_remaining,
+          }))
+          .filter(deal => !deal.is_expired);
         setQuickDeals(transformed);
       } else {
         console.error('Failed to fetch quick deals:', result.error || 'Unknown error');
@@ -187,22 +208,29 @@ const SellerHomePage = () => {
         product_id: newQuickDeal.product_id,
         caption: newQuickDeal.caption || '',
         priority: newQuickDeal.priority || 0,
-        picture: newQuickDeal.picture,          
       };
+      
+      // Only add picture if it exists
+      if (newQuickDeal.picture) {
+        dealData.picture = newQuickDeal.picture;
+      }
 
-      const result = await api.createQuickDeal(dealData);   
-
+      const result = await api.createQuickDeal(dealData);
+      
       console.log('Quick deal creation result:', result);
 
-      if (result.status >= 200 && result.status < 300 && result.data?.id) {
-       
+      // Check for success (status 200-299 or data with id)
+      if ((result.status >= 200 && result.status < 300) || result.data?.id) {
         setQuickDealModalOpen(false);
         setNewQuickDeal({ product_id: '', caption: '', picture: null, priority: 0 });
         fetchQuickDeals();
-        localStorage.setItem('quickDealUpdated', Date.now().toString()); 
+        localStorage.setItem('quickDealUpdated', Date.now().toString());
         window.dispatchEvent(new CustomEvent('quickDealCreated'));
       } else {
-        const errorMsg = result.error || JSON.stringify(result.data || {});
+        const errorMsg = result.error || 
+                        (result.data?.message) || 
+                        (result.data?.error) || 
+                        JSON.stringify(result.data || {});
         alert(`Failed to create quick deal: ${errorMsg}`);
       }
     } catch (error) {
