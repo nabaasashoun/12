@@ -22,10 +22,8 @@ class Seller(models.Model):
     contact = models.CharField(max_length=100, blank=True)
     nin_number = models.CharField(max_length=50, blank=True)
     sales = models.PositiveIntegerField(default=0)
-    trust = models.DecimalField(
-        max_digits=5, 
-        decimal_places=2, 
-        default=0.00,
+    trust = models.PositiveIntegerField(
+        default=0,
         validators=[MinValueValidator(0), MaxValueValidator(100)]
     )
     followers = models.PositiveIntegerField(default=0)

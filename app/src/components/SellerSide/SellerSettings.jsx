@@ -456,7 +456,6 @@ const SellerSettings = () => {
               <h2 className="text-xl font-bold text-white">{sellerInfo.name}</h2>
               <p className="text-white/80 text-sm">@{sellerInfo.username}</p>
               <div className="flex items-center space-x-4 mt-2 text-xs">
-                <span className="flex items-center"><Award className="w-3 h-3 mr-1" /> {sellerInfo.trust}% Trust</span>
                 <span className="flex items-center"><Briefcase className="w-3 h-3 mr-1" /> {sellerInfo.sales} Sales</span>
                 <span className="flex items-center"><User className="w-3 h-3 mr-1" /> {sellerInfo.followers} Followers</span>
               </div>

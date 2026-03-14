@@ -1819,7 +1819,7 @@ def rate_seller(request):
         # Calculate average
         if ratings:
             avg_rating = sum(ratings) / len(ratings)
-            trust_percentage = round(avg_rating * 20, 2)  # Convert to percentage
+            trust_percentage = round(avg_rating * 20)
         else:
             trust_percentage = 0
         

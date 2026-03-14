@@ -105,7 +105,7 @@ class SellerAdmin(admin.ModelAdmin):
     email_display.short_description = 'Email'
 
     def trust_display(self, obj):
-        return f"{obj.trust}%"
+        return f"{round(obj.trust)}%"
     trust_display.short_description = 'Trust'
 
 
