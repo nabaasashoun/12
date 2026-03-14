@@ -493,36 +493,6 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
             >
               Mark All Read
             </button>
-            <button
-              onClick={() => navigate('/seller/orders')}
-              className={`px-3 py-1 border rounded-full text-sm transition-colors ${
-                isDarkMode 
-                  ? 'border-green-600 text-green-400 hover:bg-green-600 hover:text-white' 
-                  : 'border-green-600 text-green-600 hover:bg-green-600 hover:text-white'
-              }`}
-            >
-              View Orders
-            </button>
-            <button
-              onClick={() => navigate('/seller/products')}
-              className={`px-3 py-1 border rounded-full text-sm transition-colors ${
-                isDarkMode 
-                  ? 'border-purple-600 text-purple-400 hover:bg-purple-600 hover:text-white' 
-                  : 'border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white'
-              }`}
-            >
-              Manage Products
-            </button>
-            <button
-              onClick={() => navigate('/seller/analytics')}
-              className={`px-3 py-1 border rounded-full text-sm transition-colors ${
-                isDarkMode 
-                  ? 'border-gray-600 text-gray-400 hover:bg-gray-600 hover:text-white' 
-                  : 'border-gray-600 text-gray-600 hover:bg-gray-600 hover:text-white'
-              }`}
-            >
-              Analytics
-            </button>
           </div>
         </div>
       )}

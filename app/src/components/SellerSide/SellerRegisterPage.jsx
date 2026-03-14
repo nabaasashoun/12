@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Upload, CheckCircle, XCircle, ChevronDown, Check } from "lucide-react";
+import { Eye, EyeOff, Upload, CheckCircle, XCircle, ChevronDown, Check, Camera } from "lucide-react";
 import styled from 'styled-components';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
@@ -149,6 +149,9 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
     if (files.length > 0) {
       setFormData(prev => ({ ...prev, [name]: files[0] }));
       setUploadStatus(prev => ({ ...prev, [name]: true }));
+      
+      // Optional: Show a preview or confirmation message
+      console.log(`${name} captured successfully`);
     }
   };
 
@@ -469,17 +472,17 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
             </div>
           )}
 
-          {/* Step 3: Documents - Now Required */}
+          {/* Step 3: Documents - Camera Only for Passport and ID */}
           {step === 3 && (
             <div className="space-y-6">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-blue-800 text-sm font-medium flex items-center gap-2">
-                  <Upload size={16} />
-                  Document verification required
+                  <Camera size={16} />
+                  Document verification required - Camera will open automatically for ID photos
                 </p>
               </div>
 
-              {/* Profile Photo - Required */}
+              {/* Profile Photo - Regular file upload */}
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-2">
                   Profile Photo <span className="text-red-500">*</span>
@@ -501,16 +504,21 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                 </div>
               </div>
 
-              {/* Passport Photo - Required */}
+              {/* Passport Photo - Camera Only (No file upload option) */}
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-2">
                   Passport Photo <span className="text-red-500">*</span>
+                  <span className="text-xs text-gray-500 ml-2 flex items-center gap-1">
+                    <Camera size={12} /> Camera only - take a photo
+                  </span>
                 </label>
+                
                 <div className={`flex items-center gap-2 p-2 rounded-lg ${uploadStatus.passport_photo ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-200'}`}>
                   <input
                     name="passport_photo"
                     type="file"
                     accept="image/*"
+                    capture="environment" // Forces rear camera, no file picker
                     onChange={handleFileChange}
                     required
                     className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
@@ -521,18 +529,26 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                     <XCircle size={20} className="text-red-400 flex-shrink-0" />
                   )}
                 </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Click the button above to open your camera and take a photo of your passport
+                </p>
               </div>
 
-              {/* ID Photo - Required */}
+              {/* ID Photo - Camera Only (No file upload option) */}
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-2">
                   ID Photo <span className="text-red-500">*</span>
+                  <span className="text-xs text-gray-500 ml-2 flex items-center gap-1">
+                    <Camera size={12} /> Camera only - take a photo
+                  </span>
                 </label>
+
                 <div className={`flex items-center gap-2 p-2 rounded-lg ${uploadStatus.id_photo ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-200'}`}>
                   <input
                     name="id_photo"
                     type="file"
                     accept="image/*"
+                    capture="environment" // Forces rear camera, no file picker
                     onChange={handleFileChange}
                     required
                     className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
@@ -543,6 +559,9 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                     <XCircle size={20} className="text-red-400 flex-shrink-0" />
                   )}
                 </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Click the button above to open your camera and take a photo of your ID
+                </p>
               </div>
 
               {/* Upload Progress Summary */}

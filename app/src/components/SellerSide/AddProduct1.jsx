@@ -2,8 +2,10 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Camera, X, FolderOpen, Check } from 'lucide-react';
 import { useAddProduct } from '../../utils/AddProductContext';
+import { useSellerDarkMode } from '../../utils/SellerDarkModeContext';
 
 const AddProduct1 = () => {
+  const { isDarkMode } = useSellerDarkMode();
   const navigate = useNavigate();
   const { productImages, setProductImages } = useAddProduct();
   const [recentImages, setRecentImages] = useState([]);
@@ -130,19 +132,25 @@ const AddProduct1 = () => {
   const mainImage = productImages[0];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+    <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className={`border-b sticky top-0 z-10 transition-colors duration-300 ${
+        isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+      }`}>
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <button
             onClick={() => navigate('/seller/home')}
-            className="flex items-center text-gray-600 hover:text-gray-900"
+            className={`flex items-center ${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-900'}`}
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
           </button>
-          <p className="text-[21px] font-bold text-gray-900">Add Images</p>
+          <p className={`text-[21px] font-bold ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>Add Images</p>
           <button
             onClick={() => navigate('/seller/add-product/step2')}
-            className="px-4 py-2 text-gray-600 rounded-lg hover:bg-blue-700"
+            className={`px-4 py-2 rounded-lg transition-colors ${
+              isDarkMode 
+                ? 'text-gray-400 hover:text-gray-200' 
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
           >
             Next
           </button>
@@ -150,11 +158,15 @@ const AddProduct1 = () => {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6">
-        <div className="mb-2 bg-white rounded-xl shadow-sm p-4">
-          <h3 className="text-lg font-semibold mb-3">Product Images (Max 9)</h3>
+        <div className={`mb-2 rounded-xl shadow-sm p-4 transition-colors duration-300 ${
+          isDarkMode ? 'bg-gray-800' : 'bg-white'
+        }`}>
+          <h3 className={`text-lg font-semibold mb-3 ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>Product Images (Max 9)</h3>
           
           <div 
-            className="relative border-2 border-gray-300 border-dashed rounded-lg overflow-hidden cursor-pointer h-64 md:h-80"
+            className={`relative border-2 border-dashed rounded-lg overflow-hidden cursor-pointer h-64 md:h-80 transition-colors duration-300 ${
+              isDarkMode ? 'border-gray-600' : 'border-gray-300'
+            }`}
             onClick={() => fileInputRef.current.click()}
           >
             {mainImage ? (
@@ -181,7 +193,8 @@ const AddProduct1 = () => {
                   <div
                     key={index}
                     className={`
-                      border border-gray-200
+                      ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}
+                      border
                       ${index % 3 !== 2 ? 'border-r-2' : ''}
                       ${index < 6 ? 'border-b-2' : ''}
                     `}
@@ -191,10 +204,12 @@ const AddProduct1 = () => {
             )}
 
             {productImages.every(img => img === null) && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 bg-opacity-90">
-                <Camera className="w-12 h-12 text-gray-400 mb-2" />
-                <p className="text-gray-600 font-medium">Click to upload images</p>
-                <p className="text-sm text-gray-500 mt-1">or drag and drop</p>
+              <div className={`absolute inset-0 flex flex-col items-center justify-center bg-opacity-90 ${
+                isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
+              }`}>
+                <Camera className={`w-12 h-12 mb-2 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`} />
+                <p className={`font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Click to upload images</p>
+                <p className={`text-sm mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>or drag and drop</p>
               </div>
             )}
 
@@ -221,7 +236,11 @@ const AddProduct1 = () => {
             <button
               type="button"
               onClick={() => folderInputRef.current.click()}
-              className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+              className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+                isDarkMode 
+                  ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
             >
               <FolderOpen className="w-4 h-4 mr-2" />
               Select Folder
@@ -229,14 +248,18 @@ const AddProduct1 = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-4">
+        <div className={`rounded-xl shadow-sm p-4 transition-colors duration-300 ${
+          isDarkMode ? 'bg-gray-800' : 'bg-white'
+        }`}>
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold">Recent Images</h3>
+            <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>Recent Images</h3>
             {multiSelectMode && (
               <div className="flex items-center space-x-2">
                 <button
                   onClick={clearMultiSelect}
-                  className="px-3 py-1 text-sm text-gray-600 hover:text-gray-900"
+                  className={`px-3 py-1 text-sm transition-colors ${
+                    isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-900'
+                  }`}
                 >
                   Cancel
                 </button>
@@ -251,8 +274,8 @@ const AddProduct1 = () => {
           </div>
 
           {recentImages.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <Camera className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+            <div className={`text-center py-8 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+              <Camera className={`w-12 h-12 mx-auto mb-2 ${isDarkMode ? 'text-gray-600' : 'text-gray-300'}`} />
               <p>No recent images</p>
               <p className="text-sm mt-1">Upload images or select a folder to get started</p>
             </div>
@@ -264,7 +287,7 @@ const AddProduct1 = () => {
                   className={`relative aspect-square rounded-md overflow-hidden border-2 cursor-pointer ${
                     selectedIndexes.includes(index)
                       ? 'border-blue-500'
-                      : 'border-transparent'
+                      : isDarkMode ? 'border-gray-700' : 'border-transparent'
                   }`}
                   onClick={() => selectRecentImage(image, index)}
                   onMouseDown={() => handleLongPress(index)}
@@ -289,8 +312,10 @@ const AddProduct1 = () => {
           )}
 
           {multiSelectMode && (
-            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-              <p className="text-sm text-blue-800">
+            <div className={`mt-4 p-3 rounded-lg ${
+              isDarkMode ? 'bg-blue-900/30' : 'bg-blue-50'
+            }`}>
+              <p className={`text-sm ${isDarkMode ? 'text-blue-300' : 'text-blue-800'}`}>
                 <span className="font-medium">Multi-select mode:</span> Tap images to select (max 4), then click "Add Selected"
               </p>
             </div>

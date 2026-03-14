@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Trash2, Check, X, FileText, List, AlertCircle, Star } from 'lucide-react';
 import { useAddProduct } from '../../utils/AddProductContext';
+import { useSellerDarkMode } from '../../utils/SellerDarkModeContext';
 
 const AddProduct3 = () => {
+  const { isDarkMode } = useSellerDarkMode();
   const navigate = useNavigate();
   const { 
     productImages, 
@@ -231,19 +233,23 @@ const AddProduct3 = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+    <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className={`border-b sticky top-0 z-10 transition-colors duration-300 ${
+        isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+      }`}>
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <button
             onClick={() => navigate('/seller/add-product/step2')}
-            className="flex items-center text-gray-600 hover:text-gray-900"
+            className={`flex items-center ${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-900'}`}
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
           </button>
-          <p className="text-[18px] font-bold text-gray-900">Product Qtns (Optional)</p>
+          <p className={`text-[18px] font-bold ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>Product Qtns (Optional)</p>
           <button
             onClick={handleSkip}
-            className="px-4 py-2 text-gray-600 hover:text-gray-900"
+            className={`px-4 py-2 transition-colors ${
+              isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-900'
+            }`}
           >
             Skip
           </button>
@@ -252,20 +258,24 @@ const AddProduct3 = () => {
 
       <div className="max-w-4xl mx-auto px-4 py-6">
         <form onSubmit={handleSubmit}>
-          <div className="bg-white rounded-xl shadow-sm p-4 md:p-6 mb-6">
+          <div className={`rounded-xl shadow-sm p-4 md:p-6 mb-6 transition-colors duration-300 ${
+            isDarkMode ? 'bg-gray-800' : 'bg-white'
+          }`}>
             <div className="mb-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">Custom Questions for Buyers</h2>
-              <p className="text-sm text-gray-600 mb-4">
+              <h2 className={`text-lg font-semibold mb-2 ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>Custom Questions for Buyers</h2>
+              <p className={`text-sm mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                 Add up to 3 questions that buyers must answer when ordering. 
                 <span className="font-semibold text-blue-600"> You must mark at least one question as mandatory (★)</span> 
                 so buyers must answer it even if they skip other questions.
               </p>
               
               {!skipQuestions && !hasMandatoryQuestion && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <div className={`mb-4 p-3 border rounded-lg ${
+                  isDarkMode ? 'bg-red-900/30 border-red-800' : 'bg-red-50 border-red-200'
+                }`}>
                   <div className="flex items-start">
                     <AlertCircle className="w-5 h-5 text-red-500 mr-2 mt-0.5" />
-                    <p className="text-sm text-red-800">
+                    <p className={`text-sm ${isDarkMode ? 'text-red-300' : 'text-red-800'}`}>
                       <span className="font-bold">Important:</span> You must mark at least one question as mandatory 
                       (click the star icon ★ next to a question). Buyers will be required to answer this question.
                     </p>
@@ -274,10 +284,12 @@ const AddProduct3 = () => {
               )}
 
               {skipQuestions && (
-                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className={`mb-4 p-3 border rounded-lg ${
+                  isDarkMode ? 'bg-yellow-900/30 border-yellow-800' : 'bg-yellow-50 border-yellow-200'
+                }`}>
                   <div className="flex items-start">
                     <AlertCircle className="w-5 h-5 text-yellow-500 mr-2 mt-0.5" />
-                    <p className="text-sm text-yellow-800">
+                    <p className={`text-sm ${isDarkMode ? 'text-yellow-300' : 'text-yellow-800'}`}>
                       You have chosen to skip questions. Buyers will not be prompted to answer any questions.
                     </p>
                   </div>
@@ -288,13 +300,19 @@ const AddProduct3 = () => {
             {!skipQuestions && (
               <div className="space-y-8">
                 {questions.map((question, questionIndex) => (
-                  <div key={question.id} className="border border-gray-200 rounded-lg p-4 relative">
+                  <div key={question.id} className={`border rounded-lg p-4 relative ${
+                    isDarkMode ? 'border-gray-700' : 'border-gray-200'
+                  }`}>
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center">
-                        <h3 className="font-medium text-gray-900 mr-2">Question {questionIndex + 1}</h3>
+                        <h3 className={`font-medium mr-2 ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+                          Question {questionIndex + 1}
+                        </h3>
                         
                         {question.required && (
-                          <span className="flex items-center text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
+                          <span className={`flex items-center text-xs px-2 py-1 rounded-full ${
+                            isDarkMode ? 'bg-yellow-900/30 text-yellow-400' : 'bg-yellow-100 text-yellow-800'
+                          }`}>
                             <Star className="w-3 h-3 mr-1 fill-yellow-500" />
                             Mandatory
                           </span>
@@ -305,7 +323,7 @@ const AddProduct3 = () => {
                         <button
                           type="button"
                           onClick={() => setAsMandatory(questionIndex)}
-                          className={`flex items-center ${question.required ? 'text-yellow-500' : 'text-gray-400 hover:text-yellow-500'}`}
+                          className={`flex items-center ${question.required ? 'text-yellow-500' : isDarkMode ? 'text-gray-600 hover:text-yellow-500' : 'text-gray-400 hover:text-yellow-500'}`}
                           title={question.required ? "This question is mandatory" : "Set as mandatory question"}
                         >
                           <Star className={`w-5 h-5 ${question.required ? 'fill-yellow-500' : ''}`} />
@@ -314,7 +332,9 @@ const AddProduct3 = () => {
                         <button
                           type="button"
                           onClick={() => toggleQuestionType(questionIndex)}
-                          className="flex items-center text-sm text-blue-600 hover:text-blue-800"
+                          className={`flex items-center text-sm ${
+                            isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'
+                          }`}
                         >
                           {question.type === 'text' ? (
                             <>
@@ -336,11 +356,15 @@ const AddProduct3 = () => {
                         type="text"
                         value={question.question}
                         onChange={(e) => updateQuestion(questionIndex, 'question', e.target.value)}
-                        className={`w-full px-4 py-3 border ${question.required ? 'border-yellow-300' : 'border-gray-300'} text-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                          isDarkMode 
+                            ? `bg-gray-700 ${question.required ? 'border-yellow-600' : 'border-gray-600'} text-gray-100` 
+                            : `${question.required ? 'border-yellow-300' : 'border-gray-300'} text-black`
+                        }`}
                         placeholder="e.g., What color would you like?"
                       />
                       {question.required && (
-                        <p className="text-xs text-yellow-600 mt-1 ml-1">
+                        <p className={`text-xs mt-1 ml-1 ${isDarkMode ? 'text-yellow-500' : 'text-yellow-600'}`}>
                           Buyers must answer this question before purchase
                         </p>
                       )}
@@ -349,12 +373,14 @@ const AddProduct3 = () => {
                     {question.type === 'multi-select' && (
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <label className="text-sm font-medium text-gray-700">Options (Max 5)</label>
+                          <label className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Options (Max 5)</label>
                           {question.options.length < 5 && (
                             <button
                               type="button"
                               onClick={() => addOption(questionIndex)}
-                              className="flex items-center text-sm text-blue-600 hover:text-blue-800"
+                              className={`flex items-center text-sm ${
+                                isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'
+                              }`}
                             >
                               <Plus className="w-4 h-4 mr-1" />
                               Add Option
@@ -369,7 +395,11 @@ const AddProduct3 = () => {
                                 type="text"
                                 value={option}
                                 onChange={(e) => updateOption(questionIndex, optionIndex, e.target.value)}
-                                className="flex-1 px-3 py-2 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className={`flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                                  isDarkMode 
+                                    ? 'bg-gray-700 border-gray-600 text-gray-100' 
+                                    : 'bg-white border-gray-300 text-black'
+                                }`}
                                 placeholder={`Option ${optionIndex + 1}`}
                               />
                               <button
@@ -387,12 +417,18 @@ const AddProduct3 = () => {
                   </div>
                 ))}
 
-                <div className="p-4 bg-blue-50 rounded-lg">
+                <div className={`p-4 rounded-lg ${
+                  isDarkMode ? 'bg-blue-900/30' : 'bg-blue-50'
+                }`}>
                   <div className="flex items-start">
-                    <AlertCircle className="w-5 h-5 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
+                    <AlertCircle className={`w-5 h-5 mr-2 mt-0.5 flex-shrink-0 ${
+                      isDarkMode ? 'text-blue-400' : 'text-blue-600'
+                    }`} />
                     <div>
-                      <p className="text-sm text-blue-800 font-medium mb-1">Important Note:</p>
-                      <p className="text-sm text-blue-700">
+                      <p className={`text-sm font-medium mb-1 ${
+                        isDarkMode ? 'text-blue-300' : 'text-blue-800'
+                      }`}>Important Note:</p>
+                      <p className={`text-sm ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>
                         The <span className="font-semibold">mandatory question (★)</span> must be answered by buyers before they can complete their purchase. 
                         Other questions are optional for buyers to answer. 
                         <span className="font-semibold"> You must set at least one mandatory question if you add any questions.</span>
@@ -404,9 +440,11 @@ const AddProduct3 = () => {
             )}
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-4 md:p-6">
+          <div className={`rounded-xl shadow-sm p-4 md:p-6 transition-colors duration-300 ${
+            isDarkMode ? 'bg-gray-800' : 'bg-white'
+          }`}>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div className="text-sm text-gray-600">
+              <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                 {!skipQuestions && hasMandatoryQuestion && (
                   <div className="flex items-center text-green-600">
                     <Check className="w-4 h-4 mr-1" />
@@ -426,7 +464,9 @@ const AddProduct3 = () => {
                 disabled={isSubmitting || (!skipQuestions && questions.some(q => q.question.trim() !== '') && !hasMandatoryQuestion)}
                 className={`w-full md:w-auto px-8 py-3 font-medium rounded-lg transition-colors flex items-center justify-center shadow-md ${
                   isSubmitting || (!skipQuestions && questions.some(q => q.question.trim() !== '') && !hasMandatoryQuestion)
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    ? isDarkMode 
+                      ? 'bg-gray-700 text-gray-500 cursor-not-allowed' 
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : 'bg-blue-600 text-white hover:bg-blue-700'
                 }`}
               >
