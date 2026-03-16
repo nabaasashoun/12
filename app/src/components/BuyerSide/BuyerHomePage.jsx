@@ -343,17 +343,6 @@ const BuyerHomePage = () => {
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="p-2 sm:p-4 md:p-6 max-w-6xl mx-auto relative">
-        {/* Dark Mode Toggle Button */}
-        <button
-          onClick={toggleDarkMode}
-          className={`fixed top-4 right-4 z-50 p-3 rounded-full shadow-lg transition-colors ${isDarkMode 
-            ? 'bg-gray-800 text-yellow-400 hover:bg-gray-700' 
-            : 'bg-white text-gray-800 hover:bg-gray-100'
-          }`}
-          aria-label="Toggle dark mode"
-        >
-          {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-        </button>
 
         <Header
           showBackButton={true}
