@@ -1,7 +1,6 @@
 import { SellerCard, SellerCardContent } from './SellerCard';
 import { 
-  Bell, 
-  CheckCircle, 
+  Bell, CheckCircle, 
   ShoppingCart, 
   Star, 
   Users, 
