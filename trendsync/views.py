@@ -14,7 +14,9 @@ from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from django.db.models import Q
-import traceback
+import traceback 
+from django.db import models
+from .utils import reverse_geocode
 from django.db.models import Avg
 import json
 import logging
@@ -604,7 +606,7 @@ def get_quick_deals(request):
         quick_deals = QuickDeal.objects.filter(
             is_active=True,
             expires_at__gt=timezone.now()
-        ).select_related('product').order_by('-priority', '-timestamp')[:12]
+        ).select_related('product').order_by('-timestamp')[:12]
 
         serializer = QuickDealSerializer(quick_deals, many=True, context={'request': request})
         return Response({
@@ -1900,15 +1902,42 @@ def dusupay_callback(request):
     frontend_url = f"{settings.FRONTEND_BASE_URL}/order/{merchant_reference}/"
     return redirect(frontend_url)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsSeller])
+def update_seller_location(request):
+    """
+    Update seller's live location using GPS coordinates from mobile device.
+    """
+    seller = request.user.seller_profile
+    lat = request.data.get('latitude')
+    lng = request.data.get('longitude')
+    accuracy = request.data.get('accuracy')
 
+    if lat is None or lng is None:
+        return Response({"error": "Missing coordinates"}, status=400)
 
+    try:
+        seller.location_lat = float(lat)
+        seller.location_lng = float(lng)
+        if accuracy is not None:
+            seller.location_accuracy = float(accuracy)
+        seller.location_updated_at = timezone.now()
 
+        # Now reverse_geocode is imported from utils
+        seller.location_address = reverse_geocode(lat, lng)
 
+        seller.save()
 
-
-
-
-
+        return Response({
+            "success": True,
+            "lat": seller.location_lat,
+            "lng": seller.location_lng,
+            "accuracy_m": seller.location_accuracy,
+            "updated_at": seller.location_updated_at,
+            "address": seller.location_address,
+        })
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
 
 
 

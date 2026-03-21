@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Upload, CheckCircle, XCircle, ChevronDown, Check, Camera, X, RotateCw } from "lucide-react";
+import { Eye, EyeOff, Upload, CheckCircle, XCircle, ChevronDown, Check, Camera, X, RotateCw, MapPin } from "lucide-react";
 import styled from 'styled-components';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
@@ -19,7 +19,7 @@ const EAST_AFRICAN_COUNTRIES = [
   { code: 'ER', name: 'Eritrea', dialCode: '+291', flag: '🇪🇷' },
 ];
 
-// Camera Component for Desktop and Mobile
+// Camera Component (unchanged)
 const CameraCapture = ({ onCapture, onClose, documentType }) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -28,74 +28,35 @@ const CameraCapture = ({ onCapture, onClose, documentType }) => {
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [facingMode, setFacingMode] = useState("environment");
 
-  // Comprehensive function to stop all camera tracks and release resources
   const stopCamera = () => {
     if (stream) {
-      console.log("🛑 Stopping camera tracks...");
-      
-      // Stop all tracks
-      stream.getTracks().forEach(track => {
-        track.stop();
-        console.log(`   ✓ Track ${track.kind} stopped. Ready state: ${track.readyState}`);
-      });
-      
-      // Release the stream
-      if (videoRef.current) {
-        videoRef.current.srcObject = null;
-        videoRef.current.load(); // Force reload to release camera
-      }
-      
+      stream.getTracks().forEach(track => track.stop());
+      if (videoRef.current) videoRef.current.srcObject = null;
       setStream(null);
       setIsCameraReady(false);
-      
-      // Clear any stored stream in window
-      if (window.activeCameraStream) {
-        window.activeCameraStream = null;
-      }
-      
-      console.log("✅ Camera fully stopped and released");
+      if (window.activeCameraStream) window.activeCameraStream = null;
     }
   };
 
   useEffect(() => {
     startCamera();
-
-    // Cleanup function - runs when component unmounts or facingMode changes
-    return () => {
-      stopCamera();
-    };
+    return () => stopCamera();
   }, [facingMode]);
 
   const startCamera = async () => {
     try {
-      // Stop any existing stream first
       stopCamera();
-
       const constraints = {
-        video: {
-          facingMode: facingMode,
-          width: { ideal: 1280 }, // Reduced resolution for better performance
-          height: { ideal: 720 },
-          torch: false // Explicitly disable torch/flash
-        },
-        audio: false // Explicitly disable audio
+        video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 }, torch: false },
+        audio: false
       };
-
       const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
       setStream(mediaStream);
-      
-      // Store in window for global access
       window.activeCameraStream = mediaStream;
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
-      
+      if (videoRef.current) videoRef.current.srcObject = mediaStream;
       setError("");
       setIsCameraReady(true);
-      console.log("📷 Camera started successfully");
     } catch (err) {
-      console.error("Camera error:", err);
       setError("Could not access camera. Please make sure you have granted camera permissions.");
       setIsCameraReady(false);
     }
@@ -106,118 +67,58 @@ const CameraCapture = ({ onCapture, onClose, documentType }) => {
       const video = videoRef.current;
       const canvas = canvasRef.current;
       const context = canvas.getContext('2d');
-
-      // Set canvas dimensions to match video
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-
-      // Draw video frame to canvas
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      // Convert to blob
       canvas.toBlob((blob) => {
-        // Create a File object from the blob
         const file = new File([blob], `${documentType}_${Date.now()}.jpg`, { type: 'image/jpeg' });
-        
-        // Stop camera immediately after capture
         stopCamera();
-        
-        // Small delay to ensure camera is fully stopped before calling onCapture
-        setTimeout(() => {
-          onCapture(file);
-        }, 150);
-      }, 'image/jpeg', 0.85); // Slightly lower quality for smaller files
+        setTimeout(() => onCapture(file), 150);
+      }, 'image/jpeg', 0.85);
     }
   };
 
-  const toggleCamera = () => {
-    setFacingMode(prev => prev === "environment" ? "user" : "environment");
-  };
+  const toggleCamera = () => setFacingMode(prev => prev === "environment" ? "user" : "environment");
 
   const handleClose = () => {
     stopCamera();
-    // Small delay to ensure camera is fully stopped
-    setTimeout(() => {
-      onClose();
-    }, 150);
+    setTimeout(() => onClose(), 150);
   };
 
   return (
     <div className="fixed inset-0 bg-black z-50 flex flex-col">
-      {/* Header */}
       <div className="bg-gray-900 text-white p-4 flex justify-between items-center">
         <h3 className="text-lg font-semibold flex items-center gap-2">
           <Camera size={20} />
           Take {documentType === 'passport' ? 'Passport' : 'ID'} Photo
         </h3>
-        <button
-          onClick={handleClose}
-          className="p-2 hover:bg-gray-800 rounded-full transition-colors"
-        >
+        <button onClick={handleClose} className="p-2 hover:bg-gray-800 rounded-full">
           <X size={24} />
         </button>
       </div>
-
-      {/* Camera View */}
       <div className="flex-1 relative bg-black flex items-center justify-center">
         {error ? (
           <div className="text-white text-center p-6">
             <p className="text-red-400 mb-4">{error}</p>
-            <button
-              onClick={startCamera}
-              className="px-4 py-2 bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
-            >
-              Try Again
-            </button>
+            <button onClick={startCamera} className="px-4 py-2 bg-indigo-600 rounded-lg hover:bg-indigo-700">Try Again</button>
           </div>
         ) : (
           <>
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted // Mute to prevent audio feedback
-              className="max-w-full max-h-full object-contain"
-              onLoadedMetadata={() => setIsCameraReady(true)}
-            />
-            
-            {/* Document Frame Overlay */}
+            <video ref={videoRef} autoPlay playsInline muted className="max-w-full max-h-full object-contain" onLoadedMetadata={() => setIsCameraReady(true)} />
             <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
               <div className="border-2 border-indigo-400 rounded-lg w-4/5 h-3/5 opacity-50"></div>
             </div>
           </>
         )}
-        
-        {/* Hidden canvas for capture */}
         <canvas ref={canvasRef} className="hidden" />
       </div>
-
-      {/* Controls */}
       {isCameraReady && !error && (
         <div className="bg-gray-900 p-6 flex justify-center gap-6">
-          {/* Toggle Camera Button */}
-          <button
-            onClick={toggleCamera}
-            className="p-4 bg-gray-700 rounded-full hover:bg-gray-600 transition-colors"
-            title="Switch Camera"
-          >
-            <RotateCw size={24} className="text-white" />
-          </button>
-
-          {/* Capture Button */}
-          <button
-            onClick={capturePhoto}
-            className="w-16 h-16 bg-white rounded-full hover:bg-gray-200 transition-colors flex items-center justify-center border-4 border-indigo-400"
-          >
-            <div className="w-12 h-12 bg-indigo-600 rounded-full"></div>
-          </button>
-
-          {/* Spacer for alignment */}
+          <button onClick={toggleCamera} className="p-4 bg-gray-700 rounded-full hover:bg-gray-600"><RotateCw size={24} className="text-white" /></button>
+          <button onClick={capturePhoto} className="w-16 h-16 bg-white rounded-full hover:bg-gray-200 flex items-center justify-center border-4 border-indigo-400"><div className="w-12 h-12 bg-indigo-600 rounded-full"></div></button>
           <div className="w-16"></div>
         </div>
       )}
-
-      {/* Instructions */}
       <div className="bg-gray-800 text-white p-4 text-center text-sm">
         <p>Position your {documentType === 'passport' ? 'passport' : 'ID'} clearly within the frame and tap the capture button</p>
       </div>
@@ -256,7 +157,6 @@ const StyledInputWrapper = styled.div`
     margin: 20px 0 30px;
     width: 100%;
   }
-
   .form-control input {
     background-color: transparent;
     border: 0;
@@ -268,8 +168,6 @@ const StyledInputWrapper = styled.div`
     color: #333;
     transition: border-color 0.2s;
   }
-
-  /* Remove autofill background and any outline */
   .form-control input:-webkit-autofill,
   .form-control input:-webkit-autofill:hover,
   .form-control input:-webkit-autofill:focus,
@@ -280,21 +178,18 @@ const StyledInputWrapper = styled.div`
     caret-color: #333;
     outline: none;
   }
-
   .form-control input:focus,
   .form-control input:valid,
   .form-control input:-webkit-autofill {
     outline: 0;
     border-bottom-color: #3b82f6;
   }
-
   .form-control label {
     position: absolute;
     top: 12px;
     left: 0;
     pointer-events: none;
   }
-
   .form-control label span {
     display: inline-block;
     font-size: 16px;
@@ -302,7 +197,6 @@ const StyledInputWrapper = styled.div`
     color: #666;
     transition: 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
-
   .form-control input:focus + label span,
   .form-control input:valid + label span,
   .form-control input:-webkit-autofill + label span {
@@ -320,12 +214,23 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
     confirmPassword: "",
     name: "",
     contact: "",
-    location: "",
     nin_number: "",
     about: "",
     profile_photo: null,
     passport_photo: null,
     id_photo: null,
+    // Location fields
+    locationType: "",
+    locationLat: null,
+    locationLng: null,
+    locationAddress: "",
+    // Payment fields
+    paymentMethod: "",
+    bankName: "",
+    bankAccount: "",
+    cardLastFour: "",
+    mobileProvider: "",
+    mobileNumber: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -343,31 +248,55 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
   const [showCamera, setShowCamera] = useState(false);
   const [cameraFor, setCameraFor] = useState(null);
   
+  // Location states
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [locationError, setLocationError] = useState("");
+  const [manualAddress, setManualAddress] = useState("");
+  const [addressConfirmed, setAddressConfirmed] = useState(false);
+  
   const navigate = useNavigate();
 
-  // Global cleanup on component unmount
+  // Reverse geocode using OpenStreetMap Nominatim (free, no key)
+  const reverseGeocode = async (lat, lng) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&accept-language=en`
+      );
+      const data = await response.json();
+      if (data && data.address) {
+        const { road, suburb, village, town, city, county, state, district, country } = data.address;
+        // Try to get the most specific area first
+        const area = suburb || village || town || city || road || '';
+        const districtName = district || county || state || '';
+        if (area && districtName) {
+          return `${area}, ${districtName}`;
+        } else if (area) {
+          return area;
+        } else if (districtName) {
+          return districtName;
+        }
+        return data.display_name.split(',')[0];
+      }
+      return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    } catch (error) {
+      console.error("Reverse geocoding error:", error);
+      return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    }
+  };
+
+  // Global cleanup
   useEffect(() => {
-    // Cleanup function when component unmounts
     return () => {
-      console.log("🧹 Component unmounting - cleaning up camera");
       if (window.activeCameraStream) {
-        window.activeCameraStream.getTracks().forEach(track => {
-          track.stop();
-          console.log(`   ✓ Global cleanup: ${track.kind} track stopped`);
-        });
+        window.activeCameraStream.getTracks().forEach(track => track.stop());
         window.activeCameraStream = null;
       }
     };
   }, []);
 
-  // Function to force stop any camera
   const forceStopCamera = () => {
-    console.log("🔴 Force stopping any camera streams");
     if (window.activeCameraStream) {
-      window.activeCameraStream.getTracks().forEach(track => {
-        track.stop();
-        console.log(`   ✓ Force stopped: ${track.kind} track`);
-      });
+      window.activeCameraStream.getTracks().forEach(track => track.stop());
       window.activeCameraStream = null;
     }
   };
@@ -396,8 +325,6 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
     setUploadStatus(prev => ({ ...prev, [fieldName]: true }));
     setShowCamera(false);
     setCameraFor(null);
-    
-    // Double-check camera is stopped
     setTimeout(forceStopCamera, 200);
   };
 
@@ -420,6 +347,37 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
     setIsCountryDropdownOpen(false);
   };
 
+  // Geolocation with reverse geocoding
+  const getCurrentLocation = async () => {
+    if (!navigator.geolocation) {
+      setLocationError("Geolocation is not supported by your browser.");
+      return;
+    }
+    setLocationLoading(true);
+    setLocationError("");
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        const address = await reverseGeocode(latitude, longitude);
+        setFormData(prev => ({
+          ...prev,
+          locationLat: latitude,
+          locationLng: longitude,
+          locationAddress: address
+        }));
+        setManualAddress(address);
+        setAddressConfirmed(false);
+        setLocationLoading(false);
+      },
+      (error) => {
+        setLocationError("Unable to retrieve your location. Please check permissions.");
+        setLocationLoading(false);
+        console.error("Geolocation error:", error);
+      }
+    );
+  };
+
+  // Navigation
   const nextStep = () => {
     if (step === 1) {
       if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
@@ -436,9 +394,49 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
       }
     }
     if (step === 2) {
-      if (!formData.name || !formData.contact || !formData.location) {
-        setError("Business name, contact and location are required");
+      if (!formData.name || !formData.contact) {
+        setError("Business name and contact are required");
         return;
+      }
+    }
+    if (step === 3) {
+      if (!allDocumentsUploaded()) {
+        setError("Please upload all required documents: Profile Photo, Passport Photo, and ID Photo");
+        return;
+      }
+    }
+    if (step === 4) {
+      if (!formData.locationType) {
+        setError("Please select your business location type");
+        return;
+      }
+      if (!formData.locationLat || !formData.locationLng) {
+        setError("Please fetch your location using the button above");
+        return;
+      }
+      if (!addressConfirmed) {
+        setError("Please confirm your location address.");
+        return;
+      }
+      if (!formData.paymentMethod) {
+        setError("Please select a payment method");
+        return;
+      }
+      if (formData.paymentMethod === 'bank') {
+        if (!formData.bankName || !formData.bankAccount) {
+          setError("Please provide bank name and account number");
+          return;
+        }
+      } else if (formData.paymentMethod === 'card') {
+        if (!formData.cardLastFour || formData.cardLastFour.length < 4) {
+          setError("Please provide the last 4 digits of your card");
+          return;
+        }
+      } else if (formData.paymentMethod === 'mobile_money') {
+        if (!formData.mobileProvider || !formData.mobileNumber) {
+          setError("Please provide mobile money provider and number");
+          return;
+        }
       }
     }
     setError("");
@@ -458,32 +456,39 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
     e.preventDefault();
     setError("");
 
-    // Check if all required documents are uploaded
-    if (!allDocumentsUploaded()) {
-      setError("Please upload all required documents: Profile Photo, Passport Photo, and ID Photo");
-      return;
-    }
-
-    // Force stop camera before submitting
     forceStopCamera();
-
     setLoading(true);
 
     const data = new FormData();
+    // Basic fields
     data.append("username", formData.username);
     data.append("email", formData.email);
     data.append("password", formData.password);
     data.append("name", formData.name);
-    
-    // Format phone number with country code
     const formattedPhone = `${selectedCountry.code} ${selectedCountry.dialCode} ${formData.contact}`;
     data.append("contact", formattedPhone);
-    
-    data.append("location", formData.location);
     if (formData.nin_number) data.append("nin_number", formData.nin_number);
     if (formData.about) data.append("about", formData.about);
     
-    // Append required documents
+    // Location fields
+    data.append("location_type", formData.locationType);
+    data.append("location_lat", formData.locationLat);
+    data.append("location_lng", formData.locationLng);
+    data.append("location_address", formData.locationAddress);
+    
+    // Payment fields
+    data.append("payment_method", formData.paymentMethod);
+    if (formData.paymentMethod === 'bank') {
+      data.append("bank_name", formData.bankName);
+      data.append("bank_account", formData.bankAccount);
+    } else if (formData.paymentMethod === 'card') {
+      data.append("card_last_four", formData.cardLastFour);
+    } else if (formData.paymentMethod === 'mobile_money') {
+      data.append("mobile_provider", formData.mobileProvider);
+      data.append("mobile_number", formData.mobileNumber);
+    }
+    
+    // Documents
     data.append("profile_photo", formData.profile_photo);
     data.append("passport_photo", formData.passport_photo);
     data.append("id_photo", formData.id_photo);
@@ -497,9 +502,7 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
       const responseData = await response.json();
 
       if (response.ok) {
-        // Final camera cleanup before navigation
         forceStopCamera();
-        
         navigate("/seller/login", {
           state: { success: "Seller account created successfully! Your documents have been submitted for verification." }
         });
@@ -517,7 +520,6 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
-      {/* Camera Modal */}
       {showCamera && (
         <CameraCapture
           onCapture={handleCameraCapture}
@@ -526,7 +528,6 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
         />
       )}
 
-      {/* Header Image */}
       <div className="h-48 relative overflow-hidden">
         <img
           src="https://csspicker.dev/api/image/?q=modern+architecture+purple&image_type=photo"
@@ -535,15 +536,13 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
         />
       </div>
 
-      {/* Registration Form Card */}
       <div className="flex-1 bg-white rounded-t-3xl -mt-6 relative px-6 pt-8 pb-8">
-        {/* Title */}
         <h1 className="text-3xl font-bold text-gray-900 mb-1">Hello!</h1>
         <p className="text-gray-400 text-lg mb-6">Create a seller account</p>
 
-        {/* Step indicator */}
+        {/* Step indicator (4 steps) */}
         <div className="flex justify-between items-center mb-6">
-          {[1, 2, 3].map((i) => (
+          {[1, 2, 3, 4].map((i) => (
             <div key={i} className="flex items-center">
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
@@ -556,7 +555,7 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
               >
                 {step > i ? '✓' : i}
               </div>
-              {i < 3 && (
+              {i < 4 && (
                 <div
                   className={`w-12 h-1 mx-1 ${
                     step > i ? 'bg-green-500' : 'bg-gray-200'
@@ -567,15 +566,13 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
           ))}
         </div>
 
-        {/* Error Message */}
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-red-700 text-sm">{error}</p>
           </div>
         )}
 
-        {/* Form */}
-        <form onSubmit={step === 3 ? handleSubmit : (e) => e.preventDefault()} className="space-y-5">
+        <form onSubmit={step === 4 ? handleSubmit : (e) => e.preventDefault()} className="space-y-5">
           {/* Step 1: Account Info */}
           {step === 1 && (
             <div className="space-y-4">
@@ -588,7 +585,6 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                 required
                 autoComplete="off"
               />
-
               <AnimatedInput
                 type="email"
                 name="email"
@@ -598,7 +594,6 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                 required
                 autoComplete="off"
               />
-
               <div className="relative">
                 <AnimatedInput
                   type={showPassword ? 'text' : 'password'}
@@ -618,7 +613,6 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-
               <div className="relative">
                 <AnimatedInput
                   type={showConfirmPassword ? 'text' : 'password'}
@@ -658,7 +652,6 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
               <div className="mb-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                 <div className="flex">
-                  {/* Country Code Dropdown */}
                   <div className="relative mr-1">
                     <button
                       type="button"
@@ -669,14 +662,9 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                       <span className="text-sm font-medium">{selectedCountry.dialCode}</span>
                       <ChevronDown size={16} className="text-gray-500" />
                     </button>
-
-                    {/* Dropdown Menu */}
                     {isCountryDropdownOpen && (
                       <>
-                        <div
-                          className="fixed inset-0 z-10"
-                          onClick={() => setIsCountryDropdownOpen(false)}
-                        />
+                        <div className="fixed inset-0 z-10" onClick={() => setIsCountryDropdownOpen(false)} />
                         <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto">
                           {EAST_AFRICAN_COUNTRIES.map((country) => (
                             <button
@@ -690,17 +678,13 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                                 <span className="font-medium">{country.name}</span>
                                 <span className="text-sm text-gray-500 ml-2">{country.dialCode}</span>
                               </span>
-                              {selectedCountry.code === country.code && (
-                                <Check size={16} className="text-indigo-500" />
-                              )}
+                              {selectedCountry.code === country.code && <Check size={16} className="text-indigo-500" />}
                             </button>
                           ))}
                         </div>
                       </>
                     )}
                   </div>
-
-                  {/* Phone Number Input */}
                   <input
                     type="tel"
                     name="contact"
@@ -713,16 +697,6 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                   />
                 </div>
               </div>
-
-              <AnimatedInput
-                type="text"
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                label="Business Address"
-                required
-                autoComplete="off"
-              />
 
               <AnimatedInput
                 type="text"
@@ -744,7 +718,7 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
             </div>
           )}
 
-          {/* Step 3: Documents - Camera Only for Passport and ID */}
+          {/* Step 3: Documents */}
           {step === 3 && (
             <div className="space-y-6">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -768,11 +742,7 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                     required
                     className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
                   />
-                  {uploadStatus.profile_photo ? (
-                    <CheckCircle size={20} className="text-green-500 flex-shrink-0" />
-                  ) : (
-                    <XCircle size={20} className="text-red-400 flex-shrink-0" />
-                  )}
+                  {uploadStatus.profile_photo ? <CheckCircle size={20} className="text-green-500" /> : <XCircle size={20} className="text-red-400" />}
                 </div>
               </div>
 
@@ -780,33 +750,17 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-2">
                   Passport Photo <span className="text-red-500">*</span>
-                  <span className="text-xs text-gray-500 ml-2 flex items-center gap-1">
-                    <Camera size={12} /> Camera only - take a photo
-                  </span>
+                  <span className="text-xs text-gray-500 ml-2 flex items-center gap-1"><Camera size={12} /> Camera only</span>
                 </label>
-                
                 {!uploadStatus.passport_photo ? (
-                  <button
-                    type="button"
-                    onClick={() => openCamera('passport')}
-                    className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors flex flex-col items-center gap-2"
-                  >
+                  <button type="button" onClick={() => openCamera('passport')} className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors flex flex-col items-center gap-2">
                     <Camera size={32} className="text-gray-400" />
                     <span className="text-sm text-gray-600">Click to open camera and take passport photo</span>
                   </button>
                 ) : (
                   <div className="flex items-center gap-2 p-2 rounded-lg bg-green-50 border border-green-200">
-                    <div className="flex-1 flex items-center gap-2">
-                      <CheckCircle size={20} className="text-green-500" />
-                      <span className="text-sm text-green-700">Passport photo captured</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => openCamera('passport')}
-                      className="text-xs text-indigo-600 hover:text-indigo-800"
-                    >
-                      Retake
-                    </button>
+                    <div className="flex-1 flex items-center gap-2"><CheckCircle size={20} className="text-green-500" /><span className="text-sm text-green-700">Passport photo captured</span></div>
+                    <button type="button" onClick={() => openCamera('passport')} className="text-xs text-indigo-600 hover:text-indigo-800">Retake</button>
                   </div>
                 )}
               </div>
@@ -815,33 +769,17 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-2">
                   ID Photo <span className="text-red-500">*</span>
-                  <span className="text-xs text-gray-500 ml-2 flex items-center gap-1">
-                    <Camera size={12} /> Camera only - take a photo
-                  </span>
+                  <span className="text-xs text-gray-500 ml-2 flex items-center gap-1"><Camera size={12} /> Camera only</span>
                 </label>
-
                 {!uploadStatus.id_photo ? (
-                  <button
-                    type="button"
-                    onClick={() => openCamera('id')}
-                    className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors flex flex-col items-center gap-2"
-                  >
+                  <button type="button" onClick={() => openCamera('id')} className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors flex flex-col items-center gap-2">
                     <Camera size={32} className="text-gray-400" />
                     <span className="text-sm text-gray-600">Click to open camera and take ID photo</span>
                   </button>
                 ) : (
                   <div className="flex items-center gap-2 p-2 rounded-lg bg-green-50 border border-green-200">
-                    <div className="flex-1 flex items-center gap-2">
-                      <CheckCircle size={20} className="text-green-500" />
-                      <span className="text-sm text-green-700">ID photo captured</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => openCamera('id')}
-                      className="text-xs text-indigo-600 hover:text-indigo-800"
-                    >
-                      Retake
-                    </button>
+                    <div className="flex-1 flex items-center gap-2"><CheckCircle size={20} className="text-green-500" /><span className="text-sm text-green-700">ID photo captured</span></div>
+                    <button type="button" onClick={() => openCamera('id')} className="text-xs text-indigo-600 hover:text-indigo-800">Retake</button>
                   </div>
                 )}
               </div>
@@ -850,38 +788,201 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
               <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                 <h3 className="text-sm font-medium text-gray-700 mb-2">Upload Progress</h3>
                 <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-600">Profile Photo:</span>
-                    {uploadStatus.profile_photo ? (
-                      <span className="text-xs text-green-600 flex items-center gap-1">Uploaded <CheckCircle size={12} /></span>
-                    ) : (
-                      <span className="text-xs text-red-500">Pending</span>
-                    )}
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-600">Passport Photo:</span>
-                    {uploadStatus.passport_photo ? (
-                      <span className="text-xs text-green-600 flex items-center gap-1">Captured <CheckCircle size={12} /></span>
-                    ) : (
-                      <span className="text-xs text-red-500">Pending</span>
-                    )}
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-600">ID Photo:</span>
-                    {uploadStatus.id_photo ? (
-                      <span className="text-xs text-green-600 flex items-center gap-1">Captured <CheckCircle size={12} /></span>
-                    ) : (
-                      <span className="text-xs text-red-500">Pending</span>
-                    )}
-                  </div>
+                  <div className="flex justify-between items-center"><span className="text-xs text-gray-600">Profile Photo:</span>{uploadStatus.profile_photo ? <span className="text-xs text-green-600">Uploaded <CheckCircle size={12} /></span> : <span className="text-xs text-red-500">Pending</span>}</div>
+                  <div className="flex justify-between items-center"><span className="text-xs text-gray-600">Passport Photo:</span>{uploadStatus.passport_photo ? <span className="text-xs text-green-600">Captured <CheckCircle size={12} /></span> : <span className="text-xs text-red-500">Pending</span>}</div>
+                  <div className="flex justify-between items-center"><span className="text-xs text-gray-600">ID Photo:</span>{uploadStatus.id_photo ? <span className="text-xs text-green-600">Captured <CheckCircle size={12} /></span> : <span className="text-xs text-red-500">Pending</span>}</div>
                 </div>
                 {allDocumentsUploaded() && (
                   <div className="mt-3 p-2 bg-green-100 rounded-lg">
-                    <p className="text-xs text-green-700 text-center font-medium">
-                      All documents uploaded! You can now create your account.
-                    </p>
+                    <p className="text-xs text-green-700 text-center font-medium">All documents uploaded!</p>
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: Location & Payment */}
+          {step === 4 && (
+            <div className="space-y-5">
+              {/* Location Type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Business Location Type</label>
+                <div className="flex gap-4">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="locationType"
+                      value="static"
+                      checked={formData.locationType === 'static'}
+                      onChange={handleChange}
+                      className="mr-2"
+                    />
+                    <span className="text-black">Static Seller (fixed shop/office)</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="locationType"
+                      value="dynamic"
+                      checked={formData.locationType === 'dynamic'}
+                      onChange={handleChange}
+                      className="mr-2"
+                    />
+                    <span className="text-black">Dynamic Seller (moves around)</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Location Fetch */}
+              <div>
+                <button
+                  type="button"
+                  onClick={getCurrentLocation}
+                  disabled={locationLoading}
+                  className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                >
+                  <MapPin size={18} />
+                  {locationLoading ? "Getting location..." : "Get My Current Location"}
+                </button>
+                {locationError && <p className="text-red-500 text-sm mt-1">{locationError}</p>}
+                {formData.locationLat && formData.locationLng && (
+                  <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-black font-medium">Location captured:</p>
+                    <p className="text-sm text-black">Coordinates: {formData.locationLat.toFixed(6)}, {formData.locationLng.toFixed(6)}</p>
+                    
+                    {/* Manual address input */}
+                    <div className="mt-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Confirm or correct address:</label>
+                      <input
+                        type="text"
+                        value={manualAddress}
+                        onChange={(e) => setManualAddress(e.target.value)}
+                        placeholder="e.g., Achilet D, Tororo"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-black"
+                      />
+                      <div className="flex items-center justify-between mt-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFormData(prev => ({ ...prev, locationAddress: manualAddress }));
+                            setAddressConfirmed(true);
+                          }}
+                          disabled={addressConfirmed}
+                          className={`px-3 py-1 text-sm rounded-md ${
+                            addressConfirmed
+                              ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                              : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                          }`}
+                        >
+                          {addressConfirmed ? 'Address Confirmed ✓' : 'Confirm Address'}
+                        </button>
+                        <span className="text-xs text-gray-500">
+                          {addressConfirmed ? 'You can still edit if needed' : 'Edit the address if it’s wrong, then confirm'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Payment Method */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Payment Method</label>
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="bank"
+                      checked={formData.paymentMethod === 'bank'}
+                      onChange={handleChange}
+                      className="mr-2"
+                    />
+                    <span className="text-black">Bank Transfer</span>
+                  </label>
+                  {formData.paymentMethod === 'bank' && (
+                    <div className="ml-6 space-y-3">
+                      <input
+                        type="text"
+                        name="bankName"
+                        value={formData.bankName}
+                        onChange={handleChange}
+                        placeholder="Bank Name"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-black"
+                      />
+                      <input
+                        type="text"
+                        name="bankAccount"
+                        value={formData.bankAccount}
+                        onChange={handleChange}
+                        placeholder="Account Number"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-black"
+                      />
+                    </div>
+                  )}
+
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="card"
+                      checked={formData.paymentMethod === 'card'}
+                      onChange={handleChange}
+                      className="mr-2"
+                    />
+                    <span className="text-black">Card Payment</span>
+                  </label>
+                  {formData.paymentMethod === 'card' && (
+                    <div className="ml-6">
+                      <input
+                        type="text"
+                        name="cardLastFour"
+                        value={formData.cardLastFour}
+                        onChange={handleChange}
+                        placeholder="Last 4 digits of card"
+                        maxLength="4"
+                        pattern="\d{4}"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-black"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">We only store the last 4 digits for verification</p>
+                    </div>
+                  )}
+
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="mobile_money"
+                      checked={formData.paymentMethod === 'mobile_money'}
+                      onChange={handleChange}
+                      className="mr-2"
+                    />
+                    <span className="text-black">Mobile Money</span>
+                  </label>
+                  {formData.paymentMethod === 'mobile_money' && (
+                    <div className="ml-6 space-y-3">
+                      <select
+                        name="mobileProvider"
+                        value={formData.mobileProvider}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-black"
+                      >
+                        <option value="">Select Provider</option>
+                        <option value="MTN">MTN</option>
+                        <option value="Airtel">Airtel</option>
+                        <option value="Africell">Africell</option>
+                      </select>
+                      <input
+                        type="tel"
+                        name="mobileNumber"
+                        value={formData.mobileNumber}
+                        onChange={handleChange}
+                        placeholder="Mobile Number"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-black"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -897,7 +998,7 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                 Back
               </button>
             )}
-            {step < 3 ? (
+            {step < 4 ? (
               <button
                 type="button"
                 onClick={nextStep}
@@ -908,12 +1009,8 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
             ) : (
               <button
                 type="submit"
-                disabled={loading || !allDocumentsUploaded()}
-                className={`w-full py-3 font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
-                  allDocumentsUploaded() && !loading
-                    ? 'bg-indigo-500 hover:bg-indigo-600 text-white'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
+                disabled={loading}
+                className="w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
               >
                 {loading ? "Creating account..." : "Create Account"}
               </button>
@@ -921,22 +1018,23 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
           </div>
         </form>
 
-        {/* Footer Links */}
         <div className="mt-8 text-center">
-          <p className="text-gray-600 text-sm">
-            Already have an account?{" "}
-            <Link to="/seller/login" className="text-indigo-600 font-medium hover:underline">
-              Sign in here
-            </Link>
-          </p>
-          <p className="text-gray-600 text-sm mt-2">
-            Are you a buyer?{" "}
-            <Link to="/register" className="text-indigo-600 font-medium hover:underline">
-              Register here
-            </Link>
-          </p>
+          <p className="text-gray-600 text-sm">Already have an account? <Link to="/seller/login" className="text-indigo-600 font-medium hover:underline">Sign in here</Link></p>
+          <p className="text-gray-600 text-sm mt-2">Are you a buyer? <Link to="/register" className="text-indigo-600 font-medium hover:underline">Register here</Link></p>
         </div>
       </div>
+
+      <style>{`
+        input, textarea, select {
+          color: #000000 !important;
+        }
+        input::placeholder, textarea::placeholder {
+          color: #6b7280 !important;
+        }
+        button.bg-indigo-500, button.bg-indigo-600 {
+          color: white !important;
+        }
+      `}</style>
     </div>
   );
 };

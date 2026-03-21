@@ -16,6 +16,10 @@ class Category(models.Model):
         return self.name
 
 class Seller(models.Model):
+    LOCATION_TYPE_CHOICES = (
+        ('static', 'Static Seller'),
+        ('dynamic', 'Dynamic Seller'),
+    )
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='seller_profile')
     name = models.CharField(max_length=200)
     location = models.CharField(max_length=200, blank=True)
@@ -31,9 +35,27 @@ class Seller(models.Model):
     profile_photo = models.ImageField(upload_to='sellers/', blank=True, null=True)
     passport_photo = models.ImageField(upload_to='sellers/id/', blank=True, null=True)
     id_photo = models.ImageField(upload_to='sellers/id/', blank=True, null=True)
+    location_type = models.CharField(max_length=10, choices=LOCATION_TYPE_CHOICES, blank=True)
+    location_lat = models.FloatField(null=True, blank=True)
+    location_lng = models.FloatField(null=True, blank=True)
+    location_address = models.TextField(blank=True)  
+
+    # New payment fields
+    PAYMENT_METHOD_CHOICES = (
+        ('bank', 'Bank Transfer'),
+        ('card', 'Card Payment'),
+        ('mobile_money', 'Mobile Money'),
+    )
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, blank=True)
+    bank_name = models.CharField(max_length=200, blank=True)
+    bank_account = models.CharField(max_length=50, blank=True)
+    card_last_four = models.CharField(max_length=4, blank=True)
+    mobile_provider = models.CharField(max_length=50, blank=True)
+    mobile_number = models.CharField(max_length=20, blank=True)
 
     def __str__(self):
         return self.name
+
 
 
 class Buyer(models.Model):
@@ -54,7 +76,7 @@ class Product(models.Model):
     name = models.CharField(max_length=200)
     stock_quantity = models.PositiveIntegerField(default=0)
     date_of_post = models.DateTimeField(auto_now_add=True)
-    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    unit_price = models.DecimalField(max_digits=10, decimal_places=0)
     unit_name = models.CharField(max_length=50, blank=True)
     product_photo = models.ImageField(upload_to='products/', blank=True, null=True)
     description = models.TextField(blank=True)
@@ -184,8 +206,8 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.PROTECT) 
     quantity = models.PositiveIntegerField()
-    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
-    subtotal = models.DecimalField(max_digits=12, decimal_places=2)
+    unit_price = models.DecimalField(max_digits=10, decimal_places=0)
+    subtotal = models.DecimalField(max_digits=12, decimal_places=0)
 
 
 class Payment(models.Model):
@@ -263,10 +285,9 @@ class QuickDeal(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField(default=default_expires_at)
     is_active = models.BooleanField(default=True)
-    priority = models.PositiveIntegerField(default=0)
     
     class Meta:
-        ordering = ['-priority', '-timestamp']
+        ordering = ['-timestamp']
     
     def __str__(self):
         return f"{self.caption}"

@@ -54,14 +54,13 @@ class BuyerRegisterSerializer(serializers.Serializer):
             profile_photo=validated_data.get('profile_photo')
         )
         return user
-        
 
 class SellerRegisterSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     email = serializers.EmailField(required=True)
     password = serializers.CharField(write_only=True, required=True)
     name = serializers.CharField(required=False)
-    location = serializers.CharField(required=False)
+    location = serializers.CharField(required=False)       
     contact = serializers.CharField(required=False)
     nin_number = serializers.CharField(required=False)
     about = serializers.CharField(required=False)
@@ -69,22 +68,60 @@ class SellerRegisterSerializer(serializers.Serializer):
     passport_photo = serializers.ImageField(required=False)
     id_photo = serializers.ImageField(required=False)
 
+    # New fields
+    location_type = serializers.ChoiceField(choices=Seller.LOCATION_TYPE_CHOICES, required=False, allow_blank=True)
+    location_lat = serializers.FloatField(required=False, allow_null=True)
+    location_lng = serializers.FloatField(required=False, allow_null=True)
+    location_address = serializers.CharField(required=False, allow_blank=True)
+
+    payment_method = serializers.ChoiceField(choices=Seller.PAYMENT_METHOD_CHOICES, required=False, allow_blank=True)
+    bank_name = serializers.CharField(required=False, allow_blank=True)
+    bank_account = serializers.CharField(required=False, allow_blank=True)
+    card_last_four = serializers.CharField(max_length=4, required=False, allow_blank=True)
+    mobile_provider = serializers.CharField(required=False, allow_blank=True)
+    mobile_number = serializers.CharField(required=False, allow_blank=True)
+
     def create(self, validated_data):
+        # Extract new fields (default to None/blank if missing)
+        location_type = validated_data.pop('location_type', '')
+        location_lat = validated_data.pop('location_lat', None)
+        location_lng = validated_data.pop('location_lng', None)
+        location_address = validated_data.pop('location_address', '')
+        payment_method = validated_data.pop('payment_method', '')
+        bank_name = validated_data.pop('bank_name', '')
+        bank_account = validated_data.pop('bank_account', '')
+        card_last_four = validated_data.pop('card_last_four', '')
+        mobile_provider = validated_data.pop('mobile_provider', '')
+        mobile_number = validated_data.pop('mobile_number', '')
+
+        # Create the user
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
             password=validated_data['password']
         )
-        Seller.objects.create(
+       
+        seller = Seller.objects.create(
             user=user,
             name=validated_data.get('name', validated_data['username']),
-            location=validated_data.get('location'),
-            contact=validated_data.get('contact'),
-            nin_number=validated_data.get('nin_number'),
-            about=validated_data.get('about'),
+            location=validated_data.get('location', ''),
+            contact=validated_data.get('contact', ''),
+            nin_number=validated_data.get('nin_number', ''),
+            about=validated_data.get('about', ''),
             profile_photo=validated_data.get('profile_photo'),
             passport_photo=validated_data.get('passport_photo'),
-            id_photo=validated_data.get('id_photo')
+            id_photo=validated_data.get('id_photo'),
+            # New fields
+            location_type=location_type,
+            location_lat=location_lat,
+            location_lng=location_lng,
+            location_address=location_address,
+            payment_method=payment_method,
+            bank_name=bank_name,
+            bank_account=bank_account,
+            card_last_four=card_last_four,
+            mobile_provider=mobile_provider,
+            mobile_number=mobile_number,
         )
         return user
 
@@ -404,7 +441,7 @@ class QuickDealSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'product', 'product_id', 'caption',
             'views', 'picture', 'timestamp', 'time_ago',
-            'is_active', 'priority', 'seller_info', 'expires_at',
+            'is_active', 'seller_info', 'expires_at',
             'time_remaining', 'is_expired', 'category_name'
         ]
         read_only_fields = ['views', 'timestamp', 'seller_info', 'expires_at', 'time_remaining', 'is_expired']
@@ -474,7 +511,7 @@ class SellerProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Seller
-        fields = '__all__'
+        fields = '__all__'   
         read_only_fields = ('sales', 'trust', 'followers')
 
 
@@ -521,7 +558,7 @@ class SellerQuickDealSerializer(serializers.ModelSerializer):
         model = QuickDeal
         fields = (
             'id', 'product', 'product_id', 'caption', 'views', 'picture',
-            'timestamp', 'expires_at', 'is_active', 'priority',
+            'timestamp', 'expires_at', 'is_active',
             'time_remaining', 'is_expired'
         )
         read_only_fields = ('views', 'timestamp', 'expires_at', 'is_active')
@@ -568,7 +605,13 @@ class NotificationSerializer(serializers.ModelSerializer):
 class SellerProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Seller
-        fields = ['name', 'location', 'contact', 'about', 'nin_number']
+        fields = [
+            'name', 'location', 'contact', 'about', 'nin_number',
+            'location_type', 'location_lat', 'location_lng', 'location_address',
+            'payment_method', 'bank_name', 'bank_account', 'card_last_four',
+            'mobile_provider', 'mobile_number'
+        ]
+        read_only_fields = ['location_updated_at']
 
 
 class DusuPayWebhookSerializer(serializers.Serializer):

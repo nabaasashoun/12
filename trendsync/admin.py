@@ -95,6 +95,15 @@ class SellerAdmin(admin.ModelAdmin):
             'fields': ('profile_photo', 'passport_photo', 'id_photo'),
             'classes': ('collapse',)
         }),
+        ('Location Details', {
+            'fields': ('location_type', 'location_lat', 'location_lng', 'location_address'),
+            'classes': ('collapse',),
+        }),
+        ('Payment Details', {
+            'fields': ('payment_method', 'bank_name', 'bank_account', 'card_last_four',
+                    'mobile_provider', 'mobile_number'),
+            'classes': ('collapse',),
+        }),
     )
 
     def email_display(self, obj):
@@ -356,10 +365,10 @@ class DeliveryAdmin(admin.ModelAdmin):
 
 @admin.register(QuickDeal)
 class QuickDealAdmin(admin.ModelAdmin):
-    list_display = ('caption', 'product', 'views', 'timestamp', 'is_active', 'priority', 'time_remaining_display')
+    list_display = ('caption', 'product', 'views', 'timestamp', 'is_active', 'time_remaining_display')
     list_filter = ('is_active', 'timestamp')
     search_fields = ('caption', 'product__name')
-    list_editable = ('is_active', 'priority')
+    list_editable = ('is_active',)
     readonly_fields = ('views', 'timestamp', 'time_remaining_display')
 
     def time_remaining_display(self, obj):
@@ -368,7 +377,7 @@ class QuickDealAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Deal Information', {
-            'fields': ('product', 'caption', 'priority')
+            'fields': ('product', 'caption')
         }),
         ('Media', {
             'fields': ('picture',)
