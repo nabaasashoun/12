@@ -3,7 +3,7 @@ import { BuyerCard, BuyerCardContent } from './BuyerCard';
 import { 
   User, Mail, Phone, MapPin, Edit, Heart, ShoppingCart, Bookmark, 
   MessageSquare, Star, MoreHorizontal, Plus, Award, ThumbsUp, X,
-  Package, Truck, Clock, CheckCircle, AlertCircle
+  Package, Truck, Clock, CheckCircle, AlertCircle, ArrowLeft
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
@@ -668,6 +668,20 @@ const AccountPage = () => {
 
   return (
     <div className={`p-6 max-w-6xl mx-auto min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      {/* Back Button */}
+      <div className="flex items-center mb-4">
+        <button
+          onClick={() => navigate(-1)}
+          className={`mr-4 p-2 rounded-full transition-colors ${
+            isDarkMode 
+              ? 'hover:bg-gray-800 text-gray-400' 
+              : 'hover:bg-gray-200 text-gray-600'
+          }`}
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+      </div>
+
       {/* Profile Header */}
       <div className={`bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-6 text-white mb-8 ${isDarkMode ? 'from-blue-600 to-indigo-700' : ''}`}>
         <div className="flex items-center">
