@@ -32,6 +32,8 @@ import { PageLoadingProvider } from "./utils/PageLoadingContext";
 import { DarkModeProvider } from "./utils/BuyerDarkModeContext";
 import { SellerDarkModeProvider } from "./utils/SellerDarkModeContext";
 import { LikeBookmarkProvider } from "./utils/LikeBookmarkContext";
+import i18n from './utils/i18n';
+import { I18nextProvider } from 'react-i18next';
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -377,17 +379,19 @@ const App = () => {
   };
 
   return (
-    <AddProductProvider>
-      <PageLoadingProvider>
-        <LikeBookmarkProvider> 
-          <NotificationProvider> 
-            <BrowserRouter>
-              <AuthenticatedContent />
-            </BrowserRouter>
-          </NotificationProvider> 
-        </LikeBookmarkProvider>  
-      </PageLoadingProvider>
-    </AddProductProvider>
+    <I18nextProvider i18n={i18n}>
+      <AddProductProvider>
+        <PageLoadingProvider>
+          <LikeBookmarkProvider> 
+            <NotificationProvider> 
+              <BrowserRouter>
+                <AuthenticatedContent />
+              </BrowserRouter>
+            </NotificationProvider> 
+          </LikeBookmarkProvider>  
+        </PageLoadingProvider>
+      </AddProductProvider>
+    </I18nextProvider>
   );
 };
 

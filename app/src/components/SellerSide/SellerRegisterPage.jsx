@@ -504,7 +504,7 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
       if (response.ok) {
         forceStopCamera();
         navigate("/seller/login", {
-          state: { success: "Seller account created successfully! Your documents have been submitted for verification." }
+          state: { success: "Seller account created successfully!" }
         });
       } else {
         console.error("Registration error:", responseData);

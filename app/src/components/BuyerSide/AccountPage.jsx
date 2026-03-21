@@ -6,6 +6,7 @@ import {
   Package, Truck, Clock, CheckCircle, AlertCircle, ArrowLeft
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../../utils/api';
 import { useCart } from '../../utils/CartContext';
 import { useLikeBookmark } from '../../utils/LikeBookmarkContext';
@@ -33,6 +34,7 @@ const DotSpinner = () => (
 );
 
 const AccountPage = () => {
+  const { t } = useTranslation();
   const { isDarkMode } = useDarkMode();                   
   const [activeTab, setActiveTab] = useState('profile');
   const [userData, setUserData] = useState(null);
@@ -94,17 +96,15 @@ const AccountPage = () => {
   const closeDropdown = () => setDropdownOpen(null);
 
   const dropdownItems = [
-    { label: 'Report', action: () => {} },
-    { label: 'Message Seller', action: () => {} },
-    { label: 'Go to Post', action: () => {} },
-    { label: 'Share to', action: () => {} },
-    { label: 'Copy Link', action: () => {} },
-    { label: 'Remove from Cart', action: () => {} },
-    { label: 'Unfollow', action: () => {} },
-    { label: 'Cancel', action: closeDropdown },
+    { label: t('dropdown.report'), action: () => {} },
+    { label: t('dropdown.message_seller'), action: () => {} },
+    { label: t('dropdown.go_to_post'), action: () => {} },
+    { label: t('dropdown.share_to'), action: () => {} },
+    { label: t('dropdown.copy_link'), action: () => {} },
+    { label: t('dropdown.remove_from_cart'), action: () => {} },
+    { label: t('dropdown.unfollow'), action: () => {} },
+    { label: t('common.cancel'), action: closeDropdown },
   ];
-
-  // rating functions
 
   const openRatingModal = (order) => {
     setSelectedOrder(order);
@@ -124,7 +124,7 @@ const AccountPage = () => {
 
   const submitTrustRating = async () => {
     if (!selectedOrder || !selectedOrder.seller_id) {
-      setRatingError('Seller information not available');
+      setRatingError(t('rating_modal.seller_info_missing'));
       return;
     }
 
@@ -159,14 +159,14 @@ const AccountPage = () => {
           closeRatingModal();
         }, 2000);
       } else {
-        const errorMsg = response.data?.error || response.data?.message || 'Failed to submit rating';
+        const errorMsg = response.data?.error || response.data?.message || t('rating_modal.submit_failed');
         setRatingError(errorMsg);
         setSubmittingRating(false);
       }
 
     } catch (error) {
       console.error('Error submitting rating:', error);
-      setRatingError('Network error. Please try again.');
+      setRatingError(t('common.network_error'));
       setSubmittingRating(false);
     }
   };
@@ -190,10 +190,10 @@ const AccountPage = () => {
             const buyerDetails = buyerResult.data;
             
             setUserData({
-              name: buyerDetails.name || userInfo.username || 'User',
-              email: userInfo.email || 'No email',
-              phone: buyerDetails.contact || 'Not provided',
-              address: buyerDetails.location || 'Not provided',
+              name: buyerDetails.name || userInfo.username || t('common.user'),
+              email: userInfo.email || t('common.no_email'),
+              phone: buyerDetails.contact || t('common.not_provided'),
+              address: buyerDetails.location || t('common.not_provided'),
               joinDate: new Date(userInfo.date_joined || Date.now()).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long'
@@ -208,10 +208,10 @@ const AccountPage = () => {
             fetchOrders();
           } else {
             setUserData({
-              name: userInfo.username || 'User',
-              email: userInfo.email || 'No email',
-              phone: 'Not provided',
-              address: 'Not provided',
+              name: userInfo.username || t('common.user'),
+              email: userInfo.email || t('common.no_email'),
+              phone: t('common.not_provided'),
+              address: t('common.not_provided'),
               joinDate: new Date(userInfo.date_joined || Date.now()).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long'
@@ -225,10 +225,10 @@ const AccountPage = () => {
         } catch (error) {
           console.error('Error fetching buyer details:', error);
           setUserData({
-            name: userInfo.username || 'User',
-            email: userInfo.email || 'No email',
-            phone: 'Not provided',
-            address: 'Not provided',
+            name: userInfo.username || t('common.user'),
+            email: userInfo.email || t('common.no_email'),
+            phone: t('common.not_provided'),
+            address: t('common.not_provided'),
             joinDate: new Date(userInfo.date_joined || Date.now()).toLocaleDateString('en-US', {
               year: 'numeric',
               month: 'long'
@@ -295,15 +295,15 @@ const AccountPage = () => {
             const product = item.product || item;
             return {
               id: product.id,
-              sellerName: product.seller_name ? `${product.seller_name}'s store` : 'Seller\'s store',
+              sellerName: product.seller_name ? `${product.seller_name}'s store` : t('bookmarks.seller_store'),
               sellerUsername: product.seller?.user?.username || 'seller',
               authorAvatar: (product.seller_name || 'S').charAt(0),
               price: formatCurrency(product.unit_price || 0),
               images: product.images && product.images.length > 0
                 ? product.images.map(img => getFullImageUrl(img))
                 : (product.product_photo ? [getFullImageUrl(product.product_photo)] : ['/sample1.jpg']),
-              product: product.name || 'Product',
-              content: product.description || 'No description available',
+              product: product.name || t('common.product'),
+              content: product.description || t('common.no_description'),
               rating: Math.floor(product.rating_magnitude) || 0,
               ratingCount: product.rating_number || 0,
               commentCount: product.comment_count || 0,
@@ -316,15 +316,15 @@ const AccountPage = () => {
         } else if (Array.isArray(result.data)) {
           products = result.data.map(product => ({
             id: product.id,
-            sellerName: product.seller_name ? `${product.seller_name}'s store` : 'Seller\'s store',
+            sellerName: product.seller_name ? `${product.seller_name}'s store` : t('bookmarks.seller_store'),
             sellerUsername: product.seller?.user?.username || 'seller',
             authorAvatar: (product.seller_name || 'S').charAt(0),
             price: formatCurrency(product.unit_price || 0),
             images: product.images && product.images.length > 0
               ? product.images.map(img => getFullImageUrl(img))
               : (product.product_photo ? [getFullImageUrl(product.product_photo)] : ['/sample1.jpg']),
-            product: product.name || 'Product',
-            content: product.description || 'No description available',
+            product: product.name || t('common.product'),
+            content: product.description || t('common.no_description'),
             rating: Math.floor(product.rating_magnitude) || 0,
             ratingCount: product.rating_number || 0,
             commentCount: product.comment_count || 0,
@@ -360,15 +360,15 @@ const AccountPage = () => {
             id: product.id,
             sellerName: product.seller_name 
               ? `${product.seller_name}'s store` 
-              : "Seller's store",
+              : t('bookmarks.seller_store'),
             sellerUsername: product.seller?.user?.username || 'seller',
             authorAvatar: (product.seller_name || 'S').charAt(0),
             price: formatCurrency(product.unit_price || 0),
             images: product.images && product.images.length > 0
               ? product.images.map(img => getFullImageUrl(img))
               : (product.product_photo ? [getFullImageUrl(product.product_photo)] : ['/sample1.jpg']),
-            product: product.name || 'Product',
-            content: product.description || 'No description available',
+            product: product.name || t('common.product'),
+            content: product.description || t('common.no_description'),
             rating: Math.floor(product.rating_magnitude) || 0,
             ratingCount: product.rating_number || 0,
             commentCount: product.comment_count || 0,
@@ -400,8 +400,8 @@ const AccountPage = () => {
           status: order.status || 'pending',
           items_count: order.items_count || 1,
           seller_id: order.seller_id || 1,
-          seller_name: order.seller_name || 'Timo',
-          product_name: order.product_name || 'Sample Product',
+          seller_name: order.seller_name || t('common.seller'),
+          product_name: order.product_name || t('common.product'),
           has_rated: order.has_rated || false,
           trustRating: order.trustRating || null
         }));
@@ -417,7 +417,7 @@ const AccountPage = () => {
             items_count: 3,
             seller_id: 1,
             seller_name: 'Timo',
-            product_name: 'Wireless Headphones',
+            product_name: t('orders.sample_product_wireless'),
             has_rated: false,
             status_badge: 'delivered'
           },
@@ -429,7 +429,7 @@ const AccountPage = () => {
             items_count: 2,
             seller_id: 1,
             seller_name: 'Timo',
-            product_name: 'Leather Wallet',
+            product_name: t('orders.sample_product_wallet'),
             has_rated: true,
             trustRating: 4,
             status_badge: 'delivered'
@@ -442,7 +442,7 @@ const AccountPage = () => {
             items_count: 1,
             seller_id: 1,
             seller_name: 'Timo',
-            product_name: 'Smart Watch',
+            product_name: t('orders.sample_product_watch'),
             has_rated: false,
             status_badge: 'shipped'
           },
@@ -454,7 +454,7 @@ const AccountPage = () => {
             items_count: 2,
             seller_id: 1,
             seller_name: 'Timo',
-            product_name: 'Decorative Pillows',
+            product_name: t('orders.sample_product_pillows'),
             has_rated: false,
             status_badge: 'processing'
           },
@@ -466,7 +466,7 @@ const AccountPage = () => {
             items_count: 4,
             seller_id: 1,
             seller_name: 'Timo',
-            product_name: 'Running Shoes',
+            product_name: t('orders.sample_product_shoes'),
             has_rated: false,
             status_badge: 'delivered'
           }
@@ -485,7 +485,7 @@ const AccountPage = () => {
           items_count: 3,
           seller_id: 1,
           seller_name: 'Timo',
-          product_name: 'Wireless Headphones',
+          product_name: t('orders.sample_product_wireless'),
           has_rated: false,
           status_badge: 'delivered'
         },
@@ -497,7 +497,7 @@ const AccountPage = () => {
           items_count: 2,
           seller_id: 1,
           seller_name: 'Timo',
-          product_name: 'Leather Wallet',
+          product_name: t('orders.sample_product_wallet'),
           has_rated: true,
           trustRating: 4,
           status_badge: 'delivered'
@@ -657,9 +657,9 @@ const AccountPage = () => {
       <div className={`p-6 max-w-6xl mx-auto ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <div className="text-center py-12">
           <User className={`w-16 h-16 mx-auto mb-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
-          <h3 className={`text-xl font-semibold mb-2 ${isDarkMode ? 'text-gray-100' : 'text-gray-700'}`}>Please login to view your account</h3>
+          <h3 className={`text-xl font-semibold mb-2 ${isDarkMode ? 'text-gray-100' : 'text-gray-700'}`}>{t('auth.please_login')}</h3>
           <Link to="/login" className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-            Go to Login
+            {t('auth.go_to_login')}
           </Link>
         </div>
       </div>
@@ -692,9 +692,9 @@ const AccountPage = () => {
             <p className="text-[23px] font-bold">{userData.name}</p>
             <p className="text-blue-100">{userData.email}</p>
             <div className="flex gap-4 mt-2">
-              <span className="text-sm">Member since {userData.joinDate}</span>
-              <span className="text-sm">{orderCount} orders</span>
-              <span className="text-sm">{bookmarkCount} in wishlist</span>
+              <span className="text-sm">{t('account.member_since', { date: userData.joinDate })}</span>
+              <span className="text-sm">{t('account.orders_count', { count: orderCount })}</span>
+              <span className="text-sm">{t('account.wishlist_count', { count: bookmarkCount })}</span>
             </div>
           </div>
         </div>
@@ -703,10 +703,10 @@ const AccountPage = () => {
       {/* Tabs */}
       <div className={`flex border-b mb-6 overflow-x-auto ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
         {[
-          { key: 'profile', label: 'Profile', icon: User },
-          { key: 'orders', label: 'Orders', icon: ShoppingCart },
-          { key: 'Bookmarks', label: 'Bookmarks', icon: Bookmark },
-          { key: 'liked', label: 'Liked', icon: Heart }
+          { key: 'profile', label: t('common.profile'), icon: User },
+          { key: 'orders', label: t('common.orders'), icon: ShoppingCart },
+          { key: 'Bookmarks', label: t('common.bookmarks'), icon: Bookmark },
+          { key: 'liked', label: t('common.liked'), icon: Heart }
         ].map((tab) => (
           <button
             key={tab.key}
@@ -729,7 +729,7 @@ const AccountPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <BuyerCard>
             <BuyerCardContent className="p-6">
-              <h2 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Personal Information</h2>
+              <h2 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>{t('account.personal_information')}</h2>
               <div className="space-y-3">
                 <div className="flex items-center">
                   <User className={`w-5 h-5 mr-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
@@ -750,26 +750,26 @@ const AccountPage = () => {
               </div>
               <Link to="/settings" className={`mt-4 flex items-center ${isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'}`}>
                 <Edit className="w-4 h-4 mr-1" />
-                Edit Profile
+                {t('common.edit')}
               </Link>
             </BuyerCardContent>
           </BuyerCard>
 
           <BuyerCard>
             <BuyerCardContent className="p-6">
-              <h2 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Account Security</h2>
+              <h2 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>{t('account.account_security')}</h2>
               <div className="space-y-4">
                 <Link to="/settings" className={`block w-full text-left p-3 border rounded-lg hover:bg-gray-50 transition-colors ${isDarkMode ? 'border-gray-700 hover:bg-gray-800' : 'border-gray-200'}`}>
-                  <h3 className={`font-medium ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Change Password</h3>
-                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Update your account password</p>
+                  <h3 className={`font-medium ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>{t('account.change_password')}</h3>
+                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('account.update_password_desc')}</p>
                 </Link>
                 <button className={`w-full text-left p-3 border rounded-lg hover:bg-gray-50 transition-colors ${isDarkMode ? 'border-gray-700 hover:bg-gray-800' : 'border-gray-200'}`}>
-                  <h3 className={`font-medium ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Two-Factor Authentication</h3>
-                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Add an extra layer of security</p>
+                  <h3 className={`font-medium ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>{t('account.two_factor_auth')}</h3>
+                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('account.two_factor_desc')}</p>
                 </button>
                 <button className={`w-full text-left p-3 border rounded-lg hover:bg-gray-50 transition-colors ${isDarkMode ? 'border-gray-700 hover:bg-gray-800' : 'border-gray-200'}`}>
-                  <h3 className={`font-medium ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Connected Devices</h3>
-                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Manage your logged-in devices</p>
+                  <h3 className={`font-medium ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>{t('account.connected_devices')}</h3>
+                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('account.connected_devices_desc')}</p>
                 </button>
               </div>
             </BuyerCardContent>
@@ -781,12 +781,12 @@ const AccountPage = () => {
       {activeTab === 'orders' && (
         <div>
           <div className="flex justify-between items-center mb-6">
-            <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Order History</h2>
+            <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>{t('orders.order_history')}</h2>
             <button
               onClick={fetchOrders}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
             >
-              Refresh Orders
+              {t('orders.refresh_orders')}
             </button>
           </div>
           
@@ -797,7 +797,7 @@ const AccountPage = () => {
                   <div className="flex justify-center">
                     <DotSpinner />
                   </div>
-                  <p className={`mt-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Loading orders...</p>
+                  <p className={`mt-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('common.loading')}</p>
                 </div>
               ) : orders.length > 0 ? (
                 <div className="space-y-4">
@@ -806,11 +806,10 @@ const AccountPage = () => {
                       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2 flex-wrap">
-                            <h3 className={`font-medium ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Order #{order.id}</h3>
+                            <h3 className={`font-medium ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>{t('orders.order_number', { id: order.id })}</h3>
                             <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded ${getStatusBadgeClass(order.status_badge || order.status)}`}>
                               {getStatusIcon(order.status_badge || order.status)}
-                              {(order.status_badge || order.status || 'Processing').charAt(0).toUpperCase() + 
-                               (order.status_badge || order.status || 'Processing').slice(1)}
+                              {t(`orders.status.${order.status_badge || order.status || 'processing'}`)}
                             </span>
                           </div>
                           <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -822,13 +821,13 @@ const AccountPage = () => {
                           </p>
                           <div className="mt-2 space-y-1">
                             <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                              <span className="font-medium">Product:</span> {order.product_name || 'Sample Product'}
+                              <span className="font-medium">{t('orders.product')}</span> {order.product_name || t('common.product')}
                             </p>
                             <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                              <span className="font-medium">Seller:</span> {order.seller_name || 'Sample Seller'}
+                              <span className="font-medium">{t('orders.seller')}</span> {order.seller_name || t('common.seller')}
                             </p>
                             <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                              <span className="font-medium">Items:</span> {order.items_count || 1}
+                              <span className="font-medium">{t('orders.items')}</span> {order.items_count || 1}
                             </p>
                           </div>
                         </div>
@@ -842,14 +841,14 @@ const AccountPage = () => {
                             disabled={order.has_rated}
                           >
                             <Award className="w-3 h-3" />
-                            {order.has_rated ? `Rated ${order.trustRating}/5` : 'Rate Seller Trust'}
+                            {order.has_rated ? t('orders.rated', { score: order.trustRating }) : t('orders.rate_seller')}
                           </button>
                           
                           <Link 
                             to={`/orders/${order.id}`}
                             className={`text-xs ${isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'} mt-1`}
                           >
-                            View Details →
+                            {t('common.view_details')} →
                           </Link>
                         </div>
                       </div>
@@ -867,27 +866,27 @@ const AccountPage = () => {
               ) : (
                 <div className="text-center py-8">
                   <ShoppingCart className={`w-12 h-12 mx-auto mb-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
-                  <p className={`mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>No orders yet</p>
+                  <p className={`mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('orders.no_orders')}</p>
                   <Link to="/products" className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                    Start Shopping
+                    {t('orders.start_shopping')}
                   </Link>
                   
                   <div className={`mt-8 p-4 rounded-lg border ${isDarkMode ? 'bg-yellow-900/30 border-yellow-800' : 'bg-yellow-50 border-yellow-200'}`}>
-                    <p className={`text-sm font-medium mb-2 ${isDarkMode ? 'text-yellow-300' : 'text-yellow-800'}`}>Demo Mode</p>
+                    <p className={`text-sm font-medium mb-2 ${isDarkMode ? 'text-yellow-300' : 'text-yellow-800'}`}>{t('orders.demo_mode')}</p>
                     <p className={`text-xs mb-3 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-700'}`}>
-                      Click the button below to test the rating system with a sample order.
+                      {t('orders.demo_text')}
                     </p>
                     <button
                       onClick={() => openRatingModal({
                         id: 9999,
                         seller_id: 1,  
                         seller_name: 'Timo',
-                        product_name: 'Sample Product'
+                        product_name: t('common.product')
                       })}
                       className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors text-sm"
                     >
                       <Award className="w-4 h-4" />
-                      Test Rating Modal
+                      {t('orders.test_rating')}
                     </button>
                   </div>
                 </div>
@@ -900,13 +899,13 @@ const AccountPage = () => {
       {/* Bookmarks Tab */}
       {activeTab === 'Bookmarks' && (
         <div>
-          <h2 className={`text-lg font-semibold mb-6 ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>My Bookmarks ({bookmarkCount})</h2>
+          <h2 className={`text-lg font-semibold mb-6 ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>{t('bookmarks.title', { count: bookmarkCount })}</h2>
           {contentLoading.bookmarks ? (
             <div className="text-center py-8">
               <div className="flex justify-center">
                 <DotSpinner />
               </div>
-              <p className={`mt-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Loading bookmarks...</p>
+              <p className={`mt-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('bookmarks.loading')}</p>
             </div>
           ) : bookmarkedProducts.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
@@ -1006,9 +1005,9 @@ const AccountPage = () => {
           ) : (
             <div className="text-center py-8">
               <Bookmark className={`w-12 h-12 mx-auto mb-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
-              <p className={`mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>No bookmarks yet</p>
+              <p className={`mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('bookmarks.empty')}</p>
               <Link to="/products" className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                Browse Products
+                {t('bookmarks.browse_products')}
               </Link>
             </div>
           )}
@@ -1018,13 +1017,13 @@ const AccountPage = () => {
       {/* Liked Tab */}
       {activeTab === 'liked' && (
         <div>
-          <h2 className={`text-lg font-semibold mb-6 ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Liked Products ({likedProducts.length})</h2>
+          <h2 className={`text-lg font-semibold mb-6 ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>{t('liked.title', { count: likedProducts.length })}</h2>
           {contentLoading.liked ? (
             <div className="text-center py-8">
               <div className="flex justify-center">
                 <DotSpinner />
               </div>
-              <p className={`mt-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Loading liked products...</p>
+              <p className={`mt-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('liked.loading')}</p>
             </div>
           ) : likedProducts.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
@@ -1124,9 +1123,9 @@ const AccountPage = () => {
           ) : (
             <div className="text-center py-8">
               <Heart className={`w-12 h-12 mx-auto mb-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
-              <p className={`mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>No liked products yet</p>
+              <p className={`mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('liked.empty')}</p>
               <Link to="/products" className="inline-flex items-center px-6 py-3 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors">
-                Discover Products
+                {t('liked.discover')}
               </Link>
             </div>
           )}
@@ -1138,7 +1137,7 @@ const AccountPage = () => {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeRatingModal}>
           <div className={`rounded-xl max-w-md w-full p-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`} onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
-              <h3 className={`text-xl font-bold ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Rate Your Experience</h3>
+              <h3 className={`text-xl font-bold ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>{t('rating_modal.title')}</h3>
               <button onClick={closeRatingModal} className={`p-1 hover:bg-gray-100 rounded-full ${isDarkMode ? 'hover:bg-gray-700' : ''}`}>
                 <X className={`w-5 h-5 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
               </button>
@@ -1149,11 +1148,11 @@ const AccountPage = () => {
                 <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${isDarkMode ? 'bg-green-900/30' : 'bg-green-100'}`}>
                   <ThumbsUp className={`w-8 h-8 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
                 </div>
-                <h4 className={`text-lg font-semibold mb-2 ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Thank You!</h4>
-                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Your rating has been submitted successfully.</p>
+                <h4 className={`text-lg font-semibold mb-2 ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>{t('rating_modal.thank_you')}</h4>
+                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('rating_modal.success')}</p>
                 {updatedTrustScore && (
                   <p className={`text-sm font-medium mt-2 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>
-                    Seller trust score updated to {updatedTrustScore.toFixed(1)}%
+                    {t('rating_modal.trust_score_updated', { score: updatedTrustScore.toFixed(1) })}
                   </p>
                 )}
               </div>
@@ -1162,18 +1161,18 @@ const AccountPage = () => {
                 <div className="mb-6">
                   <div className={`p-3 rounded-lg mb-4 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
                     <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      <span className="font-medium">Order:</span> #{selectedOrder.id}
+                      <span className="font-medium">{t('rating_modal.order')}</span> #{selectedOrder.id}
                     </p>
                     <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      <span className="font-medium">Product:</span> {selectedOrder.product_name || 'Sample Product'}
+                      <span className="font-medium">{t('rating_modal.product')}</span> {selectedOrder.product_name || t('common.product')}
                     </p>
                     <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      <span className="font-medium">Seller:</span> {selectedOrder.seller_name || 'Sample Seller'}
+                      <span className="font-medium">{t('rating_modal.seller')}</span> {selectedOrder.seller_name || t('common.seller')}
                     </p>
                   </div>
                   
                   <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    How would you rate your experience with this seller?
+                    {t('rating_modal.question')}
                   </label>
                   
                   <div className="flex justify-center gap-2 mb-4">
@@ -1186,23 +1185,23 @@ const AccountPage = () => {
                   
                   <div className="text-center mb-4">
                     <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      {trustRating === 1 && 'Poor'}
-                      {trustRating === 2 && 'Fair'}
-                      {trustRating === 3 && 'Good'}
-                      {trustRating === 4 && 'Very Good'}
-                      {trustRating === 5 && 'Excellent'}
+                      {trustRating === 1 && t('rating_modal.poor')}
+                      {trustRating === 2 && t('rating_modal.fair')}
+                      {trustRating === 3 && t('rating_modal.good')}
+                      {trustRating === 4 && t('rating_modal.very_good')}
+                      {trustRating === 5 && t('rating_modal.excellent')}
                     </span>
                   </div>
                   
                   <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Additional Comments (Optional)
+                    {t('rating_modal.additional_comments')}
                   </label>
                   <textarea
                     value={ratingComment}
                     onChange={(e) => setRatingComment(e.target.value)}
                     rows="3"
                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent ${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'border-gray-300 text-black'}`}
-                    placeholder="Share your experience with this seller..."
+                    placeholder={t('rating_modal.placeholder')}
                   />
                   
                   {ratingError && <p className="mt-2 text-sm text-red-600">{ratingError}</p>}
@@ -1210,16 +1209,16 @@ const AccountPage = () => {
 
                 <div className="flex gap-3">
                   <button onClick={closeRatingModal} className={`flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50 transition-colors ${isDarkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700'}`}>
-                    Cancel
+                    {t('rating_modal.cancel')}
                   </button>
                   <button onClick={submitTrustRating} disabled={submittingRating} className={`flex-1 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors disabled:bg-yellow-300 flex items-center justify-center gap-2`}>
                     {submittingRating ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Submitting...
+                        {t('common.submitting')}
                       </>
                     ) : (
-                      'Submit Rating'
+                      t('rating_modal.submit')
                     )}
                   </button>
                 </div>
@@ -1234,7 +1233,7 @@ const AccountPage = () => {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeDropdown}>
           <div className={`rounded-xl max-w-sm w-full ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`} onClick={(e) => e.stopPropagation()}>
             <div className={`p-4 border-b text-center ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-              <h3 className={`font-semibold text-lg ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Post Options</h3>
+              <h3 className={`font-semibold text-lg ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>{t('dropdown.post_options')}</h3>
             </div>
             <div className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
               {dropdownItems.map((item, index) => (
