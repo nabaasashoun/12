@@ -25,9 +25,8 @@ from .permissions import IsSeller, IsBuyer, IsOwner
 from rest_framework import filters
 from django.shortcuts import redirect
 from django.conf import settings
-from .models import PesapalConfig, Payment, OrderItem, CommentHelpful
+from .models import Payment, OrderItem, CommentHelpful
 from .serializers import InitiatePaymentSerializer, RefundSerializer, CancelOrderSerializer
-from . import pesapal_utils  
 from django.db import transaction
 from .models import SellerFollow
 from django_filters.rest_framework import DjangoFilterBackend  
@@ -146,6 +145,52 @@ def get_cart(request):
         else:
             return Cart.objects.create(session_key=session_key)
 
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated, IsBuyer])
+def create_order_from_cart(request):
+    cart = get_cart(request)
+    if not cart.items.exists():
+        return Response({'error': 'Cart is empty'}, status=status.HTTP_400_BAD_REQUEST)
+
+    buyer = request.user.buyer_profile
+    total_amount = sum(item.subtotal() for item in cart.items.all())
+
+    # Use default address or create one
+    address = buyer.addresses.filter(is_default=True).first()
+    if not address:
+        address = Address.objects.create(
+            buyer=buyer,
+            recipient_name=buyer.name or 'Buyer',
+            phone=buyer.contact or '0000000000',
+            street='Temporary Address',
+            city='Kampala',
+            state='Central',
+            country='Uganda',
+            iso_country_code='UG',
+            postal_code='',
+            is_default=True
+        )
+        logger.info(f"Temporary address created for buyer {buyer.id}")
+
+    order = Order.objects.create(
+        buyer=buyer,
+        total_amount=total_amount,
+        status='pending',
+        delivery_address=address,
+    )
+
+    for cart_item in cart.items.all():
+        OrderItem.objects.create(
+            order=order,
+            product=cart_item.product,
+            quantity=cart_item.quantity,
+            unit_price=cart_item.product.unit_price,
+            subtotal=cart_item.subtotal()
+        )
+
+    cart.items.all().delete()
+
+    return Response({'order_id': order.id}, status=status.HTTP_201_CREATED)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])

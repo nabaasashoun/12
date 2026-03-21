@@ -6,9 +6,14 @@ logger = logging.getLogger('dusupay')
 
 class DusuPayClient:
     def __init__(self):
-        self.public_key = settings.DUSUPAY_PUBLIC_KEY
-        self.secret_key = settings.DUSUPAY_SECRET_KEY
-        self.base_url = settings.DUSUPAY_API_BASE_URL
+        # Use getattr with defaults to avoid AttributeError
+        self.public_key = getattr(settings, 'DUSUPAY_PUBLIC_KEY', None)
+        self.secret_key = getattr(settings, 'DUSUPAY_SECRET_KEY', None)
+        self.base_url = getattr(settings, 'DUSUPAY_API_BASE_URL', 'https://sandboxapi.dusupay.com')
+        
+        if not self.public_key or not self.secret_key:
+            logger.warning("DusuPay API keys not configured. Payment functionality will not work.")
+        
         self.headers = {
             'Content-Type': 'application/json',
             'x-api-version': '1',
@@ -24,10 +29,14 @@ class DusuPayClient:
         Unified payment initiation for collections.
         Endpoint: /collections/initialize
         """
+        # If keys are missing, return an error
+        if not self.public_key or not self.secret_key:
+            return {'success': False, 'error': 'Payment system not configured. Please contact support.'}
+        
         url = f"{self.base_url}/collections/initialize"
         payload = {
             "merchant_reference": merchant_reference,
-            "transaction_method": transaction_method,  # MOBILE_MONEY, BANK_TRANSFER, CARD
+            "transaction_method": transaction_method,
             "currency": currency,
             "amount": amount,
             "description": description or f"Order #{merchant_reference} payment"
@@ -48,7 +57,6 @@ class DusuPayClient:
             payload["bank_code"] = bank_code
             payload["account_number"] = account_number
         elif transaction_method == "CARD":
-            # For card, we need redirect_url
             if not redirect_url:
                 raise ValueError("Card payment requires redirect_url")
             payload["redirect_url"] = redirect_url
@@ -62,7 +70,7 @@ class DusuPayClient:
                     'success': True,
                     'internal_reference': data['data']['internal_reference'],
                     'merchant_reference': data['data']['merchant_reference'],
-                    'redirect_url': data['data'].get('redirect_url')  # For cards
+                    'redirect_url': data['data'].get('redirect_url')
                 }
             else:
                 return {'success': False, 'error': data.get('message', 'Unknown error')}
@@ -72,6 +80,9 @@ class DusuPayClient:
 
     def check_transaction_status(self, internal_reference):
         """Check status of a transaction (optional polling)"""
+        if not self.public_key or not self.secret_key:
+            return {'success': False, 'error': 'Payment system not configured.'}
+        
         url = f"{self.base_url}/collections/status/{internal_reference}"
         try:
             response = requests.get(url, headers=self.headers, timeout=30)

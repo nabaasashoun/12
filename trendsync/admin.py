@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from .models import (
     Category, Seller, Buyer, Product, ProductLike, ProductComment,
     Wishlist, WishlistItem, Cart, CartItem, Address, Order, OrderItem,
-    Payment, Delivery, QuickDeal, ProductQuestion, QuestionOption  
+    Payment, Delivery, QuickDeal, ProductQuestion, QuestionOption, ProductImage
 )
 
 
@@ -182,9 +182,15 @@ class BuyerAdmin(admin.ModelAdmin):
     email_display.short_description = 'Email'
 
 
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage
+    extra = 1
+    fields = ('image', 'order')
+    ordering = ('order',)
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    inlines = [ProductQuestionInline]  
+    inlines = [ProductQuestionInline, ProductImageInline]  
     list_display = ('name', 'seller', 'category', 'unit_price', 'stock_quantity', 'sales_count', 'like_count')
     list_filter = ('category', 'seller')
     search_fields = ('name', 'description', 'seller__name')
@@ -198,7 +204,7 @@ class ProductAdmin(admin.ModelAdmin):
             'fields': ('unit_price', 'unit_name', 'stock_quantity', 'min_order', 'max_order')
         }),
         ('Media', {
-            'fields': ('product_photo',)
+            'fields': ('product_photo',)   # Keep for backwards compatibility (optional)
         }),
         ('Statistics', {
             'fields': ('sales_count', 'like_count', 'rating_number', 'rating_magnitude'),
@@ -285,13 +291,16 @@ class OrderItemInline(admin.TabularInline):
     readonly_fields = ('unit_price', 'subtotal')
     raw_id_fields = ('product',)
 
+from .models import DusuPayConfig
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'buyer', 'order_date', 'total_amount', 'status', 'payment_method')
+    list_display = ('id', 'buyer', 'order_date', 'total_amount', 'status', 
+                    'payment_method', 'dusupay_internal_reference')  # added
     list_filter = ('status', 'order_date', 'payment_method')
-    search_fields = ('buyer__name', 'tracking_number')
-    readonly_fields = ('order_date', 'total_amount')
+    search_fields = ('buyer__name', 'tracking_number', 'dusupay_internal_reference')  # added
+    readonly_fields = ('order_date', 'total_amount', 'dusupay_internal_reference', 
+                       'dusupay_merchant_reference')  # added
     inlines = [OrderItemInline]
 
     fieldsets = (
@@ -301,11 +310,21 @@ class OrderAdmin(admin.ModelAdmin):
         ('Payment', {
             'fields': ('payment_method',)
         }),
+        ('DusuPay Details', {   # new fieldset
+            'fields': ('dusupay_internal_reference', 'dusupay_merchant_reference'),
+            'classes': ('collapse',)
+        }),
         ('Delivery', {
             'fields': ('delivery_address', 'delivery_status', 'tracking_number',
-                      'delivery_partner', 'delivery_date')
+                       'delivery_partner', 'delivery_date')
         }),
     )
+
+@admin.register(DusuPayConfig)
+class DusuPayConfigAdmin(admin.ModelAdmin):
+    list_display = ('id', 'webhook_received_at', 'updated_at')
+    readonly_fields = ('webhook_received_at', 'updated_at')
+
 
 
 @admin.register(Payment)

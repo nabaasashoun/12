@@ -32,6 +32,7 @@ const Product = () => {
   const { addToCart, cartItems } = useCart();
 
   const touchStartX = useRef(null);
+  const carouselRef = useRef(null); // Ref for the carousel container
 
   const navigate = useNavigate();
 
@@ -176,6 +177,26 @@ const Product = () => {
     };
   }, [productId, navigate]);
   
+  // Set up non-passive touchmove listener for swipe prevention
+  useEffect(() => {
+    const element = carouselRef.current;
+    if (!element) return;
+
+    const handleTouchMoveNative = (e) => {
+      // Only prevent default if we're in a swipe (touchStartX is not null)
+      if (touchStartX.current) {
+        e.preventDefault();
+      }
+    };
+
+    // Add non-passive listener to allow preventDefault()
+    element.addEventListener('touchmove', handleTouchMoveNative, { passive: false });
+
+    return () => {
+      element.removeEventListener('touchmove', handleTouchMoveNative);
+    };
+  }, []); // Empty dependency array – runs once after ref is attached
+
   const handleAnswerChange = (qId, value) => {
     setQuestionAnswers(prev => {
       const newAnswers = {
@@ -304,7 +325,7 @@ const Product = () => {
   };
 
   const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
-  const handleTouchMove = (e) => { if (touchStartX.current) e.preventDefault(); };
+  // We no longer need the React onTouchMove handler – the native one takes over
   const handleTouchEnd = (e) => {
     if (!touchStartX.current) return;
     const touchEndX = e.changedTouches[0].clientX;
@@ -393,22 +414,67 @@ const Product = () => {
       )}
 
       {/* Main Product Image */}
-      <div className="relative mt-4">
+      <div className="relative mt-2">
+        {/* Carousel container */}
         <div
-          className="overflow-hidden rounded-xl"
+          ref={carouselRef}
+          className="flex items-center justify-center w-full overflow-hidden rounded-xl"
           onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
+          // onTouchMove removed – handled by native listener
           onTouchEnd={handleTouchEnd}
         >
-          <img
-            src={images[currentImageIndex]}
-            alt={product.name}
-            className={`w-full h-64 object-cover transition-all duration-300 ${zoom ? 'scale-150' : ''}`}
-            style={zoom ? { transformOrigin: `${zoomPos.x}px ${zoomPos.y}px` } : {}}
-            onDoubleClick={handleImageDoubleClick}
-            onMouseMove={handleMouseMove}
-          />
+          {/* Previous image (if exists) */}
+          {currentImageIndex > 0 && (
+            <div
+              className="flex-shrink-0 w-1/6 md:w-1/8 opacity-20 hover:opacity-75 transition-opacity cursor-pointer"
+              onClick={() => setCurrentImageIndex(prev => prev - 1)}
+            >
+              <img
+                src={images[currentImageIndex - 1]}
+                alt="Previous product view"
+                className="w-full h-70 object-cover rounded-l-xl"
+              />
+            </div>
+          )}
+
+          {/* Main image */}
+          <div
+            className={`
+              flex-shrink-0 transition-all
+              ${currentImageIndex > 0 && currentImageIndex < images.length - 1
+                ? 'w-4/5 md:w-2/3'
+                : (currentImageIndex > 0 || currentImageIndex < images.length - 1)
+                  ? 'w-4/5'
+                  : 'w-full'
+              }
+            `}
+          >
+            <img
+              src={images[currentImageIndex]}
+              alt={product.name}
+              className={`w-full h-70 object-cover transition-all duration-300 rounded-xl ${zoom ? 'scale-150' : ''}`}
+              style={zoom ? { transformOrigin: `${zoomPos.x}px ${zoomPos.y}px` } : {}}
+              onDoubleClick={handleImageDoubleClick}
+              onMouseMove={handleMouseMove}
+            />
+          </div>
+
+          {/* Next image (if exists) */}
+          {currentImageIndex < images.length - 1 && (
+            <div
+              className="flex-shrink-0 w-1/6 md:w-1/8 opacity-20 hover:opacity-75 transition-opacity cursor-pointer"
+              onClick={() => setCurrentImageIndex(prev => prev + 1)}
+            >
+              <img
+                src={images[currentImageIndex + 1]}
+                alt="Next product view"
+                className="w-full h-70 object-cover rounded-r-xl"
+              />
+            </div>
+          )}
         </div>
+
+        {/* Dot indicators (unchanged) */}
         {images.length > 1 && (
           <div className="flex justify-center mt-3 space-x-2">
             {images.map((_, idx) => (
