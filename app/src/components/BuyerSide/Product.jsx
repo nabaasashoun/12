@@ -27,6 +27,7 @@ const Product = () => {
   const [animatingLike, setAnimatingLike] = useState(false);
   const [animatingFavorite, setAnimatingFavorite] = useState(false);
   const [cartMessage, setCartMessage] = useState('');
+  const [isSavingAnswers, setIsSavingAnswers] = useState(false);
 
   const { isLiked, isBookmarked, toggleLike, toggleBookmark } = useLikeBookmark();
   const { addToCart, cartItems } = useCart();
@@ -195,7 +196,7 @@ const Product = () => {
     return () => {
       element.removeEventListener('touchmove', handleTouchMoveNative);
     };
-  }, []); // Empty dependency array – runs once after ref is attached
+  }, []);
 
   const handleAnswerChange = (qId, value) => {
     setQuestionAnswers(prev => {
@@ -212,8 +213,13 @@ const Product = () => {
   };
 
   const saveAnswers = () => {
-    localStorage.setItem('cartQuestionAnswers', JSON.stringify(questionAnswers));
-    setTimeout(() => setCartMessage(''), 3000);
+    setIsSavingAnswers(true);
+    
+    // Brief delay to show loading state
+    setTimeout(() => {
+      localStorage.setItem('cartQuestionAnswers', JSON.stringify(questionAnswers));
+      setIsSavingAnswers(false);
+    }, 300);
   };
 
   const allRequiredAnswered = () => {
@@ -325,7 +331,7 @@ const Product = () => {
   };
 
   const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
-  // We no longer need the React onTouchMove handler – the native one takes over
+  // React onTouchMove removed – handled by native listener
   const handleTouchEnd = (e) => {
     if (!touchStartX.current) return;
     const touchEndX = e.changedTouches[0].clientX;
@@ -474,7 +480,7 @@ const Product = () => {
           )}
         </div>
 
-        {/* Dot indicators (unchanged) */}
+        {/* Dot indicators */}
         {images.length > 1 && (
           <div className="flex justify-center mt-3 space-x-2">
             {images.map((_, idx) => (
@@ -613,20 +619,142 @@ const Product = () => {
         <div className="mt-10">
           <button
             onClick={() => setShowQuestions(!showQuestions)}
-            className={`w-full py-4 px-5 rounded-2xl flex justify-between items-center font-medium transition-all ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-100 hover:bg-gray-200'}`}
+            className={`w-full py-4 px-5 rounded-2xl flex justify-between items-center font-medium transition-all ${
+              isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-100 hover:bg-gray-200'
+            }`}
           >
             Seller Questions
-            <ChevronDown className={`w-5 h-5 transition-transform ${showQuestions ? 'rotate-180' : ''}`} />
+            <ChevronDown
+              className={`w-5 h-5 transition-transform ${showQuestions ? 'rotate-180' : ''}`}
+            />
           </button>
 
           {showQuestions && (
-            <div className={`mt-3 space-y-3 p-5 rounded-2xl ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
-              {product.questions.map((q, idx) => (
-                <div key={q.id} className={`border rounded-2xl overflow-hidden ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                </div>
-              ))}
-              <button onClick={saveAnswers} className="mt-4 w-full bg-blue-600 text-white py-3 rounded-2xl font-medium">
-                Save Answers
+            <div
+              className={`mt-3 space-y-3 p-5 rounded-2xl ${
+                isDarkMode ? 'bg-gray-800' : 'bg-gray-50'
+              }`}
+            >
+              {product.questions.map((q, idx) => {
+                const requiredUnanswered =
+                  q.required && (!answers[q.id] || !answers[q.id].trim());
+
+                return (
+                  <div
+                    key={q.id}
+                    className={`border rounded-2xl overflow-hidden ${
+                      requiredUnanswered
+                        ? isDarkMode
+                          ? 'border-red-500 bg-red-900/20'
+                          : 'border-red-300 bg-red-50'
+                        : isDarkMode
+                        ? 'border-gray-700'
+                        : 'border-gray-200'
+                    }`}
+                  >
+                    <button
+                      onClick={() => toggleQuestion(idx)}
+                      className={`w-full px-4 py-3 flex justify-between items-center text-left font-medium transition-colors ${
+                        isDarkMode
+                          ? 'bg-gray-800 hover:bg-gray-700 text-gray-100'
+                          : 'bg-white hover:bg-gray-50 text-black'
+                      }`}
+                    >
+                      <span>
+                        {q.question_text}
+                        {q.required && <span className="text-red-500 ml-1">*</span>}
+                      </span>
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform ${
+                          expandedQuestions.includes(idx) ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </button>
+
+                    <div
+                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                        expandedQuestions.includes(idx)
+                          ? 'max-h-96 opacity-100'
+                          : 'max-h-0 opacity-0'
+                      }`}
+                    >
+                      <div
+                        className={`px-4 py-3 ${
+                          isDarkMode
+                            ? 'bg-gray-800 border-gray-700'
+                            : 'bg-white border-gray-200'
+                        } border-t`}
+                      >
+                        <div className="flex justify-between items-start mb-3">
+                          {q.required && (
+                            <span
+                              className={`text-sm ${
+                                isDarkMode ? 'text-red-400' : 'text-red-500'
+                              }`}
+                            >
+                              Required
+                            </span>
+                          )}
+                          {answers[q.id]?.trim() && (
+                            <CheckCircle className="w-5 h-5 text-green-500" />
+                          )}
+                        </div>
+
+                        {q.question_type === 'text' ? (
+                          <textarea
+                            value={answers[q.id] || ''}
+                            onChange={(e) => handleAnswerChange(q.id, e.target.value)}
+                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                              requiredUnanswered
+                                ? isDarkMode
+                                  ? 'border-red-500 bg-gray-700 text-gray-100'
+                                  : 'border-red-300'
+                                : isDarkMode
+                                ? 'border-gray-600 bg-gray-700 text-gray-100'
+                                : 'border-gray-300'
+                            }`}
+                            rows={3}
+                            placeholder="Type your answer here..."
+                          />
+                        ) : q.question_type === 'multi-select' && q.options?.length ? (
+                          <div className="space-y-2">
+                            {q.options.map((opt, optIdx) => (
+                              <label
+                                key={optIdx}
+                                className={`flex items-center space-x-3 p-2 rounded cursor-pointer transition-colors ${
+                                  isDarkMode
+                                    ? 'hover:bg-gray-700'
+                                    : 'hover:bg-gray-50'
+                                }`}
+                              >
+                                <input
+                                  type="radio"
+                                  name={`question-${q.id}`}
+                                  checked={answers[q.id] === opt.option_text}
+                                  onChange={() => handleAnswerChange(q.id, opt.option_text)}
+                                  className="text-blue-600"
+                                />
+                                <span
+                                  className={isDarkMode ? 'text-gray-200' : 'text-gray-700'}
+                                >
+                                  {opt.option_text}
+                                </span>
+                              </label>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              <button
+                onClick={saveAnswers}
+                disabled={isSavingAnswers}
+                className="mt-4 w-full bg-blue-600 text-white py-3 rounded-2xl font-medium hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSavingAnswers ? 'Saving...' : 'Save Answers'}
               </button>
             </div>
           )}
