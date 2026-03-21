@@ -785,7 +785,27 @@ class Api {
       });
     }
   }
-  
+
+  async initiatePayment(orderId, phoneNumber) {
+    const token = this.getToken();
+    return this.request('/payments/initiate/', {
+      method: 'POST',
+      body: JSON.stringify({ order_id: orderId, phone_number: phoneNumber }),
+    });
+  }
+
+  async checkOrderStatus(orderId) {
+    return this.request(`/payments/status/${orderId}/`);
+  }
+
+  async initiatePayment(paymentData) {
+    const token = this.getToken();
+    return this.request('/payments/initiate/', {
+      method: 'POST',
+      body: JSON.stringify(paymentData),
+    });
+  }
+
 }
 
 const api = new Api();

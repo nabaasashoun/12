@@ -545,6 +545,10 @@ class SellerStatsSerializer(serializers.Serializer):
 
 class InitiatePaymentSerializer(serializers.Serializer):
     order_id = serializers.IntegerField()
+    transaction_method = serializers.CharField(required=False, default='MOBILE_MONEY')
+    phone_number = serializers.CharField(required=False, allow_blank=True)
+    account_number = serializers.CharField(required=False, allow_blank=True)
+    bank_code = serializers.CharField(required=False, allow_blank=True)
 
 class RefundSerializer(serializers.Serializer):
     order_id = serializers.IntegerField()
@@ -565,3 +569,8 @@ class SellerProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Seller
         fields = ['name', 'location', 'contact', 'about', 'nin_number']
+
+
+class DusuPayWebhookSerializer(serializers.Serializer):
+    event = serializers.CharField()
+    payload = serializers.DictField()

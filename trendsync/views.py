@@ -16,6 +16,10 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 import traceback
 from django.db.models import Avg
+import json
+import logging
+from .serializers import InitiatePaymentSerializer, DusuPayWebhookSerializer  
+logger = logging.getLogger('dusupay')
 from django.shortcuts import get_object_or_404
 from .permissions import IsSeller, IsBuyer, IsOwner
 from rest_framework import filters
@@ -32,10 +36,13 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Notification
 from .serializers import NotificationSerializer
 import logging
+from .dusupay_utils import DusuPayClient
+from .models import DusuPayConfig
+
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-logger = logging.getLogger('pesapal')
+dusupay_client = DusuPayClient()
 
 def create_profile_notification(user, field_name):
     """
@@ -880,246 +887,181 @@ def mark_helpful(request, comment_id):
     else:
         return Response({'status': 'already marked helpful'}, status=400)
 
-
-
-
 @api_view(['POST'])
-@permission_classes([permissions.IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def initiate_payment(request):
     logger.info(f"Payment initiation by user {request.user.id}")
     serializer = InitiatePaymentSerializer(data=request.data)
     if not serializer.is_valid():
-        logger.warning(f"Invalid initiate_payment data: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     order_id = serializer.validated_data['order_id']
+    transaction_method = serializer.validated_data.get('transaction_method', 'MOBILE_MONEY')
+    phone_number = serializer.validated_data.get('phone_number')
+    account_number = serializer.validated_data.get('account_number')
+    bank_code = serializer.validated_data.get('bank_code')
+
     try:
         order = Order.objects.get(id=order_id, buyer=request.user.buyer_profile, status='pending')
     except Order.DoesNotExist:
-        logger.warning(f"Order {order_id} not found or not pending for user {request.user.id}")
         return Response({'error': 'Order not found or not pending'}, status=status.HTTP_404_NOT_FOUND)
 
-    address = order.delivery_address or request.user.buyer_profile.addresses.filter(is_default=True).first()
-    if not address:
-        logger.warning(f"No delivery address for order {order_id}")
-        return Response({'error': 'No delivery address'}, status=status.HTTP_400_BAD_REQUEST)
+    # Get buyer details
+    buyer = request.user.buyer_profile
+    customer_name = buyer.name or request.user.username
+    customer_email = request.user.email
 
-    billing_address = {
-        "email_address": request.user.email,
-        "phone_number": address.phone,
-        "country_code": address.iso_country_code,
-        "first_name": request.user.buyer_profile.name.split()[0] if request.user.buyer_profile.name else "",
-        "last_name": " ".join(request.user.buyer_profile.name.split()[1:]) if request.user.buyer_profile.name else "",
-        "line_1": address.street,
-        "city": address.city,
-        "state": address.state,
-        "postal_code": address.postal_code,
+    # Prepare common parameters
+    common_params = {
+        'merchant_reference': str(order.id),
+        'amount': float(order.total_amount),
+        'currency': order.currency,
+        'customer_name': customer_name,
+        'customer_email': customer_email,
+        'description': f"Order #{order.id} payment"
     }
-    billing_address = {k: v for k, v in billing_address.items() if v is not None}
 
-    config, _ = PesapalConfig.objects.get_or_create(pk=1)
-    if not config.ipn_id:
-        logger.info("No IPN ID found, registering new IPN URL")
-        try:
-            ipn_id = pesapal_utils.register_ipn_url(settings.PESAPAL_IPN_URL)
-            config.ipn_id = ipn_id
-            config.save()
-            logger.info(f"IPN registered, ipn_id={ipn_id}")
-        except Exception as e:
-            logger.error(f"IPN registration failed: {str(e)}", exc_info=True)
-            return Response({'error': f'IPN registration failed: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    # Add method-specific parameters
+    if transaction_method == 'MOBILE_MONEY':
+        if not phone_number:
+            return Response({'error': 'Phone number required for mobile money'}, status=400)
+        formatted_phone = format_phone_number(phone_number)
+        provider_code = dusupay_client.get_provider_code(formatted_phone)
+        common_params.update({
+            'transaction_method': 'MOBILE_MONEY',
+            'provider_code': provider_code,
+            'account_number': formatted_phone
+        })
+    elif transaction_method == 'BANK_TRANSFER':
+        if not account_number or not bank_code:
+            return Response({'error': 'Bank account number and bank code required'}, status=400)
+        common_params.update({
+            'transaction_method': 'BANK_TRANSFER',
+            'bank_code': bank_code,
+            'account_number': account_number
+        })
+    elif transaction_method == 'CARD':
+        # Card payments require a redirect URL
+        common_params.update({
+            'transaction_method': 'CARD',
+            'redirect_url': settings.DUSUPAY_CALLBACK_URL  # This URL will handle redirect after payment
+        })
     else:
-        ipn_id = config.ipn_id
-        logger.debug(f"Using existing IPN ID: {ipn_id}")
+        return Response({'error': 'Invalid transaction method'}, status=400)
 
+    response = dusupay_client.initiate_payment(**common_params)
+
+    if response['success']:
+        order.dusupay_internal_reference = response['internal_reference']
+        order.dusupay_merchant_reference = response['merchant_reference']
+        order.save()
+
+        # For card payments, return redirect URL to frontend
+        if transaction_method == 'CARD' and response.get('redirect_url'):
+            return Response({
+                'redirect_url': response['redirect_url'],
+                'order_id': order.id
+            })
+
+        # For mobile money/bank, return pending status
+        return Response({
+            'status': 'pending',
+            'message': 'Payment initiated successfully',
+            'internal_reference': response['internal_reference'],
+            'order_id': order.id
+        })
+    else:
+        return Response({'error': response['error']}, status=status.HTTP_400_BAD_REQUEST)
+
+def format_phone_number(phone):
+    """Format phone number to international format with country code"""
+    phone = str(phone).strip()
+    # Remove any non-digit characters
+    phone = ''.join(filter(str.isdigit, phone))
+    if phone.startswith('0'):
+        phone = '256' + phone[1:]
+    elif len(phone) == 9:
+        phone = '256' + phone
+    elif not phone.startswith('256'):
+        phone = '256' + phone
+    return phone
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def dusupay_webhook(request):
+    """Handle DusuPay webhook notifications (transaction completed/failed)"""
+    logger.info(f"DusuPay webhook received: {request.data}")
+
+    serializer = DusuPayWebhookSerializer(data=request.data)
+    if not serializer.is_valid():
+        logger.warning(f"Invalid webhook data: {serializer.errors}")
+        return Response({"status": "error", "message": "Invalid data"}, status=200)
+
+    event = serializer.validated_data['event']
+    payload = serializer.validated_data['payload']
+
+    # Update config to track webhook receipt
+    config, _ = DusuPayConfig.objects.get_or_create(pk=1)
+    config.webhook_received_at = timezone.now()
+    config.save()
+
+    merchant_reference = payload.get('merchant_reference')
+    internal_reference = payload.get('internal_reference')
+
+    # Find the order
     try:
-        pesapal_response = pesapal_utils.submit_order_request(
-            merchant_reference=str(order.id),
-            amount=order.total_amount,
-            currency=order.currency,
-            description=f"Order #{order.id}",
-            callback_url=settings.PESAPAL_CALLBACK_URL,
-            notification_id=ipn_id,
-            billing_address=billing_address
-        )
-    except Exception as e:
-        logger.error(f"Pesapal submit error for order {order.id}: {str(e)}", exc_info=True)
-        return Response({'error': f'Pesapal error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    order.pesapal_tracking_id = pesapal_response.get('order_tracking_id')
-    order.save()
-    logger.info(f"Order {order.id} initiated, tracking_id={order.pesapal_tracking_id}")
-
-    return Response({
-        'redirect_url': pesapal_response.get('redirect_url'),
-        'order_tracking_id': pesapal_response.get('order_tracking_id')
-    })
-
-
-@api_view(['GET', 'POST'])
-@permission_classes([permissions.AllowAny])
-def pesapal_ipn(request):
-    params = request.GET if request.method == 'GET' else request.data
-    order_tracking_id = params.get('OrderTrackingId')
-    merchant_reference = params.get('OrderMerchantReference')
-    notification_type = params.get('OrderNotificationType')
-
-    logger.info(f"IPN received: tracking_id={order_tracking_id}, ref={merchant_reference}, type={notification_type}")
-
-    if not order_tracking_id or not merchant_reference:
-        logger.warning("IPN missing required parameters")
-        return Response({"status": 200, "message": "Missing parameters"}, status=200)
-
-    try:
-        order = Order.objects.get(id=merchant_reference)
-    except Order.DoesNotExist:
-        logger.error(f"Order {merchant_reference} not found for IPN")
-        return Response({"status": 200, "message": "Order not found"}, status=200)
-
-    if order.status == 'paid':
-        logger.info(f"Order {order.id} already marked paid, ignoring duplicate IPN")
-        return Response({"status": 200}, status=200)
-
-    try:
-        status_data = pesapal_utils.get_transaction_status(order_tracking_id)
-    except Exception as e:
-        logger.error(f"IPN get_transaction_status failed for {order_tracking_id}: {str(e)}", exc_info=True)
-        return Response({"status": 200, "message": "Status fetch failed"}, status=200)
-
-    payment_status = status_data.get('payment_status_description')
-    status_code = status_data.get('status_code')
-    confirmation_code = status_data.get('confirmation_code')
-    amount = status_data.get('amount')
-    payment_method = status_data.get('payment_method')
-    currency = status_data.get('currency', order.currency)
-
-    logger.info(f"Transaction status for order {order.id}: {payment_status}")
-
-    if payment_status and payment_status.lower() == 'completed':
-        pm_lower = (payment_method or '').lower()
-        if 'visa' in pm_lower or 'mastercard' in pm_lower or 'card' in pm_lower:
-            order.payment_method = 'card'
-        elif 'bank' in pm_lower:
-            order.payment_method = 'bank_transfer'
+        if merchant_reference:
+            order = Order.objects.get(id=merchant_reference)
+        elif internal_reference:
+            order = Order.objects.get(dusupay_internal_reference=internal_reference)
         else:
-            order.payment_method = 'wallet'
+            logger.warning("No reference found in webhook payload")
+            return Response({"status": "ok"}, status=200)
+    except Order.DoesNotExist:
+        logger.error(f"Order not found for merchant_reference: {merchant_reference}")
+        return Response({"status": "ok"}, status=200)
 
+    transaction_status = payload.get('transaction_status', '').upper()
+
+    if event == 'transaction.completed' or transaction_status == 'COMPLETED':
+        # Payment successful
         order.status = 'paid'
+        order.payment_method = payload.get('provider_code', payload.get('bank_code', 'card'))
         order.save()
 
         Payment.objects.update_or_create(
             order=order,
             defaults={
-                'amount': amount,
-                'payment_method': payment_method,
+                'amount': payload.get('request_amount', order.total_amount),
+                'payment_method': payload.get('provider_code', payload.get('bank_code', 'card')),
                 'payment_status': 'successful',
-                'transaction_reference': confirmation_code,
-                'gateway_response': status_data,
+                'transaction_reference': internal_reference,
+                'gateway_response': json.dumps(payload),
                 'payment_date': timezone.now()
             }
         )
-        logger.info(f"Order {order.id} marked as paid with method {order.payment_method}")
-    elif payment_status and payment_status.lower() in ['failed', 'invalid']:
+        logger.info(f"Order {order.id} marked as paid via DusuPay")
+
+    elif event == 'transaction.failed' or transaction_status == 'FAILED':
+        # Payment failed
         order.status = 'cancelled'
         order.save()
-        logger.info(f"Order {order.id} cancelled due to {payment_status}")
 
-        return Response({"status": 200}, status=200)
+        Payment.objects.update_or_create(
+            order=order,
+            defaults={
+                'amount': payload.get('request_amount', order.total_amount),
+                'payment_method': payload.get('provider_code', payload.get('bank_code', 'card')),
+                'payment_status': 'failed',
+                'transaction_reference': internal_reference,
+                'gateway_response': json.dumps(payload),
+                'payment_date': timezone.now()
+            }
+        )
+        logger.info(f"Order {order.id} payment failed")
 
-
-@api_view(['GET'])
-@permission_classes([permissions.AllowAny])
-def pesapal_callback(request):
-    merchant_reference = request.GET.get('OrderMerchantReference')
-    logger.info(f"Callback received for order {merchant_reference}")
-    frontend_url = f"{settings.FRONTEND_BASE_URL}/order/{merchant_reference}/"
-    return redirect(frontend_url)
-
-
-@api_view(['POST'])
-@permission_classes([permissions.IsAuthenticated])
-def refund_payment(request):
-    if not request.user.is_staff:
-        return Response({'error': 'Only administrators can perform refunds.'}, status=status.HTTP_403_FORBIDDEN)
-
-    logger.info(f"Refund requested by admin {request.user.id}")
-    serializer = RefundSerializer(data=request.data)
-    if not serializer.is_valid():
-        logger.warning(f"Invalid refund data: {serializer.errors}")
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    order_id = serializer.validated_data['order_id']
-    amount = serializer.validated_data['amount']
-    remarks = serializer.validated_data['remarks']
-    username = serializer.validated_data.get('username') or request.user.username
-
-    try:
-        order = Order.objects.get(id=order_id, status='paid')
-    except Order.DoesNotExist:
-        logger.warning(f"Order {order_id} not found or not paid for refund")
-        return Response({'error': 'Order not found or not paid'}, status=status.HTTP_404_NOT_FOUND)
-
-    try:
-        payment = order.payment
-    except Payment.DoesNotExist:
-        logger.error(f"No payment record for order {order_id}")
-        return Response({'error': 'Payment record not found'}, status=status.HTTP_404_NOT_FOUND)
-
-    confirmation_code = payment.transaction_reference
-    if not confirmation_code:
-        logger.error(f"No confirmation code for order {order_id}")
-        return Response({'error': 'No confirmation code'}, status=status.HTTP_400_BAD_REQUEST)
-
-    try:
-        refund_resp = pesapal_utils.refund_request(confirmation_code, amount, username, remarks)
-    except Exception as e:
-        logger.error(f"Refund API error for order {order_id}: {str(e)}", exc_info=True)
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    if refund_resp.get('status') == '200':
-        order.status = 'refunded'
-        order.save()
-        logger.info(f"Order {order_id} refund requested successfully")
-        return Response({'message': 'Refund request submitted successfully'})
-    else:
-        logger.error(f"Refund failed for order {order_id}: {refund_resp.get('message')}")
-        return Response({'error': refund_resp.get('message', 'Refund failed')}, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(['POST'])
-@permission_classes([permissions.IsAuthenticated])
-def cancel_pesapal_order(request):
-    logger.info(f"Cancel order requested by user {request.user.id}")
-    serializer = CancelOrderSerializer(data=request.data)
-    if not serializer.is_valid():
-        logger.warning(f"Invalid cancel data: {serializer.errors}")
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    order_id = serializer.validated_data['order_id']
-    try:
-        order = Order.objects.get(id=order_id, buyer=request.user.buyer_profile, status='pending')
-    except Order.DoesNotExist:
-        logger.warning(f"Order {order_id} not found or not pending for cancellation")
-        return Response({'error': 'Order not found or not pending'}, status=status.HTTP_404_NOT_FOUND)
-
-    if not order.pesapal_tracking_id:
-        logger.error(f"Order {order_id} has no Pesapal tracking ID")
-        return Response({'error': 'No Pesapal tracking ID'}, status=status.HTTP_400_BAD_REQUEST)
-
-    try:
-        cancel_resp = pesapal_utils.cancel_order(order.pesapal_tracking_id)
-    except Exception as e:
-        logger.error(f"Cancel API error for order {order_id}: {str(e)}", exc_info=True)
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    if cancel_resp.get('status') == '200':
-        order.status = 'cancelled'
-        order.save()
-        logger.info(f"Order {order_id} cancelled successfully")
-        return Response({'message': 'Order cancelled successfully'})
-    else:
-        logger.error(f"Cancel failed for order {order_id}: {cancel_resp.get('message')}")
-        return Response({'error': cancel_resp.get('message', 'Cancellation failed')}, status=status.HTTP_400_BAD_REQUEST)
+    return Response({"status": "ok"}, status=200)
 
 
 @api_view(['GET'])
@@ -1129,69 +1071,36 @@ def order_status(request, order_id):
         order = Order.objects.get(id=order_id, buyer=request.user.buyer_profile)
     except Order.DoesNotExist:
         return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
-
+    
+    # If payment is pending, check status with DusuPay
+    if order.status == 'pending' and order.dusupay_internal_reference:
+        status_response = dusupay_client.check_transaction_status(order.dusupay_internal_reference)
+        if status_response['success']:
+            if status_response['status'] == 'COMPLETED':
+                order.status = 'paid'
+                order.save()
+            elif status_response['status'] == 'FAILED':
+                order.status = 'cancelled'
+                order.save()
+    
     return Response({
         'status': order.status,
-        'pesapal_tracking_id': order.pesapal_tracking_id
+        'dusupay_internal_reference': order.dusupay_internal_reference
     })
-
 
 @api_view(['GET'])
 @permission_classes([permissions.AllowAny])
-def pesapal_health(request):
+def dusupay_health(request):
+    """
+    Health check for DusuPay API
+    """
     try:
-        pesapal_utils.get_access_token()
-        return Response({"status": "healthy", "message": "Pesapal API is reachable"}, status=200)
+        # Simple test request to check connectivity
+        response = dusupay_client.check_transaction_status('test')
+        return Response({"status": "healthy", "message": "DusuPay API is reachable"}, status=200)
     except Exception as e:
-        logger.error(f"Pesapal health check failed: {str(e)}", exc_info=True)
+        logger.error(f"DusuPay health check failed: {str(e)}")
         return Response({"status": "unhealthy", "message": str(e)}, status=503)
- 
-
-@api_view(['POST'])
-@permission_classes([permissions.IsAuthenticated, IsBuyer])
-def create_order_from_cart(request):
-    cart = get_cart(request)
-    if not cart.items.exists():
-        return Response({'error': 'Cart is empty'}, status=status.HTTP_400_BAD_REQUEST)
-
-    buyer = request.user.buyer_profile
-    total_amount = sum(item.subtotal() for item in cart.items.all())
-
-    address = buyer.addresses.filter(is_default=True).first()
-    if not address:
-        address = Address.objects.create(
-            buyer=buyer,
-            recipient_name=buyer.name or 'Buyer',
-            phone=buyer.contact or '0000000000',
-            street='Temporary Address',
-            city='Kampala',
-            state='Central',
-            country='Uganda',
-            iso_country_code='UG',
-            postal_code='',
-            is_default=True
-        )
-        logger.info(f"Temporary address created for buyer {buyer.id}")
-
-    order = Order.objects.create(
-        buyer=buyer,
-        total_amount=total_amount,
-        status='pending',
-        delivery_address=address,
-    )
-
-    for cart_item in cart.items.all():
-        OrderItem.objects.create(
-            order=order,
-            product=cart_item.product,
-            quantity=cart_item.quantity,
-            unit_price=cart_item.product.unit_price,
-            subtotal=cart_item.subtotal()
-        )
-
-    cart.items.all().delete()
-
-    return Response({'order_id': order.id}, status=status.HTTP_201_CREATED)
 
 
 @api_view(['POST'])
@@ -1936,3 +1845,46 @@ def get_order_detail(request, order_id):
     except Exception as e:
         print(f"Error fetching order detail: {e}")
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def dusupay_callback(request):
+    """Redirect user after card payment (called by DusuPay)"""
+    merchant_reference = request.GET.get('merchant_reference')
+    logger.info(f"Callback received for order {merchant_reference}")
+    frontend_url = f"{settings.FRONTEND_BASE_URL}/order/{merchant_reference}/"
+    return redirect(frontend_url)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

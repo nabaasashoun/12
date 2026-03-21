@@ -52,13 +52,11 @@ urlpatterns = [
     path('comments/<int:comment_id>/', views.comment_detail, name='comment-detail'),
     path('comments/<int:comment_id>/helpful/', views.mark_helpful, name='comment-helpful'),
 
+    # DusuPay payment URLs
     path('payments/initiate/', views.initiate_payment, name='initiate-payment'),
-    path('payments/ipn/', views.pesapal_ipn, name='pesapal-ipn'),
-    path('payments/callback/', views.pesapal_callback, name='pesapal-callback'),
-    path('payments/refund/', views.refund_payment, name='refund-payment'),
-    path('payments/cancel/', views.cancel_pesapal_order, name='cancel-pesapal-order'),
+    path('payments/webhook/', views.dusupay_webhook, name='dusupay-webhook'),
     path('payments/status/<int:order_id>/', views.order_status, name='order-status'),
-    path('payments/health/', views.pesapal_health, name='pesapal-health'),
+    path('payments/health/', views.dusupay_health, name='dusupay-health'),
 
     path('sellers/<int:seller_id>/follow/', views.toggle_follow_seller, name='toggle-follow-seller'),    
     # Notification URLs 
@@ -77,7 +75,7 @@ urlpatterns = [
     path('buyer/profile/', views.buyer_profile_detail, name='buyer-profile-detail'),
     path('change-email/', views.change_email, name='change-email'),
     path('change-password/', views.change_password, name='change-password'),
-
     path('orders/', views.get_orders, name='get-orders'),
     path('orders/<int:order_id>/', views.get_order_detail, name='order-detail'),
+    path('payments/callback/', views.dusupay_callback, name='dusupay-callback'),
 ]

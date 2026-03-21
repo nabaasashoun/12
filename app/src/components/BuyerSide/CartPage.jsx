@@ -5,10 +5,24 @@ import {
   Package, CreditCard, Truck, X, HelpCircle, CheckCircle, Save, Loader2 
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from  '../../utils/api';
+import api from '../../utils/api';
 import styled from 'styled-components';
 import Loader from '../UISkeleton/Loader';
 import { useDarkMode } from '../../utils/BuyerDarkModeContext';
+
+// Bank list for Uganda
+const ugandanBanks = [
+  { code: 'stb_ug', name: 'Stanbic Bank' },
+  { code: 'bar_ug', name: 'Barclays/Absa Bank' },
+  { code: 'cbu_ug', name: 'Centenary Bank' },
+  { code: 'equity_ug', name: 'Equity Bank' },
+  { code: 'dfcu_ug', name: 'dfcu Bank' },
+  { code: 'kcb_ug', name: 'KCB Bank' },
+  { code: 'uca_ug', name: 'UBA Bank' },
+  { code: 'cba_ug', name: 'CBA Bank' },
+  { code: 'boi_ug', name: 'Bank of India' },
+  { code: 'db_ug', name: 'Diamond Trust Bank' },
+];
 
 const CustomCheckbox = ({ checked, onChange, id, value, isDarkMode }) => {
   return (
@@ -151,6 +165,13 @@ const CartPage = () => {
   const [questionAnswers, setQuestionAnswers] = useState({});
   const [openQuestionModal, setOpenQuestionModal] = useState(null);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [showPhoneModal, setShowPhoneModal] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('mobile_money');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+  const [bankAccount, setBankAccount] = useState('');
+  const [bankCode, setBankCode] = useState('');
+  const [bankError, setBankError] = useState('');
   const navigate = useNavigate();
 
   const formatCurrency = (amount) => {
@@ -286,8 +307,10 @@ const CartPage = () => {
       setQuestionAnswers(updatedAnswers);
       localStorage.setItem('cartQuestionAnswers', JSON.stringify(updatedAnswers));
       triggerCartUpdate();
+      setNotification({ type: 'success', message: 'Item removed from cart' });
       setTimeout(() => setNotification(null), 2000);
     } catch (err) {
+      setNotification({ type: 'error', message: 'Failed to remove item' });
       setTimeout(() => setNotification(null), 3000);
     }
   };
@@ -353,6 +376,7 @@ const CartPage = () => {
       const answers = questionAnswers[productId] || {};
       await saveAnswersToBackend(productId, answers);
       setOpenQuestionModal(null);
+      setNotification({ type: 'success', message: 'Answers saved successfully!' });
       setTimeout(() => setNotification(null), 3000);
     } catch (error) {
       console.error('Error saving answers:', error);
@@ -365,7 +389,8 @@ const CartPage = () => {
     return product?.questions || [];
   };
 
-  const handleCheckout = async () => {
+  // Modified: open phone modal instead of direct checkout
+  const handleCheckout = () => {
     if (hasUnansweredRequiredQuestions()) {
       setNotification({
         type: 'error',
@@ -374,36 +399,88 @@ const CartPage = () => {
       setTimeout(() => setNotification(null), 3000);
       return;
     }
+    setShowPhoneModal(true);
+  };
+
+  // Payment initiation for all methods
+  const handlePaymentInitiation = async () => {
+    // Validate based on method
+    if (paymentMethod === 'mobile_money') {
+      if (!phoneNumber) {
+        setPhoneError('Phone number is required');
+        return;
+      }
+      const cleanPhone = phoneNumber.replace(/\D/g, '');
+      if (cleanPhone.length < 9) {
+        setPhoneError('Please enter a valid phone number (e.g., 0781234567)');
+        return;
+      }
+    } else if (paymentMethod === 'bank_transfer') {
+      if (!bankAccount) {
+        setBankError('Bank account number is required');
+        return;
+      }
+      if (!bankCode) {
+        setBankError('Please select your bank');
+        return;
+      }
+      const cleanAccount = bankAccount.replace(/\D/g, '');
+      if (cleanAccount.length < 8) {
+        setBankError('Please enter a valid bank account number');
+        return;
+      }
+    }
 
     setCheckoutLoading(true);
     try {
-      console.log('Step 1: Creating order from cart...');
+      // Create order
       const orderResponse = await api.createOrderFromCart();
       if (orderResponse.error) {
         throw new Error('Order creation failed: ' + orderResponse.error);
       }
       const orderId = orderResponse.data.order_id;
-      console.log('Order created successfully with ID:', orderId);
 
+      // Clear local data
       setQuestionAnswers({});
       localStorage.removeItem('cartQuestionAnswers');
 
-      console.log('Step 2: Initiating payment for order', orderId);
-      const paymentResponse = await api.initiatePayment(orderId);
+      // Build payment data
+      const paymentData = { order_id: orderId, transaction_method: paymentMethod.toUpperCase() };
+      if (paymentMethod === 'mobile_money') {
+        paymentData.phone_number = phoneNumber.replace(/\D/g, '');
+      } else if (paymentMethod === 'bank_transfer') {
+        paymentData.account_number = bankAccount.replace(/\D/g, '');
+        paymentData.bank_code = bankCode;
+      }
+
+      const paymentResponse = await api.initiatePayment(paymentData);
       if (paymentResponse.error) {
         throw new Error('Payment initiation failed: ' + paymentResponse.error);
       }
 
-      const redirectUrl = paymentResponse.data.redirect_url;
-      if (!redirectUrl) {
-        throw new Error('No redirect URL received from payment initiation');
+      // For card payments, redirect
+      if (paymentMethod === 'card' && paymentResponse.data.redirect_url) {
+        window.location.href = paymentResponse.data.redirect_url;
+        return;
       }
 
-      console.log('Redirecting to Pesapal:', redirectUrl);
-      window.location.href = redirectUrl;
+      // For mobile money / bank, show success and navigate
+      setNotification({
+        type: 'success',
+        message: paymentMethod === 'mobile_money'
+          ? 'Payment initiated! Check your phone to complete the transaction.'
+          : 'Payment initiated! Check your bank app to authorize the transaction.'
+      });
+      setShowPhoneModal(false);
+      setPhoneNumber('');
+      setBankAccount('');
+      setBankCode('');
+      setTimeout(() => navigate(`/order/${orderId}`), 3000);
     } catch (error) {
       console.error('Checkout error:', error);
       setNotification({ type: 'error', message: error.message });
+      setShowPhoneModal(false);
+    } finally {
       setCheckoutLoading(false);
     }
   };
@@ -762,7 +839,7 @@ const CartPage = () => {
                           }`}>Secure Payment</p>
                           <p className={`text-xs ${
                             isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                          }`}>100% secure payment</p>
+                          }`}>100% secure payment via DusuPay (MTN/Airtel/Bank/Card)</p>
                         </div>
                       </div>
                       <div className="flex items-start">
@@ -949,6 +1026,153 @@ const CartPage = () => {
                     </div>
                   );
                 })()}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* DusuPay Payment Modal */}
+        {showPhoneModal && (
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowPhoneModal(false)}
+          >
+            <div
+              className={`rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto ${
+                isDarkMode ? 'bg-gray-800' : 'bg-white'
+              }`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6">
+                <h3 className={`text-lg font-semibold mb-4 ${
+                  isDarkMode ? 'text-gray-100' : 'text-gray-900'
+                }`}>
+                  Select Payment Method
+                </h3>
+
+                <div className="flex gap-2 mb-6">
+                  <button
+                    onClick={() => setPaymentMethod('mobile_money')}
+                    className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
+                      paymentMethod === 'mobile_money'
+                        ? 'bg-blue-600 text-white'
+                        : isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'
+                    }`}
+                  >
+                    Mobile Money
+                  </button>
+                  <button
+                    onClick={() => setPaymentMethod('bank_transfer')}
+                    className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
+                      paymentMethod === 'bank_transfer'
+                        ? 'bg-blue-600 text-white'
+                        : isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'
+                    }`}
+                  >
+                    Bank Transfer
+                  </button>
+                  <button
+                    onClick={() => setPaymentMethod('card')}
+                    className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
+                      paymentMethod === 'card'
+                        ? 'bg-blue-600 text-white'
+                        : isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'
+                    }`}
+                  >
+                    Card Payment
+                  </button>
+                </div>
+
+                {paymentMethod === 'mobile_money' && (
+                  <>
+                    <p className={`text-sm mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      Enter your MTN or Airtel mobile money number to complete the payment.
+                    </p>
+                    <input
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={(e) => {
+                        setPhoneNumber(e.target.value);
+                        setPhoneError('');
+                      }}
+                      placeholder="e.g., 0781234567"
+                      className={`w-full px-4 py-2 rounded-lg border ${
+                        phoneError
+                          ? 'border-red-500'
+                          : isDarkMode
+                          ? 'border-gray-600 bg-gray-700 text-gray-100'
+                          : 'border-gray-300'
+                      }`}
+                    />
+                    {phoneError && <p className="text-red-500 text-sm mt-1">{phoneError}</p>}
+                  </>
+                )}
+
+                {paymentMethod === 'bank_transfer' && (
+                  <>
+                    <p className={`text-sm mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      Enter your bank account details to complete the payment.
+                    </p>
+                    <select
+                      value={bankCode}
+                      onChange={(e) => {
+                        setBankCode(e.target.value);
+                        setBankError('');
+                      }}
+                      className={`w-full px-4 py-2 rounded-lg border mb-3 ${
+                        isDarkMode
+                          ? 'border-gray-600 bg-gray-700 text-gray-100'
+                          : 'border-gray-300'
+                      }`}
+                    >
+                      <option value="">Select your bank</option>
+                      {ugandanBanks.map(bank => (
+                        <option key={bank.code} value={bank.code}>{bank.name}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="text"
+                      value={bankAccount}
+                      onChange={(e) => {
+                        setBankAccount(e.target.value);
+                        setBankError('');
+                      }}
+                      placeholder="Bank Account Number"
+                      className={`w-full px-4 py-2 rounded-lg border ${
+                        bankError
+                          ? 'border-red-500'
+                          : isDarkMode
+                          ? 'border-gray-600 bg-gray-700 text-gray-100'
+                          : 'border-gray-300'
+                      }`}
+                    />
+                    {bankError && <p className="text-red-500 text-sm mt-1">{bankError}</p>}
+                  </>
+                )}
+
+                {paymentMethod === 'card' && (
+                  <div className={`text-sm mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    You will be redirected to a secure payment page to enter your card details.
+                  </div>
+                )}
+
+                <div className="flex gap-3 mt-6">
+                  <button
+                    onClick={() => setShowPhoneModal(false)}
+                    className={`flex-1 py-2 rounded-lg ${
+                      isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'
+                    }`}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handlePaymentInitiation}
+                    disabled={checkoutLoading}
+                    className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {checkoutLoading ? 'Processing...' : 'Pay Now'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
