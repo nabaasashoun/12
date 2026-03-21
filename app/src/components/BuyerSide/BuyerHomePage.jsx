@@ -76,30 +76,54 @@ const BuyerHomePage = () => {
   const [expandedDescriptionPosition, setExpandedDescriptionPosition] = useState({ top: 0, left: 0, buttonWidth: 0 });
   const [quickDeals, setQuickDeals] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchToast, setSearchToast] = useState('');
   const navigate = useNavigate();
   const { cartItems, addToCart, removeFromCart } = useCart();
   const { setIsPageLoading } = usePageLoading();
   const [categories, setCategories] = useState([]);
+  
+  // Recent searches
+  const [recentSearches, setRecentSearches] = useState([]);
+  const [showRecentSearches, setShowRecentSearches] = useState(false);
+  const searchInputRef = useRef(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
 
-  const cartPosts = cartItems.reduce((acc, item) => {
-    if (item.product?.id) acc[item.product.id] = true;
-    return acc;
-  }, {});
-
+  // Load recent searches from localStorage
   useEffect(() => {
-    const fetchCategories = async () => {
+    const stored = localStorage.getItem('recentSearches');
+    if (stored) {
       try {
-        const result = await api.getCategories();
-        if (result.data && Array.isArray(result.data)) {
-          setCategories(result.data.map(cat => ({ id: cat.id, name: cat.name })));
-        }
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-      }
-    };
-    fetchCategories();
+        setRecentSearches(JSON.parse(stored));
+      } catch (e) {}
+    }
   }, []);
 
+  // Save recent searches to localStorage
+  const addToRecentSearches = useCallback((term) => {
+    if (!term || term.trim() === '') return;
+    const trimmed = term.trim();
+    setRecentSearches(prev => {
+      const filtered = prev.filter(s => s !== trimmed);
+      const updated = [trimmed, ...filtered].slice(0, 5);
+      localStorage.setItem('recentSearches', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  // Update dropdown position relative to the search input
+  const updateDropdownPosition = useCallback(() => {
+    if (searchInputRef.current) {
+      const rect = searchInputRef.current.getBoundingClientRect();
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      setDropdownPosition({
+        top: rect.bottom + scrollTop,
+        left: rect.left,
+        width: rect.width,
+      });
+    }
+  }, []);
+
+  // Fetch products with search parameters (supports search text and/or category)
   const fetchProductsWithParams = useCallback(async (params = {}) => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
@@ -111,8 +135,10 @@ const BuyerHomePage = () => {
     setIsLoading(true);
     try {
       let productsResult;
-      if (params.search && params.search.trim() !== '') {
-        productsResult = await api.searchProducts(params.search, params.category);
+      const hasSearch = params.search && params.search.trim() !== '';
+      const hasCategory = params.category && params.category !== 'all' && params.category !== '';
+      if (hasSearch || hasCategory) {
+        productsResult = await api.searchProducts(params.search || '', params.category);
       } else {
         productsResult = await api.getProducts();
       }
@@ -143,6 +169,9 @@ const BuyerHomePage = () => {
       });
 
       setPosts(transformedPosts);
+      if ((hasSearch || hasCategory) && transformedPosts.length === 0) {
+        setSearchToast('No products found.');
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
       setPosts(samplePosts);
@@ -152,9 +181,104 @@ const BuyerHomePage = () => {
     }
   }, [navigate, setIsPageLoading]);
 
-  const handleSearch = (query, category) => {
+  // Handle search (called from Header)
+  const handleSearch = useCallback((query, category) => {
+    if (query && query.trim() !== '') {
+      addToRecentSearches(query);
+    }
     fetchProductsWithParams({ search: query, category });
+  }, [addToRecentSearches, fetchProductsWithParams]);
+
+  // Enhanced category handler – does NOT overwrite the input box
+  const handleCategorySearch = useCallback((query, category) => {
+    // If a category is selected and the query is empty (or whitespace)
+    if (category && category !== 'all' && (!query || query.trim() === '')) {
+      // Perform search by category only (no text query)
+      fetchProductsWithParams({ category });
+      // Optionally add category name to recent searches
+      const categoryObj = categories.find(c => c.id === category);
+      if (categoryObj) {
+        addToRecentSearches(categoryObj.name);
+      }
+      return;
+    }
+    // Otherwise, perform a normal combined search (text + category)
+    handleSearch(query, category);
+  }, [categories, addToRecentSearches, fetchProductsWithParams, handleSearch]);
+
+  const onSearchWrapper = useCallback((query, category) => {
+    handleCategorySearch(query, category);
+  }, [handleCategorySearch]);
+
+  const selectRecentSearch = (searchTerm) => {
+    if (searchInputRef.current) {
+      searchInputRef.current.value = searchTerm;
+    }
+    setShowRecentSearches(false);
+    handleSearch(searchTerm, null);
   };
+
+  // Attach listeners to search input after Header mounts
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      // Adjust selector to match your Header's search input
+      const input = document.querySelector('input[placeholder*="Search"]');
+      if (input) {
+        searchInputRef.current = input;
+        
+        const handleFocus = () => {
+          updateDropdownPosition();
+          setShowRecentSearches(true);
+        };
+        const handleBlur = () => {
+          setTimeout(() => {
+            if (!document.activeElement || !document.activeElement.closest('.recent-searches-dropdown')) {
+              setShowRecentSearches(false);
+            }
+          }, 150);
+        };
+        input.addEventListener('focus', handleFocus);
+        input.addEventListener('blur', handleBlur);
+        window.addEventListener('resize', updateDropdownPosition);
+        window.addEventListener('scroll', updateDropdownPosition, true);
+        
+        return () => {
+          input.removeEventListener('focus', handleFocus);
+          input.removeEventListener('blur', handleBlur);
+          window.removeEventListener('resize', updateDropdownPosition);
+          window.removeEventListener('scroll', updateDropdownPosition, true);
+        };
+      }
+    }, 100);
+    return () => clearTimeout(timeout);
+  }, [updateDropdownPosition]);
+
+  // Clear toast after 3 seconds
+  useEffect(() => {
+    if (searchToast) {
+      const timer = setTimeout(() => setSearchToast(''), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [searchToast]);
+
+  const cartPosts = cartItems.reduce((acc, item) => {
+    if (item.product?.id) acc[item.product.id] = true;
+    return acc;
+  }, {});
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const result = await api.getCategories();
+        if (result.data && Array.isArray(result.data)) {
+          setCategories(result.data.map(cat => ({ id: cat.id, name: cat.name })));
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     fetchProductsWithParams();
@@ -317,18 +441,6 @@ const BuyerHomePage = () => {
     );
   }
 
-  if (posts.length === 0) {
-    return (
-      <div className={`p-3 sm:p-4 md:p-6 max-w-4xl mx-auto ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-        <div className="text-center py-8">
-          <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
-            No products found.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   const dropdownItems = [
     { label: 'Report', action: () => {} },
     { label: 'Message Seller', action: () => {} },
@@ -346,10 +458,44 @@ const BuyerHomePage = () => {
 
         <Header
           showBackButton={true}
-          onSearch={handleSearch}
+          onSearch={onSearchWrapper}
           categories={categories}
           isDarkMode={isDarkMode}
         />
+
+        {/* Search Toast */}
+        {searchToast && (
+          <div className="fixed top-4 right-4 z-50 animate-slideDown">
+            <div className="px-6 py-3 rounded-full shadow-lg bg-red-600 text-white">
+              <span className="font-medium">{searchToast}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Recent searches dropdown – now positioned absolutely relative to the input */}
+        {showRecentSearches && recentSearches.length > 0 && (
+          <div
+            className="recent-searches-dropdown fixed z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden"
+            style={{
+              top: `${dropdownPosition.top}px`,
+              left: `${dropdownPosition.left}px`,
+              width: `${dropdownPosition.width}px`,
+            }}
+          >
+            <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+              Recent searches
+            </div>
+            {recentSearches.map((term, idx) => (
+              <button
+                key={idx}
+                onClick={() => selectRecentSearch(term)}
+                className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                {term}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Quick Deals Section */}
         <div className={`sticky top-0 z-40 pt-1 pb-2 mb-2 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -679,8 +825,45 @@ const BuyerHomePage = () => {
             from { opacity: 0; transform: translateY(-5px); }
             to { opacity: 1; transform: translateY(0); }
           }
+          @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          .animate-slideDown {
+            animation: slideDown 0.3s ease-out;
+          }
           .animate-fadeIn {
             animation: fadeIn 0.2s ease-out;
+          }
+
+          /* Force search inputs to have black text in ALL situations */
+          input[type="text"],
+          input[type="search"],
+          input[placeholder*="Search"],
+          input.search-input,
+          input[type="text"]::placeholder,
+          input[type="search"]::placeholder {
+            color: #000000 !important;
+            -webkit-text-fill-color: #000000 !important;
+          }
+
+          /* Placeholder should be gray, not disappearing or too light */
+          input::placeholder {
+            color: #6b7280 !important;
+            opacity: 1 !important;
+          }
+
+          /* When focused — still keep text black */
+          input:focus {
+            color: #000000 !important;
+          }
+
+          /* Prevent dark mode / system preferences from overriding */
+          @media (prefers-color-scheme: dark) {
+            input[type="text"],
+            input[type="search"] {
+              color: #000000 !important;
+            }
           }
         `}</style>
       </div>
