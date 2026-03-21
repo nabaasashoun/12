@@ -1,10 +1,13 @@
 import { NavLink } from "react-router-dom";
-import { Home, TrendingUp, PlusCircle, Bell, User } from "lucide-react";
-import { useSellerDarkMode } from "../../utils/SellerDarkModeContext";
+import { Home, TrendingUp, PlusCircle, Bell, User, MessageSquare } from "lucide-react";
+import { useChat } from "../../utils/ChatContext";
+import { useDarkMode } from "../../utils/BuyerDarkModeContext";
 
 const SellerBottomNav = () => {
-  const { isDarkMode } = useSellerDarkMode();
-  
+  const { unreadNotifications } = useChat();
+  const { isDarkMode } = useDarkMode();
+  const unreadCount = unreadNotifications.length;
+
   const navItems = [
     { to: "/seller/home", icon: Home, label: "Home" },
     { to: "/seller/trending2", icon: TrendingUp, label: "Trending" },
