@@ -6,10 +6,15 @@ import {
 } from 'lucide-react';
 import { useLikeBookmark } from '../../utils/LikeBookmarkContext';
 import { useCart } from '../../utils/CartContext';
-import { useDarkMode } from '../../utils/BuyerDarkModeContext';   
+import { useDarkMode } from '../../utils/BuyerDarkModeContext';
+import { getFullImageUrl, PLACEHOLDER_IMAGE } from '../../utils/imageUtils';
 
 const Product = () => {
-  const { isDarkMode } = useDarkMode();                   
+  const { isDarkMode } = useDarkMode();  
+  console.log('getFullImageUrl function:', getFullImageUrl);
+  console.log('PLACEHOLDER_IMAGE:', PLACEHOLDER_IMAGE);
+  console.log('Product images data:', product?.images);
+  console.log('Product photo:', product?.product_photo);                 
   const { productId } = useParams();
   const [product, setProduct] = useState(null);
   const [comments, setComments] = useState([]);
@@ -33,7 +38,7 @@ const Product = () => {
   const { addToCart, cartItems } = useCart();
 
   const touchStartX = useRef(null);
-  const carouselRef = useRef(null); // Ref for the carousel container
+  const carouselRef = useRef(null);
 
   const navigate = useNavigate();
 
@@ -184,13 +189,11 @@ const Product = () => {
     if (!element) return;
 
     const handleTouchMoveNative = (e) => {
-      // Only prevent default if we're in a swipe (touchStartX is not null)
       if (touchStartX.current) {
         e.preventDefault();
       }
     };
 
-    // Add non-passive listener to allow preventDefault()
     element.addEventListener('touchmove', handleTouchMoveNative, { passive: false });
 
     return () => {
@@ -215,7 +218,6 @@ const Product = () => {
   const saveAnswers = () => {
     setIsSavingAnswers(true);
     
-    // Brief delay to show loading state
     setTimeout(() => {
       localStorage.setItem('cartQuestionAnswers', JSON.stringify(questionAnswers));
       setIsSavingAnswers(false);
@@ -283,7 +285,7 @@ const Product = () => {
 
     setIsAddingToCart(true);
     try {
-      const success = await addToCart(
+      await addToCart(
         parseInt(productId), 
         quantity, 
         questionAnswers[productId] || {} 
@@ -331,7 +333,7 @@ const Product = () => {
   };
 
   const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
-  // React onTouchMove removed – handled by native listener
+  
   const handleTouchEnd = (e) => {
     if (!touchStartX.current) return;
     const touchEndX = e.changedTouches[0].clientX;
@@ -359,7 +361,10 @@ const Product = () => {
     return <div className={`p-4 ${isDarkMode ? 'text-gray-400' : 'text-black'}`}>Loading...</div>;
   }
 
-  const images = product.images?.length ? product.images : product.product_photo ? [product.product_photo] : [];
+  const images = product.images?.length ? product.images.map(img => getFullImageUrl(img)) : 
+                   product.product_photo ? [getFullImageUrl(product.product_photo)] : 
+                   [PLACEHOLDER_IMAGE];
+  
   const averageRating = Number(product.rating_magnitude) || 0;
   const totalReviews = Number(product.rating_number) || 0;
   const answers = questionAnswers[productId] || {};
@@ -408,10 +413,10 @@ const Product = () => {
                 className={`flex-shrink-0 w-20 h-20 border rounded-lg shadow-sm hover:shadow-md cursor-pointer transition-all ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
               >
                 <img
-                  src={rp.product_photo || 'https://via.placeholder.com/150'}
+                  src={getFullImageUrl(rp.product_photo) || PLACEHOLDER_IMAGE}
                   alt={rp.name}
                   className="w-full h-full object-cover rounded-lg"
-                  onError={(e) => { e.target.src = 'https://via.placeholder.com/150'; }}
+                  onError={(e) => { e.target.src = PLACEHOLDER_IMAGE; }}
                 />
               </div>
             ))}
@@ -426,7 +431,6 @@ const Product = () => {
           ref={carouselRef}
           className="flex items-center justify-center w-full overflow-hidden rounded-xl"
           onTouchStart={handleTouchStart}
-          // onTouchMove removed – handled by native listener
           onTouchEnd={handleTouchEnd}
         >
           {/* Previous image (if exists) */}
@@ -439,6 +443,7 @@ const Product = () => {
                 src={images[currentImageIndex - 1]}
                 alt="Previous product view"
                 className="w-full h-70 object-cover rounded-l-xl"
+                onError={(e) => { e.target.src = PLACEHOLDER_IMAGE; }}
               />
             </div>
           )}
@@ -462,6 +467,7 @@ const Product = () => {
               style={zoom ? { transformOrigin: `${zoomPos.x}px ${zoomPos.y}px` } : {}}
               onDoubleClick={handleImageDoubleClick}
               onMouseMove={handleMouseMove}
+              onError={(e) => { e.target.src = PLACEHOLDER_IMAGE; }}
             />
           </div>
 
@@ -475,6 +481,7 @@ const Product = () => {
                 src={images[currentImageIndex + 1]}
                 alt="Next product view"
                 className="w-full h-70 object-cover rounded-r-xl"
+                onError={(e) => { e.target.src = PLACEHOLDER_IMAGE; }}
               />
             </div>
           )}
@@ -590,7 +597,7 @@ const Product = () => {
                 <div className="flex items-start">
                   <div className={`w-10 h-10 rounded-full flex-shrink-0 mr-4 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
                     {comment.user_photo ? (
-                      <img src={comment.user_photo} alt="" className="w-full h-full rounded-full object-cover" />
+                      <img src={getFullImageUrl(comment.user_photo)} alt="" className="w-full h-full rounded-full object-cover" onError={(e) => { e.target.src = PLACEHOLDER_IMAGE; }} />
                     ) : (
                       <User className={`w-5 h-5 mx-auto mt-2.5 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
                     )}

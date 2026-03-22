@@ -179,18 +179,26 @@ const CartPage = () => {
   };
 
   const getProductImage = (product) => {
+    // Get the API base URL from environment variable
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+    const BASE_URL = API_BASE_URL.replace('/api', '');
+    
     if (product?.product_photo) {
       if (typeof product.product_photo === 'string') {
         if (product.product_photo.startsWith('http')) {
           return product.product_photo;
+        } else if (product.product_photo.startsWith('/')) {
+          return `${BASE_URL}${product.product_photo}`;
         } else {
-          return `http://localhost:8000${product.product_photo}`;
+          return `${BASE_URL}/media/${product.product_photo}`;
         }
       } else if (typeof product.product_photo === 'object' && product.product_photo.url) {
         if (product.product_photo.url.startsWith('http')) {
           return product.product_photo.url;
+        } else if (product.product_photo.url.startsWith('/')) {
+          return `${BASE_URL}${product.product_photo.url}`;
         } else {
-          return `http://localhost:8000${product.product_photo.url}`;
+          return `${BASE_URL}/media/${product.product_photo.url}`;
         }
       }
     }
@@ -622,7 +630,8 @@ const CartPage = () => {
                               className="w-full h-full object-cover rounded-lg"
                               onError={(e) => {
                                 console.log('Image failed to load:', productImage);
-                                e.target.src = '/sample1.jpg';
+                                e.target.src = 'https://via.placeholder.com/300x300?text=No+Image';
+
                               }}
                             />
                           </div>
