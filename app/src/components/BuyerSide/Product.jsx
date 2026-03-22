@@ -10,11 +10,7 @@ import { useDarkMode } from '../../utils/BuyerDarkModeContext';
 import { getFullImageUrl, PLACEHOLDER_IMAGE } from '../../utils/imageUtils';
 
 const Product = () => {
-  const { isDarkMode } = useDarkMode();  
-  console.log('getFullImageUrl function:', getFullImageUrl);
-  console.log('PLACEHOLDER_IMAGE:', PLACEHOLDER_IMAGE);
-  console.log('Product images data:', product?.images);
-  console.log('Product photo:', product?.product_photo);                 
+  const { isDarkMode } = useDarkMode();                 
   const { productId } = useParams();
   const [product, setProduct] = useState(null);
   const [comments, setComments] = useState([]);
@@ -36,6 +32,11 @@ const Product = () => {
 
   const { isLiked, isBookmarked, toggleLike, toggleBookmark } = useLikeBookmark();
   const { addToCart, cartItems } = useCart();
+
+  console.log('getFullImageUrl function:', getFullImageUrl);
+  console.log('PLACEHOLDER_IMAGE:', PLACEHOLDER_IMAGE);
+  console.log('Product images data:', product?.images);
+  console.log('Product photo:', product?.product_photo);  
 
   const touchStartX = useRef(null);
   const carouselRef = useRef(null);
