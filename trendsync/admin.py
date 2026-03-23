@@ -6,7 +6,7 @@ from .models import (
     Wishlist, WishlistItem, Cart, CartItem, Address, Order, OrderItem,
     Payment, Delivery, QuickDeal, ProductQuestion, QuestionOption, ProductImage
 )
-
+from django import forms
 
 class QuestionOptionInline(admin.TabularInline):
     model = QuestionOption
@@ -197,8 +197,46 @@ class ProductImageInline(admin.TabularInline):
     fields = ('image', 'order')
     ordering = ('order',)
 
+from django import forms
+from django.contrib import admin
+
+class ProductAdminForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = '__all__'
+        widgets = {
+            'stock_quantity': forms.NumberInput(attrs={
+                'onchange': 'updateMaxOrderToStock(this)',
+                'oninput': 'updateMaxOrderToStock(this)'
+            }),
+            'max_order': forms.NumberInput(attrs={
+                'onchange': 'validateMaxOrder(this)'
+            })
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # For new products, set max_order default to stock_quantity if available
+        if not self.instance.pk:
+            stock_quantity = self.initial.get('stock_quantity')
+            if stock_quantity:
+                self.initial['max_order'] = stock_quantity
+
+    def clean(self):
+        cleaned_data = super().clean()
+        stock_quantity = cleaned_data.get('stock_quantity')
+        max_order = cleaned_data.get('max_order')
+        
+        if stock_quantity and max_order and max_order > stock_quantity:
+            raise forms.ValidationError({
+                'max_order': f'Maximum order ({max_order}) cannot exceed available stock ({stock_quantity})'
+            })
+        
+        return cleaned_data
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
+    form = ProductAdminForm
     inlines = [ProductQuestionInline, ProductImageInline]  
     list_display = ('name', 'seller', 'category', 'unit_price', 'stock_quantity', 'sales_count', 'like_count')
     list_filter = ('category', 'seller')
@@ -213,14 +251,16 @@ class ProductAdmin(admin.ModelAdmin):
             'fields': ('unit_price', 'unit_name', 'stock_quantity', 'min_order', 'max_order')
         }),
         ('Media', {
-            'fields': ('product_photo',)   # Keep for backwards compatibility (optional)
+            'fields': ('product_photo',)
         }),
         ('Statistics', {
             'fields': ('sales_count', 'like_count', 'rating_number', 'rating_magnitude'),
-            'classes': ('collapse',)
+            'classes': ('collapse',),
         }),
     )
 
+    class Media:
+        js = ('admin/js/product_admin.js',)
 
 @admin.register(ProductLike)
 class ProductLikeAdmin(admin.ModelAdmin):

@@ -278,8 +278,10 @@ const Product = () => {
       setTimeout(() => setCartMessage(''), 3000);
       return;
     }
-    if (quantity > product.max_order) {
-      setCartMessage(`Maximum order quantity is ${product.max_order}`);
+    
+    const maxAllowed = Math.min(product.max_order, product.stock_quantity);
+    if (quantity > maxAllowed) {
+      setCartMessage(`Maximum allowed is ${maxAllowed} (Stock: ${product.stock_quantity}, Max order: ${product.max_order})`);
       setTimeout(() => setCartMessage(''), 3000);
       return;
     }
@@ -305,14 +307,16 @@ const Product = () => {
   };
 
   const increaseQuantity = () => {
-    if (quantity < product.max_order) setQuantity(q => q + 1);
+    const maxAllowed = Math.min(product.max_order, product.stock_quantity);
+    if (quantity < maxAllowed) setQuantity(q => q + 1);
   };
 
   const handleQuantityChange = (e) => {
     const val = parseInt(e.target.value);
     if (isNaN(val)) return;
+    const maxAllowed = Math.min(product.max_order, product.stock_quantity);
     if (val < product.min_order) setQuantity(product.min_order);
-    else if (val > product.max_order) setQuantity(product.max_order);
+    else if (val > maxAllowed) setQuantity(maxAllowed);
     else setQuantity(val);
   };
 
@@ -523,9 +527,6 @@ const Product = () => {
       </div>
 
       <p className={`mt-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Stock: {product.stock_quantity}</p>
-      <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
-        Min Order: {product.min_order} | Max Order: {product.max_order}
-      </p>
 
       {/* Like & Bookmark Buttons */}
       <div className="flex gap-3 mt-6">
@@ -563,14 +564,14 @@ const Product = () => {
           value={quantity}
           onChange={handleQuantityChange}
           min={product.min_order}
-          max={product.max_order}
+          max={Math.min(product.max_order, product.stock_quantity)}
           className={`mx-4 w-16 text-center text-xl font-medium border rounded-xl py-3 focus:outline-none ${isDarkMode ? 'bg-gray-800 border-gray-600 text-gray-100' : 'bg-white border-gray-300'}`}
         />
 
         <button
           onClick={increaseQuantity}
-          disabled={quantity >= product.max_order}
-          className={`p-3 rounded-xl transition-all ${quantity >= product.max_order ? 'bg-gray-700 cursor-not-allowed' : isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'}`}
+          disabled={quantity >= Math.min(product.max_order, product.stock_quantity)}
+          className={`p-3 rounded-xl transition-all ${quantity >= Math.min(product.max_order, product.stock_quantity) ? 'bg-gray-700 cursor-not-allowed' : isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'}`}
         >
           <Plus className="w-5 h-5" />
         </button>

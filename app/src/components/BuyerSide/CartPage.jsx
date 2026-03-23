@@ -263,6 +263,42 @@ const CartPage = () => {
       removeFromCart(productId);
       return;
     }
+    
+    // Find the product to check its limits
+    const cartItem = cartItems.find(item => item.product.id === productId);
+    const product = cartItem?.product;
+    
+    if (product) {
+      const maxAllowed = Math.min(product.max_order, product.stock_quantity);
+      
+      if (newQuantity > maxAllowed) {
+        setNotification({ 
+          type: 'error', 
+          message: `Maximum allowed is ${maxAllowed} (Limited by stock: ${product.stock_quantity} available, max order: ${product.max_order})` 
+        });
+        setTimeout(() => setNotification(null), 3000);
+        return;
+      }
+      
+      if (newQuantity > product.stock_quantity) {
+        setNotification({ 
+          type: 'error', 
+          message: `Only ${product.stock_quantity} items available in stock` 
+        });
+        setTimeout(() => setNotification(null), 3000);
+        return;
+      }
+      
+      if (newQuantity > product.max_order) {
+        setNotification({ 
+          type: 'error', 
+          message: `Maximum order quantity for this product is ${product.max_order}` 
+        });
+        setTimeout(() => setNotification(null), 3000);
+        return;
+      }
+    }
+    
     try {
       const result = await api.updateCartItem(productId, newQuantity);
       if (result.error) {
@@ -295,7 +331,6 @@ const CartPage = () => {
       setTimeout(() => setNotification(null), 3000);
     }
   };
-
   const removeFromCart = async (productId) => {
     try {
       const result = await api.removeFromCart(productId);
@@ -699,29 +734,45 @@ const CartPage = () => {
                               <div className="flex items-center space-x-2">
                                 <button
                                   onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                                  disabled={item.quantity <= (item.product.min_order || 1)}
                                   className={`p-1 rounded-full border transition-colors ${
-                                    isDarkMode 
-                                      ? 'border-gray-600 hover:bg-gray-700 text-gray-300' 
-                                      : 'border-gray-300 hover:bg-gray-100 text-gray-700'
+                                    item.quantity <= (item.product.min_order || 1)
+                                      ? 'opacity-50 cursor-not-allowed'
+                                      : isDarkMode 
+                                        ? 'border-gray-600 hover:bg-gray-700 text-gray-300' 
+                                        : 'border-gray-300 hover:bg-gray-100 text-gray-700'
                                   }`}
                                 >
                                   <Minus className="w-4 h-4" />
                                 </button>
-                                <span className={`w-12 text-center font-medium ${
-                                  isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                                }`}>
-                                  {item.quantity}
-                                </span>
+                                <input
+                                  type="number"
+                                  value={item.quantity}
+                                  onChange={(e) => updateQuantity(item.product.id, parseInt(e.target.value))}
+                                  min={item.product.min_order || 1}
+                                  max={Math.min(item.product.max_order, item.product.stock_quantity)}
+                                  className={`w-16 text-center border rounded-md py-1 ${
+                                    isDarkMode 
+                                      ? 'bg-gray-700 border-gray-600 text-gray-100' 
+                                      : 'bg-white border-gray-300 text-gray-900'
+                                  }`}
+                                />
                                 <button
                                   onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                                  disabled={item.quantity >= Math.min(item.product.max_order, item.product.stock_quantity)}
                                   className={`p-1 rounded-full border transition-colors ${
-                                    isDarkMode 
-                                      ? 'border-gray-600 hover:bg-gray-700 text-gray-300' 
-                                      : 'border-gray-300 hover:bg-gray-100 text-gray-700'
+                                    item.quantity >= Math.min(item.product.max_order, item.product.stock_quantity)
+                                      ? 'opacity-50 cursor-not-allowed'
+                                      : isDarkMode 
+                                        ? 'border-gray-600 hover:bg-gray-700 text-gray-300' 
+                                        : 'border-gray-300 hover:bg-gray-100 text-gray-700'
                                   }`}
                                 >
                                   <Plus className="w-4 h-4" />
                                 </button>
+                              </div>
+                              <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                Max: {Math.min(item.product.max_order, item.product.stock_quantity)}
                               </div>
                             </div>
                           </div>

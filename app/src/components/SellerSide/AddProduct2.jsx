@@ -39,6 +39,17 @@ const AddProduct2 = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const validateMaxOrder = () => {
+    const stockQty = parseInt(formData.stock_quantity);
+    const maxOrder = parseInt(formData.max_order);
+    
+    if (maxOrder && stockQty && maxOrder > stockQty) {
+      alert(`Maximum order quantity (${maxOrder}) cannot exceed available stock (${stockQty})`);
+      return false;
+    }
+    return true;
+  };
+
   const handleContinue = () => {
     if (!formData.name.trim()) {
       alert('Please enter a product name');
@@ -56,7 +67,35 @@ const AddProduct2 = () => {
       alert('Please select a unit');
       return;
     }
+    
+    // Add max_order validation
+    if (!validateMaxOrder()) {
+      return;
+    }
+    
     navigate('/seller/add-product/step3');
+  };
+
+  // Also add validation when stock_quantity changes
+  const handleStockChange = (e) => {
+    const newStock = e.target.value;
+    setFormData(prev => ({ ...prev, stock_quantity: newStock }));
+    
+    // If max_order exists and exceeds new stock, show warning
+    if (formData.max_order && newStock && parseInt(formData.max_order) > parseInt(newStock)) {
+      alert(`Note: Maximum order (${formData.max_order}) exceeds current stock (${newStock}). You may want to adjust the maximum order.`);
+    }
+  };
+
+  // Add validation when max_order changes
+  const handleMaxOrderChange = (e) => {
+    const newMaxOrder = e.target.value;
+    setFormData(prev => ({ ...prev, max_order: newMaxOrder }));
+    
+    // Validate against current stock
+    if (formData.stock_quantity && newMaxOrder && parseInt(newMaxOrder) > parseInt(formData.stock_quantity)) {
+      alert(`Maximum order cannot exceed available stock (${formData.stock_quantity})`);
+    }
   };
 
   return (

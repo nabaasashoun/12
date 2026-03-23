@@ -4,6 +4,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from decimal import Decimal
 from django.utils import timezone
 from datetime import timedelta
+from django.core.exceptions import ValidationError
 
 class Category(models.Model):
     name = models.CharField(max_length=200)
@@ -87,8 +88,30 @@ class Product(models.Model):
     sales_count = models.PositiveIntegerField(default=0)
     like_count = models.PositiveIntegerField(default=0)
 
-    def __str__(self):
-        return self.name
+    def clean(self):
+        """Model-level validation"""
+        super().clean()
+        
+        # Validate min_order is at least 1
+        if self.min_order < 1:
+            raise ValidationError({'min_order': 'Minimum order must be at least 1'})
+        
+        # Validate max_order doesn't exceed stock_quantity
+        if self.max_order > self.stock_quantity:
+            raise ValidationError({
+                'max_order': f'Maximum order cannot exceed available stock ({self.stock_quantity})'
+            })
+        
+        # Validate min_order is not greater than max_order
+        if self.min_order > self.max_order:
+            raise ValidationError({
+                'min_order': f'Minimum order ({self.min_order}) cannot be greater than maximum order ({self.max_order})'
+            })
+
+    def save(self, *args, **kwargs):
+        # Call clean() before saving
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 
 class ProductLike(models.Model):

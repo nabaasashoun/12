@@ -497,7 +497,6 @@ def check_product_like(request, product_id):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def add_to_cart(request):
@@ -510,6 +509,23 @@ def add_to_cart(request):
 
     try:
         product = Product.objects.get(id=product_id)
+        
+        # Validate quantity against product limits
+        if quantity < product.min_order:
+            return Response({
+                'error': f'Minimum order quantity is {product.min_order}'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if quantity > product.max_order:
+            return Response({
+                'error': f'Maximum order quantity is {product.max_order}'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if quantity > product.stock_quantity:
+            return Response({
+                'error': f'Only {product.stock_quantity} items available in stock'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
         cart = get_cart(request)
 
         cart_item, created = CartItem.objects.get_or_create(
@@ -519,7 +535,20 @@ def add_to_cart(request):
         )
 
         if not created:
-            cart_item.quantity += quantity
+            new_quantity = cart_item.quantity + quantity
+            
+            # Check if new total would exceed max_order
+            if new_quantity > product.max_order:
+                return Response({
+                    'error': f'Cannot add {quantity} more. Maximum allowed per order is {product.max_order}. You already have {cart_item.quantity} in cart.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            if new_quantity > product.stock_quantity:
+                return Response({
+                    'error': f'Cannot add {quantity} more. Only {product.stock_quantity} available in stock.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            cart_item.quantity = new_quantity
             if answers:
                 cart_item.answers.update(answers)
             cart_item.save()
@@ -535,7 +564,6 @@ def add_to_cart(request):
         return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 @api_view(['DELETE'])
 @permission_classes([AllowAny])

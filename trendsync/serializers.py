@@ -272,7 +272,30 @@ class ProductSerializer(serializers.ModelSerializer):
                 instance.save(update_fields=['product_photo'])
 
         return instance
-
+    
+    def validate(self, data):
+        """Validate product data"""
+        stock_quantity = data.get('stock_quantity')
+        max_order = data.get('max_order')
+        min_order = data.get('min_order')
+        
+        # If updating an existing instance, get current stock if not provided
+        if self.instance and 'stock_quantity' not in data:
+            stock_quantity = self.instance.stock_quantity
+            
+        if max_order and stock_quantity:
+            if max_order > stock_quantity:
+                raise serializers.ValidationError({
+                    'max_order': f'Maximum order ({max_order}) cannot exceed available stock ({stock_quantity})'
+                })
+        
+        if min_order and max_order:
+            if min_order > max_order:
+                raise serializers.ValidationError({
+                    'min_order': f'Minimum order ({min_order}) cannot be greater than maximum order ({max_order})'
+                })
+        
+        return data
 
 class ProductCommentSerializer(serializers.ModelSerializer):
     comment = serializers.CharField(source='comment_text')

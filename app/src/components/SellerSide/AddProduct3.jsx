@@ -104,6 +104,12 @@ const AddProduct3 = () => {
       return;
     }
 
+    // Validate max_order against stock_quantity
+    if (formData.max_order && parseInt(formData.max_order) > parseInt(formData.stock_quantity)) {
+      alert(`Maximum order quantity (${formData.max_order}) cannot exceed available stock (${formData.stock_quantity})`);
+      return;
+    }
+
     if (productImages.filter(img => img !== null).length === 0) {
       alert('Please upload at least one product image');
       return;
