@@ -52,20 +52,9 @@ urlpatterns = [
     path('comments/<int:comment_id>/', views.comment_detail, name='comment-detail'),
     path('comments/<int:comment_id>/helpful/', views.mark_helpful, name='comment-helpful'),
 
-    # DusuPay payment URLs
-    path('payments/initiate/', views.initiate_payment, name='initiate-payment'),
-    path('payments/webhook/', views.dusupay_webhook, name='dusupay-webhook'),
-    path('payments/status/<int:order_id>/', views.order_status, name='order-status'),
-    path('payments/health/', views.dusupay_health, name='dusupay-health'),
 
     path('sellers/<int:seller_id>/follow/', views.toggle_follow_seller, name='toggle-follow-seller'),    
-    # Notification URLs 
-    path('notifications/', views.get_notifications, name='get-notifications'),
-    path('notifications/<int:notification_id>/read/', views.mark_notification_read, name='mark-notification-read'),
-    path('notifications/read-all/', views.mark_all_notifications_read, name='mark-all-read'),
-    path('notifications/<int:notification_id>/delete/', views.delete_notification, name='delete-notification'),
-    path('notifications/clear-all/', views.clear_all_notifications, name='clear-all-notifications'),
-
+    
     path('simple-notifications/', views.get_simple_notifications, name='simple-notifications'),
     path('simple-notifications/<int:notification_id>/read/', views.mark_simple_notification_read, name='simple-notification-read'),
     path('simple-notifications/read-all/', views.mark_all_simple_notifications_read, name='simple-notifications-read-all'),
