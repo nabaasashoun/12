@@ -231,12 +231,13 @@ const Header = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+  const [locationQuery, setLocationQuery] = useState('');
 
   const allCategories = [{ id: '', name: 'All' }, ...categories];
 
   const handleSearch = () => {
     if (onSearch) {
-      onSearch(searchQuery, selectedCategory);
+      onSearch(searchQuery, selectedCategory, locationQuery);
     }
   };
 
@@ -284,12 +285,22 @@ const Header = ({
       <SearchWrapper>
         <div className="search-container">
             <input
-            type="text"
-            className="search-input"
-            placeholder={`Search in ${selectedCategoryName}...`}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyPress={handleKeyPress}
+              type="text"
+              className="search-input"
+              placeholder={`Search in ${selectedCategoryName}...`}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={handleKeyPress}
+            />
+            <div style={{ width: '1px', backgroundColor: '#e5e7eb', height: '1.5rem', alignSelf: 'center' }}></div>
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Location..."
+              value={locationQuery}
+              onChange={(e) => setLocationQuery(e.target.value)}
+              onKeyPress={handleKeyPress}
+              style={{ maxWidth: '90px' }}
             />
           <button className="search-button" onClick={handleSearch}>
             Search

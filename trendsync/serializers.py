@@ -6,7 +6,7 @@ from .models import CommentHelpful
 from .models import (
     Category, Seller, Buyer, Product, ProductLike, ProductComment,
     Wishlist, Cart, CartItem, Address, Order, OrderItem, QuickDeal, WishlistItem,
-    ProductQuestion, QuestionOption, ProductImage, SellerFollow
+    ProductQuestion, QuestionOption, ProductImage, SellerFollow, ChatMessage
 )
 
 from .models import Notification
@@ -640,3 +640,11 @@ class SellerProfileUpdateSerializer(serializers.ModelSerializer):
 class DusuPayWebhookSerializer(serializers.Serializer):
     event = serializers.CharField()
     payload = serializers.DictField()
+
+class ChatMessageSerializer(serializers.ModelSerializer):
+    sender_name = serializers.CharField(source='sender.username', read_only=True)
+    recipient_name = serializers.CharField(source='recipient.username', read_only=True)
+
+    class Meta:
+        model = ChatMessage
+        fields = ['id', 'sender', 'sender_name', 'recipient', 'recipient_name', 'content', 'timestamp', 'is_read']

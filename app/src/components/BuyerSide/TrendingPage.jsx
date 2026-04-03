@@ -68,10 +68,11 @@ const TrendingPage = () => {
       let productsResult;
       const hasSearch = params.search && params.search.trim() !== '';
       const hasCategory = params.category && params.category !== 'all' && params.category !== '';
+      const hasLocation = params.location && params.location.trim() !== '';
 
-      if (hasSearch || hasCategory) {
-        // Search with term and/or category
-        productsResult = await api.searchProducts(params.search || '', params.category);
+      if (hasSearch || hasCategory || hasLocation) {
+        // Search with term and/or category and/or location
+        productsResult = await api.searchProducts(params.search || '', params.category, params.location || '');
       } else {
         // No search, fetch trending (ordered by like_count)
         productsResult = await api.getProducts({ ordering: '-like_count' });
@@ -111,8 +112,8 @@ const TrendingPage = () => {
   }, [fetchProducts]);
 
   // Handle search from Header
-  const handleSearch = useCallback((query, category) => {
-    fetchProducts({ search: query, category });
+  const handleSearch = useCallback((query, category, location) => {
+    fetchProducts({ search: query, category, location });
   }, [fetchProducts]);
 
   // Image carousel navigation

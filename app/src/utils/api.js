@@ -545,10 +545,11 @@ class Api {
     return this.request('/orders/count/');
   }
 
-  async searchProducts(query, category = 'all') {
+  async searchProducts(query, category = 'all', location = '') {
     const params = new URLSearchParams();
     if (query) params.append('search', query);
     if (category && category !== 'all') params.append('category', category);
+    if (location && location !== 'all') params.append('location', location);
     return this.request(`/products/?${params.toString()}`);
   }
 
@@ -804,6 +805,14 @@ class Api {
       method: 'POST',
       body: JSON.stringify(paymentData),
     });
+  }
+
+  async getChatInbox() {
+    return this.request('/chat/inbox/');
+  }
+
+  async getChatHistory(userId) {
+    return this.request(`/chat/${userId}/`);
   }
 
 }

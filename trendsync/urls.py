@@ -68,4 +68,8 @@ urlpatterns = [
     path('orders/<int:order_id>/', views.get_order_detail, name='order-detail'),
     path('payments/callback/', views.dusupay_callback, name='dusupay-callback'),
     path('seller/location/update/', views.update_seller_location, name='update-seller-location'),
+    
+    # Chat APIs
+    path('chat/inbox/', views.get_chat_inbox, name='chat-inbox'),
+    path('chat/<int:user_id>/', views.get_chat_history, name='chat-history'),
 ]

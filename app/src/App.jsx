@@ -29,6 +29,7 @@ import SellerNotifications from "./components/SellerSide/SellerNotfifcations";
 import SellerSettings from "./components/SellerSide/SellerSettings";
 import SellerTrendingPage from "./components/SellerSide/SellerTrendingPage";
 import { PageLoadingProvider } from "./utils/PageLoadingContext";
+import { ChatProvider } from "./utils/ChatContext";
 import ChatPage from "./components/Chat/ChatPage";
 import { DarkModeProvider } from "./utils/BuyerDarkModeContext";
 import { LikeBookmarkProvider } from "./utils/LikeBookmarkContext";
@@ -94,9 +95,7 @@ const App = () => {
               return;
             }
 
-            if (!storedUser) {
-              localStorage.setItem('user', JSON.stringify(user));
-            }
+            localStorage.setItem('user', JSON.stringify(user));
 
             const role = user.is_seller ? 'seller' : 'buyer';
             setUserRole(role);
@@ -188,20 +187,8 @@ const App = () => {
   const BuyerRoute = ({ children }) => {
     if (!isAuthenticated) return <Navigate to="/login" />;
 
-    const storedUserStr = localStorage.getItem('user');
-    let isBuyerUser = true;
-
-    if (storedUserStr) {
-      try {
-        const storedUser = JSON.parse(storedUserStr);
-        isSellerUser = storedUser.is_seller === true;
-      } catch (error) {
-        console.error('Error parsing user data:', error);
-      }
-    }
-
-    if (isSellerUser || userRole === 'seller') {
-      return <Navigate to="/seller/login" />;
+    if (userRole === 'seller') {
+      return <Navigate to="/seller-home" />;
     }
 
     if (userRole !== 'buyer') {
@@ -214,19 +201,7 @@ const App = () => {
   const SellerRoute = ({ children }) => {
     if (!isAuthenticated) return <Navigate to="/seller/login" />;
 
-    const storedUserStr = localStorage.getItem('user');
-    let isSellerUser = false;
-
-    if (storedUserStr) {
-      try {
-        const storedUser = JSON.parse(storedUserStr);
-        isBuyerUser = !storedUser.is_seller;
-      } catch (error) {
-        console.error('Error parsing user data:', error);
-      }
-    }
-
-    if (!isSellerUser) {
+    if (userRole !== 'seller') {
       return <Navigate to="/" />;
     }
 
@@ -266,9 +241,12 @@ const App = () => {
     if (userRole === 'buyer') {
       return (
         <DarkModeProvider>
-          <LikeBookmarkProvider>
+          <SellerDarkModeProvider>
+            <LikeBookmarkProvider>
             <ChatProvider>
-              <BrowserRouter>
+              <PageLoadingProvider>
+                <NotificationProvider>
+                  <BrowserRouter>
                 <div className="flex min-h-screen bg-gray-100">
                   {isAuthenticated && userRole === 'buyer' && <SidebarNav onLogout={handleLogout} />}
 
@@ -414,9 +392,12 @@ const App = () => {
                   {isAuthenticated && userRole === 'buyer' && <BottomNav />}
                   {isAuthenticated && userRole === 'seller' && <SellerBottomNav />}
                 </div>
-              </BrowserRouter>
+                  </BrowserRouter>
+                </NotificationProvider>
+              </PageLoadingProvider>
             </ChatProvider>
           </LikeBookmarkProvider>
+          </SellerDarkModeProvider>
         </DarkModeProvider>
       );
     }
@@ -426,7 +407,8 @@ const App = () => {
         <LikeBookmarkProvider>
           <ChatProvider>
             <PageLoadingProvider>
-              <AddProductProvider>
+              <NotificationProvider>
+                <AddProductProvider>
                 <BrowserRouter>
                   <SellerDarkModeProvider>
                     <div className="flex min-h-screen bg-gray-100">
@@ -484,7 +466,8 @@ const App = () => {
                     <SellerBottomNav />
                   </SellerDarkModeProvider>
                 </BrowserRouter>
-              </AddProductProvider>
+                </AddProductProvider>
+              </NotificationProvider>
             </PageLoadingProvider>
           </ChatProvider>
         </LikeBookmarkProvider>

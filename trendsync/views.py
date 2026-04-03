@@ -332,10 +332,16 @@ class ProductViewSet(viewsets.ModelViewSet):
         serializer.save(seller=self.request.user.seller_profile)
 
     def get_queryset(self):
+        queryset = Product.objects.all()
         if hasattr(self.request.user, 'seller_profile'):
             if self.action in ['update', 'partial_update', 'destroy']:
-                return Product.objects.filter(seller=self.request.user.seller_profile)
-        return Product.objects.all()
+                queryset = Product.objects.filter(seller=self.request.user.seller_profile)
+        
+        location = self.request.query_params.get('location')
+        if location and location.lower() != 'all':
+            queryset = queryset.filter(seller__location__icontains=location)
+            
+        return queryset
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def like(self, request, pk=None):
@@ -2244,6 +2250,52 @@ def update_seller_location(request):
         })
     except Exception as e:
         return Response({"error": str(e)}, status=400)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_chat_inbox(request):
+    from django.db.models import Q
+    from .models import ChatMessage
+    
+    user_id = request.user.id
+    messages = ChatMessage.objects.filter(Q(sender=request.user) | Q(recipient=request.user)).order_by('-timestamp')
+    
+    conversations = {}
+    for msg in messages:
+        partner_id = msg.recipient.id if msg.sender.id == user_id else msg.sender.id
+        if partner_id not in conversations:
+            conversations[partner_id] = {
+                'partner_id': partner_id,
+                'partner_name': msg.recipient.username if msg.sender.id == user_id else msg.sender.username,
+                'last_message': msg.content,
+                'timestamp': msg.timestamp,
+                'unread_count': 0
+            }
+        
+        if msg.recipient.id == user_id and not msg.is_read:
+            conversations[partner_id]['unread_count'] += 1
+            
+    inbox = list(conversations.values())
+    inbox.sort(key=lambda x: x['timestamp'], reverse=True)
+    return Response(inbox, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_chat_history(request, user_id):
+    from django.db.models import Q
+    from .models import ChatMessage
+    from .serializers import ChatMessageSerializer
+    
+    messages = ChatMessage.objects.filter(
+        (Q(sender=request.user) & Q(recipient_id=user_id)) | 
+        (Q(sender_id=user_id) & Q(recipient=request.user))
+    ).order_by('timestamp')
+    
+    ChatMessage.objects.filter(sender_id=user_id, recipient=request.user, is_read=False).update(is_read=True)
+    
+    serializer = ChatMessageSerializer(messages, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 
 
