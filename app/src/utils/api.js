@@ -815,6 +815,10 @@ class Api {
     return this.request(`/chat/${userId}/`);
   }
 
+  async getSellerUserID(sellerProfileId) {
+    return this.request(`/sellers/${sellerProfileId}/`);
+  }
+
 }
 
 const api = new Api();

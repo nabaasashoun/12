@@ -4,15 +4,14 @@ import { useChat } from "../../utils/ChatContext";
 import { useDarkMode } from "../../utils/BuyerDarkModeContext";
 
 const SellerBottomNav = () => {
-  const { unreadNotifications } = useChat();
+  const { unreadCount } = useChat();
   const { isDarkMode } = useDarkMode();
-  const unreadCount = unreadNotifications.length;
 
   const navItems = [
-    { to: "/seller/home", icon: Home, label: "Home" },
-    { to: "/seller/trending2", icon: TrendingUp, label: "Trending" },
-    { to: "/seller/add-product", icon: PlusCircle, label: "Add Product" },
-    { to: "/seller/notifications", icon: Bell, label: "Notifications" },
+    { to: "/seller-home", icon: Home, label: "Home" },
+    { to: "/seller/chat", icon: MessageSquare, label: "Chat", badge: unreadCount },
+    { to: "/seller/add-product/step1", icon: PlusCircle, label: "Add" },
+    { to: "/seller/notifications", icon: Bell, label: "Alerts" },
     { to: "/seller/account", icon: User, label: "Account" },
   ];
 
@@ -22,7 +21,7 @@ const SellerBottomNav = () => {
         ? 'bg-gray-800 border-gray-700' 
         : 'bg-white border-gray-200'
     }`}>
-      {navItems.map(({ to, icon: Icon, label }) => (
+      {navItems.map(({ to, icon: Icon, label, badge }) => (
         <NavLink 
           key={to} 
           to={to} 
@@ -43,8 +42,13 @@ const SellerBottomNav = () => {
                   strokeWidth={isActive ? 2.5 : 1.5}
                 />
                 {/* For the plus icon */}
-                {to === "/seller/add-product" && (
+                {to === "/seller/add-product/step1" && (
                   <span className="absolute -top-1 -right-2 w-2 h-2 bg-green-500 rounded-full"></span>
+                )}
+                {badge > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] min-w-[16px] h-4 flex items-center justify-center rounded-full px-1 border-2 border-white">
+                    {badge > 9 ? '9+' : badge}
+                  </span>
                 )}
               </div>
               <span

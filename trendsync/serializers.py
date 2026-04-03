@@ -152,12 +152,13 @@ class ProductSerializer(serializers.ModelSerializer):
     questions_input = serializers.JSONField(required=False, write_only=True)
     images = serializers.SerializerMethodField()
     seller_name = serializers.CharField(source='seller.name', read_only=True)
+    seller_user_id = serializers.IntegerField(source='seller.user.id', read_only=True)
     questions = ProductQuestionSerializer(source='questions.all', many=True, read_only=True)
 
     class Meta:
         model = Product
         fields = [
-            'id', 'seller', 'seller_name', 'category', 'name', 'stock_quantity', 'date_of_post',
+            'id', 'seller', 'seller_name', 'seller_user_id', 'category', 'name', 'stock_quantity', 'date_of_post',
             'unit_price', 'unit_name', 'product_photo', 'description', 'min_order',
             'max_order', 'rating_number', 'rating_magnitude', 'sales_count', 'like_count',
             'is_liked', 'questions_input', 'images', 'questions'

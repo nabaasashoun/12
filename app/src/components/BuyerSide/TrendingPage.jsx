@@ -9,6 +9,7 @@ import { useDarkMode } from '../../utils/BuyerDarkModeContext';
 import { useLikeBookmark } from '../../utils/LikeBookmarkContext';
 import { useCart } from '../../utils/CartContext';
 import { usePageLoading } from '../../utils/PageLoadingContext';
+import { useChat } from '../../utils/ChatContext';
 import api from '../../utils/api';
 import Header from './Header';
 
@@ -22,6 +23,7 @@ const TrendingPage = () => {
   const { isLiked, isBookmarked, toggleLike, toggleBookmark } = useLikeBookmark();
   const { cartItems, addToCart, removeFromCart } = useCart();
   const { setIsPageLoading } = usePageLoading();
+  const { startChat } = useChat();
 
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState({});
@@ -94,7 +96,8 @@ const TrendingPage = () => {
         ratingCount: product.rating_number || 0,
         commentCount: product.comment_count || 0,
         like_count: product.like_count || 0,
-        sellerId: product.seller
+        sellerId: product.seller,
+        sellerUserId: product.seller_user_id,
       }));
       setPosts(transformedPosts);
     } catch (error) {
@@ -165,16 +168,38 @@ const TrendingPage = () => {
     }
   };
 
-  const dropdownItems = [
-    { label: 'Report', action: () => {} },
-    { label: 'Message Seller', action: () => {} },
-    { label: 'Go to Post', action: () => {} },
-    { label: 'Share to', action: () => {} },
-    { label: 'Copy Link', action: () => {} },
-    { label: 'Remove from Cart', action: () => {} },
-    { label: 'Unfollow', action: () => {} },
-    { label: 'Cancel', action: closeDropdown },
-  ];
+  const dropdownItems = (postId) => {
+    const post = posts.find(p => p.id === postId);
+    return [
+      { label: 'Report', action: () => {} },
+      { 
+        label: 'Message Seller', 
+        action: async () => {
+          closeDropdown();
+          let targetUserId = post?.sellerUserId;
+          if (!targetUserId && post?.sellerId) {
+            // Fallback: fetch seller profile to resolve user ID
+            const r = await api.getSellerUserID(post.sellerId);
+            if (!r.error && r.data?.user) {
+              targetUserId = r.data.user;
+            }
+          }
+          if (targetUserId) {
+            startChat(targetUserId);
+            navigate('/chat');
+          } else {
+            console.warn('Could not resolve seller user ID', post);
+          }
+        }
+      },
+      { label: 'Go to Post', action: () => { closeDropdown(); navigate(`/product/${postId}`); } },
+      { label: 'Share to', action: () => {} },
+      { label: 'Copy Link', action: () => {} },
+      { label: 'Remove from Cart', action: () => {} },
+      { label: 'Unfollow', action: () => {} },
+      { label: 'Cancel', action: closeDropdown },
+    ];
+  };
 
   if (loading) {
     return (
@@ -380,7 +405,7 @@ const TrendingPage = () => {
                 <h3 className={`font-semibold text-lg ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Post Options</h3>
               </div>
               <div className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
-                {dropdownItems.map((item, index) => (
+                {dropdownItems(dropdownOpen).map((item, index) => (
                   <button
                     key={index}
                     onClick={item.action}

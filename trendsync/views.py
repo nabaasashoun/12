@@ -239,11 +239,15 @@ class WishlistViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        if not hasattr(self.request.user, 'buyer_profile'):
+            return []
         wishlist, _ = Wishlist.objects.get_or_create(buyer=self.request.user.buyer_profile)
         return [item.product for item in wishlist.wishlistitem_set.all()]
 
     @action(detail=False, methods=['post'])
     def add(self, request):
+        if not hasattr(request.user, 'buyer_profile'):
+            return Response({"error": "Sellers cannot maintain wishlists."}, status=status.HTTP_403_FORBIDDEN)
         product_id = request.data.get('product_id')
         product = Product.objects.get(id=product_id)
         wishlist, _ = Wishlist.objects.get_or_create(buyer=request.user.buyer_profile)
@@ -463,6 +467,8 @@ class LikedProductsView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        if not hasattr(self.request.user, 'buyer_profile'):
+            return Product.objects.none()
         buyer = self.request.user.buyer_profile
         liked_product_ids = ProductLike.objects.filter(buyer=buyer).values_list('product_id', flat=True)
         return Product.objects.filter(id__in=liked_product_ids)
@@ -471,6 +477,8 @@ class LikedProductsView(generics.ListAPIView):
 @permission_classes([permissions.IsAuthenticated])
 def toggle_product_like(request, product_id):
     try:
+        if not hasattr(request.user, 'buyer_profile'):
+            return Response({"error": "Sellers cannot like products."}, status=403)
         buyer = request.user.buyer_profile
         product = Product.objects.get(id=product_id)
 

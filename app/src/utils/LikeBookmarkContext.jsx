@@ -19,7 +19,8 @@ export const LikeBookmarkProvider = ({ children }) => {
   }, []);
 
   const fetchLikedProducts = useCallback(async () => {
-    if (!isAuthenticated()) {
+    const role = localStorage.getItem('userRole');
+    if (!isAuthenticated() || role === 'seller') {
       setLikedPosts(new Set());
       return;
     }
@@ -38,7 +39,8 @@ export const LikeBookmarkProvider = ({ children }) => {
   }, [isAuthenticated]);
 
   const fetchBookmarkedProducts = useCallback(async () => {
-    if (!isAuthenticated()) {
+    const role = localStorage.getItem('userRole');
+    if (!isAuthenticated() || role === 'seller') {
       setBookmarkedPosts(new Set());
       return;
     }

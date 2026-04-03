@@ -8,6 +8,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import { useCart } from '../../utils/CartContext';
 import { useLikeBookmark } from '../../utils/LikeBookmarkContext';
+import { useChat } from '../../utils/ChatContext';
 import Loader from '../UISkeleton/Loader';
 import { usePageLoading } from '../../utils/PageLoadingContext';
 import Header from './Header';
@@ -78,6 +79,7 @@ const BuyerHomePage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchToast, setSearchToast] = useState('');
   const navigate = useNavigate();
+  const { startChat } = useChat();
   const { cartItems, addToCart, removeFromCart } = useCart();
   const { setIsPageLoading } = usePageLoading();
   const [categories, setCategories] = useState([]);
@@ -164,7 +166,8 @@ const BuyerHomePage = () => {
           ratingCount: product.rating_number || 0,
           commentCount: product.comment_count || 0,
           like_count: product.like_count || 0,
-          sellerId: product.seller
+          sellerId: product.seller,
+          sellerUserId: product.seller_user_id,
         };
       });
 
@@ -441,16 +444,38 @@ const BuyerHomePage = () => {
     );
   }
 
-  const dropdownItems = [
-    { label: 'Report', action: () => {} },
-    { label: 'Message Seller', action: () => {} },
-    { label: 'Go to Post', action: () => {} },
-    { label: 'Share to', action: () => {} },
-    { label: 'Copy Link', action: () => {} },
-    { label: 'Remove from Cart', action: () => {} },
-    { label: 'Unfollow', action: () => {} },
-    { label: 'Cancel', action: closeDropdown },
-  ];
+  const dropdownItems = (postId) => {
+    const post = posts.find(p => p.id === postId);
+    return [
+      { label: 'Report', action: () => {} },
+      { 
+        label: 'Message Seller', 
+        action: async () => {
+          closeDropdown();
+          let targetUserId = post?.sellerUserId;
+          if (!targetUserId && post?.sellerId) {
+            // Fallback: fetch the seller profile to get the user ID
+            const r = await api.getSellerUserID(post.sellerId);
+            if (!r.error && r.data?.user) {
+              targetUserId = r.data.user;
+            }
+          }
+          if (targetUserId) {
+            startChat(targetUserId);
+            navigate('/chat');
+          } else {
+            console.warn('Could not resolve seller user ID', post);
+          }
+        }
+      },
+      { label: 'Go to Post', action: () => { closeDropdown(); navigate(`/product/${postId}`); } },
+      { label: 'Share to', action: () => {} },
+      { label: 'Copy Link', action: () => {} },
+      { label: 'Remove from Cart', action: () => {} },
+      { label: 'Unfollow', action: () => {} },
+      { label: 'Cancel', action: closeDropdown },
+    ];
+  };
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -791,7 +816,7 @@ const BuyerHomePage = () => {
                 <h3 className={`font-semibold text-lg ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Post Options</h3>
               </div>
               <div className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
-                {dropdownItems.map((item, index) => (
+                {dropdownItems(dropdownOpen).map((item, index) => (
                   <button
                     key={index}
                     onClick={item.action}
