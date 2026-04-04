@@ -47,4 +47,11 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
+### 6. Run the WebSocket server
+
+```bash
+daphne -b 0.0.0.0 -p 8000 config.asgi:application
+```
+
+
 The API will be available at http://127.0.0.1:8000/
