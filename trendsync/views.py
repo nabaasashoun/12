@@ -457,7 +457,9 @@ def verify_token_view(request):
         'user': {
             'id': request.user.id,
             'username': request.user.username,
-            'email': request.user.email
+            'email': request.user.email,
+            'is_seller': hasattr(request.user, 'seller_profile'),
+            'is_buyer': hasattr(request.user, 'buyer_profile'),
         }
     })
 

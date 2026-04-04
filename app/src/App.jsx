@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { BrowserRouter, Routes, Route, Navigate, NavLink } from "react-router-dom";
 import { AddProductProvider } from "./utils/AddProductContext";
 import HomePage from "./components/BuyerSide/BuyerHomePage";
@@ -34,6 +34,19 @@ import { DarkModeProvider } from "./utils/BuyerDarkModeContext";
 import { LikeBookmarkProvider } from "./utils/LikeBookmarkContext";
 import { SellerDarkModeProvider } from "./utils/SellerDarkModeContext";
 
+const BuyerRoute = ({ children, userRole, isAuthenticated }) => {
+  if (!isAuthenticated) return <Navigate to="/login" />;
+  if (userRole === 'seller') return <Navigate to="/seller-home" />;
+  if (userRole !== 'buyer') return <Navigate to="/login" />;
+  return children;
+};
+
+const SellerRoute = ({ children, userRole, isAuthenticated }) => {
+  if (!isAuthenticated) return <Navigate to="/seller/login" />;
+  if (userRole !== 'seller') return <Navigate to="/" />;
+  return children;
+};
+
 const AuthenticatedContent = ({ isAuthenticated, userRole, handleLogout, setIsAuthenticated, setUserRole }) => {
   if (!isAuthenticated) {
     return (
@@ -46,17 +59,6 @@ const AuthenticatedContent = ({ isAuthenticated, userRole, handleLogout, setIsAu
       </Routes>
     );
   }
-
-  const BuyerRoute = ({ children }) => {
-    if (userRole === 'seller') return <Navigate to="/seller-home" />;
-    if (userRole !== 'buyer') return <Navigate to="/login" />;
-    return children;
-  };
-
-  const SellerRoute = ({ children }) => {
-    if (userRole !== 'seller') return <Navigate to="/" />;
-    return children;
-  };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -80,39 +82,39 @@ const AuthenticatedContent = ({ isAuthenticated, userRole, handleLogout, setIsAu
 
       <div className={`flex-1 overflow-y-auto ${userRole === 'buyer' ? 'pb-16 md:pb-0' : 'pb-16 md:pb-0'}`}>
         <Routes>
-          {/* Global Auth Routes */}
+          {/* Global Auth Routes (Redirects) */}
           <Route path="/login" element={<Navigate to={userRole === 'seller' ? "/seller-home" : "/"} />} />
           <Route path="/register" element={<Navigate to={userRole === 'seller' ? "/seller-home" : "/"} />} />
           <Route path="/seller/login" element={<Navigate to={userRole === 'seller' ? "/seller-home" : "/"} />} />
           <Route path="/seller/register" element={<Navigate to={userRole === 'seller' ? "/seller-home" : "/"} />} />
 
           {/* Buyer Routes */}
-          <Route path="/" element={<BuyerRoute><HomePage /></BuyerRoute>} />
-          <Route path="/cart" element={<BuyerRoute><CartPage /></BuyerRoute>} />
-          <Route path="/trending" element={<BuyerRoute><TrendingPage /></BuyerRoute>} />
-          <Route path="/search" element={<BuyerRoute><SearchBar /></BuyerRoute>} />
-          <Route path="/settings" element={<BuyerRoute><SettingsPage /></BuyerRoute>} />
-          <Route path="/notifications" element={<BuyerRoute><NotificationsPage /></BuyerRoute>} />
-          <Route path="/chat" element={<BuyerRoute><ChatPage /></BuyerRoute>} />
-          <Route path="/account" element={<BuyerRoute><AccountPage /></BuyerRoute>} />
-          <Route path="/product/:productId" element={<BuyerRoute><Product /></BuyerRoute>} />
-          <Route path="/seller/:sellerId" element={<BuyerRoute><SellerPage /></BuyerRoute>} />
-          <Route path="/product/:productId/comments" element={<BuyerRoute><ProductCommentsPage /></BuyerRoute>} />
+          <Route path="/" element={<BuyerRoute userRole={userRole} isAuthenticated={isAuthenticated}><HomePage /></BuyerRoute>} />
+          <Route path="/cart" element={<BuyerRoute userRole={userRole} isAuthenticated={isAuthenticated}><CartPage /></BuyerRoute>} />
+          <Route path="/trending" element={<BuyerRoute userRole={userRole} isAuthenticated={isAuthenticated}><TrendingPage /></BuyerRoute>} />
+          <Route path="/search" element={<BuyerRoute userRole={userRole} isAuthenticated={isAuthenticated}><SearchBar /></BuyerRoute>} />
+          <Route path="/settings" element={<BuyerRoute userRole={userRole} isAuthenticated={isAuthenticated}><SettingsPage /></BuyerRoute>} />
+          <Route path="/notifications" element={<BuyerRoute userRole={userRole} isAuthenticated={isAuthenticated}><NotificationsPage /></BuyerRoute>} />
+          <Route path="/chat" element={<BuyerRoute userRole={userRole} isAuthenticated={isAuthenticated}><ChatPage /></BuyerRoute>} />
+          <Route path="/account" element={<BuyerRoute userRole={userRole} isAuthenticated={isAuthenticated}><AccountPage /></BuyerRoute>} />
+          <Route path="/product/:productId" element={<BuyerRoute userRole={userRole} isAuthenticated={isAuthenticated}><Product /></BuyerRoute>} />
+          <Route path="/seller/:sellerId" element={<BuyerRoute userRole={userRole} isAuthenticated={isAuthenticated}><SellerPage /></BuyerRoute>} />
+          <Route path="/product/:productId/comments" element={<BuyerRoute userRole={userRole} isAuthenticated={isAuthenticated}><ProductCommentsPage /></BuyerRoute>} />
 
           {/* Seller Routes */}
-          <Route path="/seller-home" element={<SellerRoute><SellerHomePage /></SellerRoute>} />
-          <Route path="/seller/products" element={<SellerRoute><div className="p-8"><h1 className="text-2xl font-bold">My Products</h1><p>Products management page</p></div></SellerRoute>} />
-          <Route path="/seller/orders" element={<SellerRoute><div className="p-8"><h1 className="text-2xl font-bold">Orders</h1><p>Orders management page</p></div></SellerRoute>} />
-          <Route path="/seller/account" element={<SellerRoute><SellerAccountPage /></SellerRoute>} />
-          <Route path="/seller/analytics" element={<SellerRoute><div className="p-8"><h1 className="text-2xl font-bold">Analytics</h1><p>Analytics dashboard</p></div></SellerRoute>} />
-          <Route path="/seller/add-product/step1" element={<SellerRoute><AddProduct1 /></SellerRoute>} />
-          <Route path="/seller/add-product/step2" element={<SellerRoute><AddProduct2 /></SellerRoute>} />
-          <Route path="/seller/add-product/step3" element={<SellerRoute><AddProduct3 /></SellerRoute>} />
+          <Route path="/seller-home" element={<SellerRoute userRole={userRole} isAuthenticated={isAuthenticated}><SellerHomePage /></SellerRoute>} />
+          <Route path="/seller/products" element={<SellerRoute userRole={userRole} isAuthenticated={isAuthenticated}><div className="p-8"><h1 className="text-2xl font-bold">My Products</h1><p>Products management page</p></div></SellerRoute>} />
+          <Route path="/seller/orders" element={<SellerRoute userRole={userRole} isAuthenticated={isAuthenticated}><div className="p-8"><h1 className="text-2xl font-bold">Orders</h1><p>Orders management page</p></div></SellerRoute>} />
+          <Route path="/seller/account" element={<SellerRoute userRole={userRole} isAuthenticated={isAuthenticated}><SellerAccountPage /></SellerRoute>} />
+          <Route path="/seller/analytics" element={<SellerRoute userRole={userRole} isAuthenticated={isAuthenticated}><div className="p-8"><h1 className="text-2xl font-bold">Analytics</h1><p>Analytics dashboard</p></div></SellerRoute>} />
+          <Route path="/seller/add-product/step1" element={<SellerRoute userRole={userRole} isAuthenticated={isAuthenticated}><AddProduct1 /></SellerRoute>} />
+          <Route path="/seller/add-product/step2" element={<SellerRoute userRole={userRole} isAuthenticated={isAuthenticated}><AddProduct2 /></SellerRoute>} />
+          <Route path="/seller/add-product/step3" element={<SellerRoute userRole={userRole} isAuthenticated={isAuthenticated}><AddProduct3 /></SellerRoute>} />
           <Route path="/seller/add-product" element={<Navigate to="/seller/add-product/step1" />} />
-          <Route path="/seller/notifications" element={<SellerRoute><SellerNotifications /></SellerRoute>} />
-          <Route path="/seller/chat" element={<SellerRoute><ChatPage /></SellerRoute>} />
-          <Route path="/seller/settings" element={<SellerRoute><SellerSettings /></SellerRoute>} />
-          <Route path="/seller/trending2" element={<SellerRoute><SellerTrendingPage /></SellerRoute>} />
+          <Route path="/seller/notifications" element={<SellerRoute userRole={userRole} isAuthenticated={isAuthenticated}><SellerNotifications /></SellerRoute>} />
+          <Route path="/seller/chat" element={<SellerRoute userRole={userRole} isAuthenticated={isAuthenticated}><ChatPage /></SellerRoute>} />
+          <Route path="/seller/settings" element={<SellerRoute userRole={userRole} isAuthenticated={isAuthenticated}><SellerSettings /></SellerRoute>} />
+          <Route path="/seller/trending2" element={<SellerRoute userRole={userRole} isAuthenticated={isAuthenticated}><SellerTrendingPage /></SellerRoute>} />
 
           <Route path="*" element={<Navigate to={userRole === 'seller' ? "/seller-home" : "/"} />} />
         </Routes>
@@ -125,26 +127,27 @@ const AuthenticatedContent = ({ isAuthenticated, userRole, handleLogout, setIsAu
 };
 
 const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRole, setUserRole] = useState(null);
+  // Initialize from localStorage immediately to avoid "flash of wrong content"
+  const [isAuthenticated, setIsAuthenticated] = useState(() => !!(localStorage.getItem('accessToken') || localStorage.getItem('access')));
+  const [userRole, setUserRole] = useState(() => localStorage.getItem('userRole'));
   const [loading, setLoading] = useState(true);
 
-  const clearAuthData = () => {
+  const clearAuthData = useCallback(() => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('access');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('refresh');
     localStorage.removeItem('user');
     localStorage.removeItem('userRole');
-  };
+  }, []);
 
   useEffect(() => {
     const validateToken = async () => {
       const token = localStorage.getItem('accessToken') || localStorage.getItem('access');
-      const storedRole = localStorage.getItem('userRole');
       const storedUser = localStorage.getItem('user');
 
       if (!token) {
+        clearAuthData();
         setIsAuthenticated(false);
         setUserRole(null);
         setLoading(false);
@@ -163,6 +166,7 @@ const App = () => {
           const data = await response.json();
           const user = data.user || (storedUser ? JSON.parse(storedUser) : null);
           if (user) {
+            console.log("[App] Verified user role:", user.is_seller ? 'seller' : 'buyer');
             localStorage.setItem('user', JSON.stringify(user));
             const role = user.is_seller ? 'seller' : 'buyer';
             setUserRole(role);
@@ -176,10 +180,13 @@ const App = () => {
         }
       } catch (error) {
         console.error('Token validation error:', error);
+        // Fallback to local storage if network fails but we have a user
         if (storedUser) {
           try {
             const user = JSON.parse(storedUser);
-            setUserRole(user.is_seller ? 'seller' : 'buyer');
+            const role = user.is_seller ? 'seller' : 'buyer';
+            setUserRole(role);
+            localStorage.setItem('userRole', role);
             setIsAuthenticated(true);
           } catch {
             clearAuthData();
@@ -193,14 +200,14 @@ const App = () => {
     };
 
     validateToken();
-  }, []);
+  }, [clearAuthData]);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     clearAuthData();
     window.dispatchEvent(new Event('authStateChanged'));
     setIsAuthenticated(false);
     setUserRole(null);
-  };
+  }, [clearAuthData]);
 
   if (loading) {
     return <div className="flex h-screen items-center justify-center bg-gray-50 font-medium text-gray-500">Loading TendSync...</div>;

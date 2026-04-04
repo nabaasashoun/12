@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import { useSellerDarkMode } from '../../utils/SellerDarkModeContext';
+import { useChat } from '../../utils/ChatContext';
+import { ConnectionBadge } from '../Chat/ChatPage';
 
 const SellerHomePage = () => {
   const { isDarkMode } = useSellerDarkMode();
@@ -26,6 +28,7 @@ const SellerHomePage = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const { isConnected, startChat } = useChat();
 
   // Quick deals state
   const [quickDeals, setQuickDeals] = useState([]);
@@ -390,14 +393,22 @@ const SellerHomePage = () => {
     }
   };
 
-  const dropdownItems = [
-    { label: 'Report', action: () => {} },
-    { label: 'Message Buyer', action: () => {} },
-    { label: 'Go to Post', action: () => {} },
-    { label: 'Share to', action: () => {} },
-    { label: 'Copy Link', action: () => {} },
-    { label: 'Remove from Cart', action: () => {} },
-    { label: 'Unfollow', action: () => {} },
+  const getDropdownItems = (post) => [
+    { label: 'Report', action: () => closeDropdown() },
+    { 
+      label: 'Chat with Buyer', 
+      action: () => {
+        // Sellers can start chats from orders or comments, 
+        // but for a general "Message Buyer" on their own product, 
+        // we'll default to the last person who interacted or just open the inbox
+        closeDropdown();
+        navigate('/seller/chat');
+      }
+    },
+    { label: 'View Post', action: () => { closeDropdown(); navigate(`/product/${post.id}`); } },
+    { label: 'Share', action: () => closeDropdown() },
+    { label: 'Copy Link', action: () => closeDropdown() },
+    { label: 'Edit Product', action: () => { closeDropdown(); openEditModal(post); } },
     { label: 'Cancel', action: closeDropdown },
   ];
 
@@ -414,7 +425,12 @@ const SellerHomePage = () => {
 
   return (
     <div className={`p-2 sm:p-4 md:p-6 max-w-4xl mx-auto relative min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      {/* Header section */}
+      {/* Header section with connection status */}
+      <div className="flex justify-between items-center mb-4">
+        <h1 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>My Store</h1>
+        <ConnectionBadge isConnected={isConnected} />
+      </div>
+
       <div className="flex justify-between items-center mb-2 sm:mb-3">
         <div className={`flex w-full sm:w-64 border rounded-lg overflow-hidden ${
           isDarkMode ? 'border-gray-700' : 'border-gray-300'
@@ -605,13 +621,36 @@ const SellerHomePage = () => {
                       </Link>
                       <button
                         onClick={() => toggleDropdown(post.id)}
-                        className={`p-1 rounded ${
+                        className={`p-1 rounded transition-relative ${
                           isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
                         }`}
                       >
                         <MoreHorizontal className={`w-3 h-3 sm:w-4 sm:h-4 ${
                           isDarkMode ? 'text-gray-400' : 'text-gray-500'
                         }`} />
+                        
+                        {dropdownOpen === post.id && (
+                          <div className={`absolute right-0 mt-2 w-48 rounded-md shadow-lg z-50 py-1 border ${
+                            isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+                          }`}>
+                            {getDropdownItems(post).map((item, idx) => (
+                              <button
+                                key={idx}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  item.action();
+                                }}
+                                className={`block w-full text-left px-4 py-2 text-sm ${
+                                  item.label === 'Cancel' 
+                                    ? 'text-red-500 border-t mt-1 ' + (isDarkMode ? 'border-gray-700' : 'border-gray-100')
+                                    : (isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100')
+                                }`}
+                              >
+                                {item.label}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </button>
                     </div>
                     <div className="flex justify-center items-center mt-0.2">

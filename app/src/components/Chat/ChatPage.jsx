@@ -15,6 +15,27 @@ const formatDate = (ts) => {
     : d.toLocaleDateString([], { month: 'short', day: 'numeric' });
 };
 
+// ── Contact filter ────────────────────────────────────────────────────────────
+
+const CONTACT_PATTERNS = [
+  // Email
+  /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/,
+  // Phone: +256701234567 | 0701 234 567 | (070) 123-4567
+  /(\+?\d[\d\s\-().]{6,18}\d)/,
+  // URLs with protocol or www
+  /(https?:\/\/|www\.)\S+/i,
+  // Bare domains with common TLDs
+  /\S+\.(com|net|org|io|co|app|me|ly|gg)\b/i,
+  // Social handles
+  /@[a-zA-Z0-9_]{3,}/,
+  // Telegram / WhatsApp invite links
+  /t\.me\/\S+/i,
+  /wa\.me\/\S+/i,
+];
+
+const containsContactInfo = (text) =>
+  CONTACT_PATTERNS.some((pattern) => pattern.test(text));
+
 // ── Small reusable components ────────────────────────────────────────────────
 
 const Avatar = ({ name, size = 'md', active = false }) => {
@@ -32,7 +53,7 @@ const Avatar = ({ name, size = 'md', active = false }) => {
   );
 };
 
-const ConnectionBadge = ({ isConnected, short = false }) =>
+export const ConnectionBadge = ({ isConnected, short = false }) =>
   isConnected ? (
     <span className="flex items-center gap-1.5 text-xs font-medium text-green-600">
       <Wifi className="w-3.5 h-3.5 text-green-500" />
@@ -46,8 +67,6 @@ const ConnectionBadge = ({ isConnected, short = false }) =>
   );
 
 // ── InboxPanel ───────────────────────────────────────────────────────────────
-// Defined OUTSIDE ChatPage so React never treats it as a new component type
-// on re-render, which would cause unmount/remount and kill focus + WebSocket.
 
 const InboxPanel = ({ inbox, activeChatId, isConnected, onSelectConversation }) => (
   <div className="flex flex-col h-full">
@@ -112,7 +131,6 @@ const InboxPanel = ({ inbox, activeChatId, isConnected, onSelectConversation }) 
 );
 
 // ── ChatPanel ────────────────────────────────────────────────────────────────
-// Also defined OUTSIDE ChatPage for the same reason.
 
 const ChatPanel = ({
   messages,
@@ -125,78 +143,101 @@ const ChatPanel = ({
   messagesEndRef,
   onSend,
   onBack,
-}) => (
-  <div className="flex flex-col h-full">
-    <div className="px-3 py-3 border-b bg-white flex items-center gap-3 shrink-0">
-      <button
-        onClick={onBack}
-        className="md:hidden p-1.5 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
-        aria-label="Back to inbox"
-      >
-        <ArrowLeft className="w-5 h-5" />
-      </button>
-      <Avatar name={currentChatPartner} />
-      <div className="flex-1 min-w-0">
-        <p className="font-semibold text-gray-900 text-sm truncate">{currentChatPartner}</p>
-        <ConnectionBadge isConnected={isConnected} short />
-      </div>
-    </div>
+  blockedMessage,
+}) => {
+  const isBlocked = containsContactInfo(inputText);
 
-    <div className="flex-1 overflow-y-auto px-3 py-4 bg-gray-50 flex flex-col gap-2">
-      {messages.length === 0 && (
-        <div className="flex-1 flex items-center justify-center text-center py-12">
-          <div>
-            <MessageCircle className="w-10 h-10 text-gray-300 mx-auto mb-2" />
-            <p className="text-gray-400 text-sm">Send a message to get started</p>
-          </div>
+  return (
+    <div className="flex flex-col h-full">
+      <div className="px-3 py-3 border-b bg-white flex items-center gap-3 shrink-0">
+        <button
+          onClick={onBack}
+          className="md:hidden p-1.5 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
+          aria-label="Back to inbox"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <Avatar name={currentChatPartner} />
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-gray-900 text-sm truncate">{currentChatPartner}</p>
+          <ConnectionBadge isConnected={isConnected} short />
         </div>
-      )}
-      {messages.map((msg, idx) => {
-        const isMe = msg.sender === currentUser?.id;
-        return (
-          <div key={msg.id || idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-            {!isMe && <Avatar name={currentChatPartner} size="sm" />}
-            <div className={`max-w-[75%] sm:max-w-[65%] rounded-2xl px-3.5 py-2 ml-2
-              ${isMe
-                ? 'bg-blue-500 text-white rounded-br-sm'
-                : 'bg-white text-gray-800 border border-gray-200 rounded-bl-sm shadow-sm'}`}>
-              <p className="text-sm leading-relaxed break-words">{msg.content}</p>
-              <p className={`text-[10px] mt-1 text-right ${isMe ? 'text-blue-200' : 'text-gray-400'}`}>
-                {formatTime(msg.timestamp)}
-              </p>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-3 py-4 bg-gray-50 flex flex-col gap-2">
+        {messages.length === 0 && (
+          <div className="flex-1 flex items-center justify-center text-center py-12">
+            <div>
+              <MessageCircle className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+              <p className="text-gray-400 text-sm">Send a message to get started</p>
             </div>
           </div>
-        );
-      })}
-      <div ref={messagesEndRef} />
-    </div>
+        )}
+        {messages.map((msg, idx) => {
+          const isMe = msg.sender === currentUser?.id;
+          return (
+            <div key={msg.id || idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+              {!isMe && <Avatar name={currentChatPartner} size="sm" />}
+              <div className={`max-w-[75%] sm:max-w-[65%] rounded-2xl px-3.5 py-2 ml-2
+                ${isMe
+                  ? 'bg-blue-500 text-white rounded-br-sm'
+                  : 'bg-white text-gray-800 border border-gray-200 rounded-bl-sm shadow-sm'}`}>
+                <p className="text-sm leading-relaxed break-words">{msg.content}</p>
+                <p className={`text-[10px] mt-1 text-right ${isMe ? 'text-blue-200' : 'text-gray-400'}`}>
+                  {formatTime(msg.timestamp)}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+        <div ref={messagesEndRef} />
+      </div>
 
-    <div className="px-3 py-3 bg-white border-t shrink-0">
-      <form onSubmit={onSend} className="flex items-center gap-2">
-        <input
-          ref={inputRef}
-          type="text"
-          value={inputText}
-          onChange={e => setInputText(e.target.value)}
-          placeholder="Type a message…"
-          className="flex-1 bg-gray-100 rounded-full px-4 py-2.5 text-sm text-gray-900
-            placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400
-            focus:bg-white transition-colors"
-        />
-        <button
-          type="submit"
-          disabled={!inputText.trim() || !isConnected}
-          aria-label="Send"
-          className="shrink-0 w-10 h-10 bg-blue-500 hover:bg-blue-600
-            disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-full
-            flex items-center justify-center transition-colors"
-        >
-          <Send className="w-4 h-4" />
-        </button>
-      </form>
+      {/* Client-side warning: triggers as user types */}
+      {isBlocked && (
+        <div className="mx-3 mb-1 px-3 py-2 bg-red-50 border border-red-200 rounded-xl
+          text-xs text-red-600 flex items-center gap-2">
+          <span>🚫</span>
+          Contact details (phones, emails, links) cannot be shared here.
+        </div>
+      )}
+
+      {/* Server-side rejection: shown after a blocked send attempt */}
+      {blockedMessage && (
+        <div className="mx-3 mb-1 px-3 py-2 bg-orange-50 border border-orange-200 rounded-xl
+          text-xs text-orange-600 flex items-center gap-2">
+          <span>⚠️</span>
+          {blockedMessage}
+        </div>
+      )}
+
+      <div className="px-3 py-3 bg-white border-t shrink-0">
+        <form onSubmit={onSend} className="flex items-center gap-2">
+          <input
+            ref={inputRef}
+            type="text"
+            value={inputText}
+            onChange={e => setInputText(e.target.value)}
+            placeholder="Type a message…"
+            className={`flex-1 bg-gray-100 rounded-full px-4 py-2.5 text-sm text-gray-900
+              placeholder-gray-400 focus:outline-none focus:ring-2 focus:bg-white transition-colors
+              ${isBlocked ? 'focus:ring-red-300' : 'focus:ring-blue-400'}`}
+          />
+          <button
+            type="submit"
+            disabled={!inputText.trim() || !isConnected || isBlocked}
+            aria-label="Send"
+            className="shrink-0 w-10 h-10 bg-blue-500 hover:bg-blue-600
+              disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-full
+              flex items-center justify-center transition-colors"
+          >
+            <Send className="w-4 h-4" />
+          </button>
+        </form>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // ── ChatPage ─────────────────────────────────────────────────────────────────
 
@@ -211,6 +252,7 @@ const ChatPage = () => {
   const [inputText, setInputText] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
   const [mobileView, setMobileView] = useState(activeChatId ? 'chat' : 'inbox');
+  const [blockedMessage, setBlockedMessage] = useState(null);
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -235,9 +277,27 @@ const ChatPage = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Listen for server-side contact-filter rejections dispatched from ChatContext
+  useEffect(() => {
+    const handleChatError = (e) => {
+      if (e.detail?.code === 'contact_info_blocked') {
+        setBlockedMessage(e.detail.message);
+        // Roll back the optimistic message that was added before the server rejected it
+        setMessages(prev => prev.filter(m => !String(m.id).startsWith('temp-')));
+        setTimeout(() => setBlockedMessage(null), 5000);
+      }
+    };
+    window.addEventListener('chatError', handleChatError);
+    return () => window.removeEventListener('chatError', handleChatError);
+  }, [setMessages]);
+
   const handleSend = useCallback((e) => {
     e.preventDefault();
     if (!inputText.trim() || !activeChatId) return;
+    // Belt-and-suspenders: button is already disabled when blocked,
+    // but this stops any programmatic bypasses too.
+    if (containsContactInfo(inputText)) return;
+
     sendMessage(activeChatId, inputText);
     setMessages(prev => [...prev, {
       id: 'temp-' + Date.now(),
@@ -276,6 +336,7 @@ const ChatPage = () => {
     messagesEndRef,
     onSend: handleSend,
     onBack: () => setMobileView('inbox'),
+    blockedMessage,
   };
 
   return (

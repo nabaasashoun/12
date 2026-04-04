@@ -80,6 +80,8 @@ export function ChatProvider({ children }) {
           timestamp: payload.timestamp,
         };
 
+
+
         setMessages(prev => {
           // Deduplicate confirmed messages
           if (prev.some(m => m.id === payload.id)) return prev;
@@ -103,6 +105,11 @@ export function ChatProvider({ children }) {
         window.dispatchEvent(new CustomEvent('chatMessageReceived', { detail: payload }));
       } else if (payload.type === 'notification') {
         window.dispatchEvent(new CustomEvent('newNotification', { detail: payload }));
+      }
+
+      if (payload.type === 'error') {
+        window.dispatchEvent(new CustomEvent('chatError', { detail: payload }));
+        return;
       }
     };
 
