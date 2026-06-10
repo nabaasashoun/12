@@ -1,3 +1,8 @@
+// Add this at the top of ChatContext.jsx, right after the imports
+console.log('=== ChatContext Debug ===');
+console.log('VITE_API_URL:', import.meta.env.VITE_API_URL);
+console.log('All env vars:', import.meta.env);
+
 import {
   createContext, useContext, useState, useEffect,
   useRef, useCallback, useMemo,

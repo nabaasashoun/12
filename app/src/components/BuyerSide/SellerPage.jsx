@@ -8,12 +8,13 @@ import { useLikeBookmark } from '../../utils/LikeBookmarkContext';
 import Loader from '../UISkeleton/Loader';
 import { useDarkMode } from '../../utils/BuyerDarkModeContext';
 import { useNotifications } from '../../utils/NotificationContext';
-import Header from './Header'; // <-- import Header
+import Header from './Header';
 
 const SellerPage = () => {
   const { isDarkMode } = useDarkMode();
   const { fetchNotifications } = useNotifications();
   const { sellerId } = useParams();
+  const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [sellerMenuOpen, setSellerMenuOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState({});
@@ -26,8 +27,7 @@ const SellerPage = () => {
   const [seller, setSeller] = useState(null);
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
-  const [searchQuery, setSearchQuery] = useState(''); // client‑side filter
-  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const { cartItems, addToCart, removeFromCart } = useCart();
   const { isLiked, isBookmarked, toggleLike, toggleBookmark } = useLikeBookmark();
@@ -56,13 +56,12 @@ const SellerPage = () => {
     fetchCategories();
   }, []);
 
-  // Handle search from Header – only filter products client‑side
+  // Handle search from Header
   const handleSearch = (query, category) => {
     setSearchQuery(query);
-    // category could be used later if we want to filter by category as well
   };
 
-  // Filter products by name (client‑side) – only show products from this seller
+  // Filter products by name
   const filteredProducts = seller?.products.filter(product =>
     product.product.toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
@@ -134,6 +133,18 @@ const SellerPage = () => {
       setFollowMessage('Failed to follow. Please try again.');
       setTimeout(() => setFollowMessage(''), 3000);
     }
+  };
+
+  // Navigate to chat with seller
+  const handleStartChat = () => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    // Pass seller's user ID to chat page
+    const sellerUserId = seller.user?.id || seller.id;
+    navigate(`/chat?sellerId=${sellerUserId}`);
   };
 
   // Fetch seller data
@@ -321,7 +332,7 @@ const SellerPage = () => {
             </div>
           )}
 
-          {/* Action Buttons */}
+          {/* Action Buttons - UPDATED with MessageSquare icon that navigates to chat */}
           <div className="flex gap-3 justify-center w-full mb-4">
             {[
               {
@@ -335,11 +346,13 @@ const SellerPage = () => {
               },
               {
                 icon: <MessageCircle className="w-5 h-5 group-hover:scale-125 transition-transform" />,
-                action: () => {}
+                action: handleStartChat,
+                tooltip: 'Message Seller'
               },
               {
                 icon: <MessageSquare className="w-5 h-5 group-hover:scale-125 transition-transform" />,
-                action: () => {}
+                action: handleStartChat,
+                tooltip: 'Message Seller'
               }
             ].map((btn, index) => (
               <div key={index} className="relative">
@@ -561,7 +574,6 @@ const SellerPage = () => {
           50% { transform: scale(1.2); }
           100% { transform: scale(1); }
         }
-        /* Force black text in search input */
         input[type="text"],
         input[type="search"],
         input[placeholder*="Search"],

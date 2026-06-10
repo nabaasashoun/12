@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Send, MessageCircle, Wifi, WifiOff } from 'lucide-react';
 import { useChat } from '../../utils/ChatContext';
 import api from '../../utils/api';
@@ -147,8 +148,32 @@ const ChatPanel = ({
 }) => {
   const isBlocked = containsContactInfo(inputText);
 
+  // Auto-focus input when chat loads
+  useEffect(() => {
+    if (inputRef.current) {
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+        inputRef.current?.click(); // Some mobile browsers need this
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [currentChatPartner, inputRef]);
+
+  const handleInputClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    inputRef.current?.focus();
+  };
+
+  const handleInputTouch = (e) => {
+    // For mobile devices
+    e.preventDefault();
+    inputRef.current?.focus();
+  };
+
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-gray-50">
+      {/* Header */}
       <div className="px-3 py-3 border-b bg-white flex items-center gap-3 shrink-0">
         <button
           onClick={onBack}
@@ -164,12 +189,13 @@ const ChatPanel = ({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-3 py-4 bg-gray-50 flex flex-col gap-2">
+      {/* Messages Container */}
+      <div className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-2">
         {messages.length === 0 && (
           <div className="flex-1 flex items-center justify-center text-center py-12">
             <div>
               <MessageCircle className="w-10 h-10 text-gray-300 mx-auto mb-2" />
-              <p className="text-gray-400 text-sm">Send a message to get started</p>
+              <p className="text-gray-400 text-sm">Tap the input below to start chatting</p>
             </div>
           </div>
         )}
@@ -193,7 +219,7 @@ const ChatPanel = ({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Client-side warning: triggers as user types */}
+      {/* Warning Messages */}
       {isBlocked && (
         <div className="mx-3 mb-1 px-3 py-2 bg-red-50 border border-red-200 rounded-xl
           text-xs text-red-600 flex items-center gap-2">
@@ -202,7 +228,6 @@ const ChatPanel = ({
         </div>
       )}
 
-      {/* Server-side rejection: shown after a blocked send attempt */}
       {blockedMessage && (
         <div className="mx-3 mb-1 px-3 py-2 bg-orange-50 border border-orange-200 rounded-xl
           text-xs text-orange-600 flex items-center gap-2">
@@ -211,22 +236,29 @@ const ChatPanel = ({
         </div>
       )}
 
-      <div className="px-3 py-3 bg-white border-t shrink-0">
+      {/* Input Area - Fixed for mobile keyboard */}
+      <div className="px-3 py-3 bg-white border-t shrink-0 relative z-10">
         <form onSubmit={onSend} className="flex items-center gap-2">
           <input
             ref={inputRef}
             type="text"
             value={inputText}
             onChange={e => setInputText(e.target.value)}
+            onClick={handleInputClick}
+            onTouchStart={handleInputTouch}
             placeholder="Type a message…"
-            className={`flex-1 bg-gray-100 rounded-full px-4 py-2.5 text-sm text-gray-900
-              placeholder-gray-400 focus:outline-none focus:ring-2 focus:bg-white transition-colors
-              ${isBlocked ? 'focus:ring-red-300' : 'focus:ring-blue-400'}`}
+            autoFocus={true}
+            className="flex-1 bg-gray-100 rounded-full px-4 py-2.5 text-sm text-gray-900
+              placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 
+              focus:bg-white transition-colors cursor-text"
+            style={{ 
+              WebkitAppearance: 'none',
+              WebkitTapHighlightColor: 'transparent'
+            }}
           />
           <button
             type="submit"
             disabled={!inputText.trim() || !isConnected || isBlocked}
-            aria-label="Send"
             className="shrink-0 w-10 h-10 bg-blue-500 hover:bg-blue-600
               disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-full
               flex items-center justify-center transition-colors"
@@ -249,44 +281,100 @@ const ChatPage = () => {
     sendMessage, isConnected,
   } = useChat();
 
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  
   const [inputText, setInputText] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
   const [mobileView, setMobileView] = useState(activeChatId ? 'chat' : 'inbox');
   const [blockedMessage, setBlockedMessage] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
+  // Get current user info
   useEffect(() => {
     const stored = localStorage.getItem('user');
-    if (stored) setCurrentUser(JSON.parse(stored));
+    if (stored) {
+      try {
+        setCurrentUser(JSON.parse(stored));
+      } catch (e) {
+        console.error('Error parsing user:', e);
+      }
+    }
   }, []);
 
+  // Auto-select chat when coming from seller page
+  useEffect(() => {
+    const autoSelectChat = async () => {
+      if (isLoading) return;
+      
+      const sellerId = searchParams.get('sellerId');
+      const buyerId = searchParams.get('buyerId');
+      const userId = searchParams.get('userId');
+      const targetUserId = sellerId || buyerId || userId;
+      
+      if (targetUserId && !activeChatId) {
+        setIsLoading(true);
+        try {
+          setActiveChatId(parseInt(targetUserId));
+          
+          const historyResult = await api.getChatHistory(targetUserId);
+          if (!historyResult.error && historyResult.data) {
+            setMessages(historyResult.data);
+          }
+          
+          await fetchInbox();
+          setMobileView('chat');
+          
+          // Focus input after chat loads
+          setTimeout(() => {
+            inputRef.current?.focus();
+          }, 500);
+        } catch (error) {
+          console.error('Error auto-selecting chat:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+    
+    autoSelectChat();
+  }, [searchParams, activeChatId, setActiveChatId, setMessages, fetchInbox, isLoading]);
+
+  // Fetch chat history when activeChatId changes
   useEffect(() => {
     if (!activeChatId) return;
-    api.getChatHistory(activeChatId).then(r => {
-      if (!r.error && r.data) {
-        setMessages(r.data);
+    
+    const fetchChat = async () => {
+      const result = await api.getChatHistory(activeChatId);
+      if (!result.error && result.data) {
+        setMessages(result.data);
         fetchInbox();
       }
-    });
+    };
+    
+    fetchChat();
     setMobileView('chat');
   }, [activeChatId, setMessages, fetchInbox]);
 
+  // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Listen for server-side contact-filter rejections dispatched from ChatContext
+  // Listen for server-side contact-filter rejections
   useEffect(() => {
     const handleChatError = (e) => {
       if (e.detail?.code === 'contact_info_blocked') {
         setBlockedMessage(e.detail.message);
-        // Roll back the optimistic message that was added before the server rejected it
         setMessages(prev => prev.filter(m => !String(m.id).startsWith('temp-')));
         setTimeout(() => setBlockedMessage(null), 5000);
       }
     };
+    
     window.addEventListener('chatError', handleChatError);
     return () => window.removeEventListener('chatError', handleChatError);
   }, [setMessages]);
@@ -294,8 +382,6 @@ const ChatPage = () => {
   const handleSend = useCallback((e) => {
     e.preventDefault();
     if (!inputText.trim() || !activeChatId) return;
-    // Belt-and-suspenders: button is already disabled when blocked,
-    // but this stops any programmatic bypasses too.
     if (containsContactInfo(inputText)) return;
 
     sendMessage(activeChatId, inputText);
@@ -307,7 +393,11 @@ const ChatPage = () => {
       timestamp: new Date().toISOString(),
     }]);
     setInputText('');
-    inputRef.current?.focus();
+    
+    // Keep focus on input after sending
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
   }, [inputText, activeChatId, currentUser, sendMessage, setMessages]);
 
   const handleSelectConversation = useCallback((partnerId) => {
@@ -315,8 +405,7 @@ const ChatPage = () => {
     setMobileView('chat');
   }, [setActiveChatId]);
 
-  const currentChatPartner =
-    inbox.find(c => c.partner_id === activeChatId)?.partner_name || 'Chat';
+  const currentChatPartner = inbox.find(c => c.partner_id === activeChatId)?.partner_name || 'Chat';
 
   const sharedInboxProps = {
     inbox,
@@ -341,15 +430,15 @@ const ChatPage = () => {
 
   return (
     <div className="flex h-[calc(100vh-56px)] bg-white overflow-hidden">
-      {/* Mobile */}
+      {/* Mobile View */}
       <div className="flex flex-col flex-1 md:hidden">
         {mobileView === 'inbox' || !activeChatId
           ? <InboxPanel {...sharedInboxProps} />
-          : <ChatPanel  {...sharedChatProps} />
+          : <ChatPanel {...sharedChatProps} />
         }
       </div>
 
-      {/* Desktop */}
+      {/* Desktop View */}
       <div className="hidden md:flex flex-1 overflow-hidden">
         <div className="w-72 lg:w-80 border-r flex flex-col shrink-0 overflow-hidden">
           <InboxPanel {...sharedInboxProps} />
