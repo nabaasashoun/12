@@ -1,8 +1,3 @@
-// Add this at the top of ChatContext.jsx, right after the imports
-console.log('=== ChatContext Debug ===');
-console.log('VITE_API_URL:', import.meta.env.VITE_API_URL);
-console.log('All env vars:', import.meta.env);
-
 import {
   createContext, useContext, useState, useEffect,
   useRef, useCallback, useMemo,
@@ -33,7 +28,11 @@ export function ChatProvider({ children }) {
   useEffect(() => { fetchInboxRef.current = fetchInbox; }, [fetchInbox]);
 
   const connectWs = useCallback(() => {
-    if (!api.getToken()) return;
+    const token = api.getToken();
+    if (!token) {
+      console.log('No token available for WebSocket connection');
+      return;
+    }
 
     const ws = wsRef.current;
     if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
@@ -47,14 +46,23 @@ export function ChatProvider({ children }) {
       wsRef.current = null;
     }
 
+    // FIXED: Construct WebSocket URL correctly
     const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-    const wsUrl = API_BASE_URL.replace('http', 'ws').replace('/api', '') + '/ws/';
-    const socket = new WebSocket(`${wsUrl}?token=${api.getToken()}`);
+    // Extract base URL (remove /api)
+    const baseUrl = API_BASE_URL.replace('/api', '');
+    // Convert http to ws
+    const wsBaseUrl = baseUrl.replace('http', 'ws');
+    // Add the correct WebSocket path
+    const wsUrl = `${wsBaseUrl}/ws/trendsync/`;
+    
+    console.log('Connecting to WebSocket:', `${wsUrl}?token=${token.substring(0, 20)}...`);
+    const socket = new WebSocket(`${wsUrl}?token=${token}`);
     socket._intentional = false;
     wsRef.current = socket;
 
     socket.onopen = () => {
       if (wsRef.current !== socket) return;
+      console.log('✅ WebSocket connected successfully');
       setIsConnected(true);
       reconnectDelayRef.current = 2000;
     };
@@ -84,8 +92,6 @@ export function ChatProvider({ children }) {
           content: payload.content,
           timestamp: payload.timestamp,
         };
-
-
 
         setMessages(prev => {
           // Deduplicate confirmed messages
@@ -119,6 +125,7 @@ export function ChatProvider({ children }) {
     };
 
     socket.onclose = (event) => {
+      console.log('WebSocket closed:', event.code, event.reason);
       if (socket._intentional) return;
 
       if (wsRef.current === socket) {
@@ -131,12 +138,14 @@ export function ChatProvider({ children }) {
       const delay = reconnectDelayRef.current;
       reconnectDelayRef.current = Math.min(delay * 1.5, 30_000);
 
+      console.log(`Reconnecting in ${delay}ms...`);
       reconnectTimerRef.current = setTimeout(() => {
         if (api.getToken()) connectWs();
       }, delay);
     };
 
-    socket.onerror = () => {
+    socket.onerror = (error) => {
+      console.error('WebSocket error:', error);
       // onclose fires after onerror — reconnect logic lives there
     };
   }, []); // No deps — fetchInbox accessed via ref
@@ -171,8 +180,9 @@ export function ChatProvider({ children }) {
         recipient_id: recipientId,
         content,
       }));
+      console.log(`Message sent to ${recipientId}:`, content);
     } else {
-      console.warn('[WS] Not connected — message dropped.');
+      console.warn('[WS] Not connected — message dropped. ReadyState:', wsRef.current?.readyState);
     }
   }, []);
 

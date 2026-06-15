@@ -812,13 +812,100 @@ class Api {
   }
 
   async getChatHistory(userId) {
-    return this.request(`/chat/${userId}/`);
+    console.log(`Fetching chat history for user ID: ${userId}`);
+    const response = await this.request(`/chat/${userId}/`);
+    console.log('Chat history response:', response);
+    
+    // Ensure we return data consistently
+    if (response.error) {
+      return { error: true, data: [] };
+    }
+    
+    // If response.data is an array, return it directly
+    if (Array.isArray(response.data)) {
+      return { data: response.data, error: false };
+    }
+    
+    // If response.data has a data property (nested)
+    if (response.data && Array.isArray(response.data.data)) {
+      return { data: response.data.data, error: false };
+    }
+    
+    // Fallback
+    return { data: [], error: false };
   }
 
   async getSellerUserID(sellerProfileId) {
     return this.request(`/sellers/${sellerProfileId}/`);
   }
 
+    // Add this method to the Api class in api.js
+  async sendChatMessage(recipientId, content) {
+    // This is a fallback HTTP endpoint if WebSocket fails
+    // Make sure this endpoint exists in your backend urls.py
+    return this.request('/chat/send/', {
+      method: 'POST',
+      body: JSON.stringify({ recipient_id: recipientId, content }),
+    });
+  }
+
+  // Add to Api class
+  getWebSocketURL() {
+    const token = this.getToken();
+    // Use ws:// for local development, wss:// for production
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const host = 'localhost:8000'; // or use window.location.host for production
+    return `${protocol}//${host}/ws/trendsync/?token=${token}`;
+  }
+
+  setupWebSocket(onMessage, onOpen, onClose, onError) {
+    const wsUrl = this.getWebSocketURL();
+    console.log('Connecting to WebSocket:', wsUrl);
+    
+    const ws = new WebSocket(wsUrl);
+    
+    ws.onopen = () => {
+      console.log('WebSocket connected');
+      if (onOpen) onOpen();
+    };
+    
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        console.log('WebSocket message received:', data);
+        if (onMessage) onMessage(data);
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
+    };
+    
+    ws.onclose = () => {
+      console.log('WebSocket disconnected');
+      if (onClose) onClose();
+    };
+    
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      if (onError) onError(error);
+    };
+    
+    return ws;
+  }
+
+  // Add to Api class
+  async getSellerUserInfo(sellerId) {
+    console.log(`Getting user info for seller profile ID: ${sellerId}`);
+    const response = await this.request(`/sellers/${sellerId}/`);
+    
+    if (!response.error && response.data) {
+      const seller = response.data;
+      const userId = seller.user?.id || seller.user_id;
+      console.log(`Seller ${sellerId} maps to user ID: ${userId}`);
+      return { userId, seller };
+    }
+    
+    return { userId: null, seller: null };
+  }
 }
 
 const api = new Api();

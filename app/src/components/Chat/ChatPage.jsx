@@ -307,6 +307,7 @@ const ChatPage = () => {
   }, []);
 
   // Auto-select chat when coming from seller page
+// Update the autoSelectChat effect in ChatPage.jsx:
   useEffect(() => {
     const autoSelectChat = async () => {
       if (isLoading) return;
@@ -316,12 +317,19 @@ const ChatPage = () => {
       const userId = searchParams.get('userId');
       const targetUserId = sellerId || buyerId || userId;
       
+      console.log('Auto-select chat - targetUserId:', targetUserId);
+      console.log('Current activeChatId:', activeChatId);
+      
       if (targetUserId && !activeChatId) {
         setIsLoading(true);
         try {
-          setActiveChatId(parseInt(targetUserId));
+          const targetId = parseInt(targetUserId);
+          console.log('Setting active chat ID to:', targetId);
+          setActiveChatId(targetId);
           
-          const historyResult = await api.getChatHistory(targetUserId);
+          const historyResult = await api.getChatHistory(targetId);
+          console.log('Chat history result:', historyResult);
+          
           if (!historyResult.error && historyResult.data) {
             setMessages(historyResult.data);
           }
@@ -329,7 +337,6 @@ const ChatPage = () => {
           await fetchInbox();
           setMobileView('chat');
           
-          // Focus input after chat loads
           setTimeout(() => {
             inputRef.current?.focus();
           }, 500);

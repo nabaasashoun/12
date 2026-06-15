@@ -142,9 +142,28 @@ const SellerPage = () => {
       navigate('/login');
       return;
     }
-    // Pass seller's user ID to chat page
-    const sellerUserId = seller.user?.id || seller.id;
-    navigate(`/chat?sellerId=${sellerUserId}`);
+    
+    // More robust way to get the seller's user ID
+    let sellerUserId = null;
+    
+    if (seller.user?.id) {
+      sellerUserId = seller.user.id;
+    } else if (seller.user_id) {
+      sellerUserId = seller.user_id;
+    } else if (seller.id && !seller.is_seller) {
+      // If seller.id is actually the user ID
+      sellerUserId = seller.id;
+    }
+    
+    console.log('Starting chat with seller user ID:', sellerUserId);
+    console.log('Seller data:', seller);
+    
+    if (sellerUserId) {
+      navigate(`/chat?sellerId=${sellerUserId}`);
+    } else {
+      console.error('Could not determine seller user ID');
+      // Show error to user
+    }
   };
 
   // Fetch seller data
@@ -177,7 +196,7 @@ const SellerPage = () => {
           sellerId: sellerId
         }));
 
-        setSeller({ ...sellerData, products });
+        setSeller({ ...sellerData, products, user_id: sellerData.user?.id || sellerData.user_id });
         setIsFollowing(sellerData.is_following || false);
 
       } catch (error) {

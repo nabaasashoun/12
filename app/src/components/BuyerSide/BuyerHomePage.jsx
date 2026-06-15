@@ -1,7 +1,7 @@
 import { BuyerCard, BuyerCardContent } from './BuyerCard';
 import {
   Heart, MessageSquare, Star, Bookmark, Plus, Settings,
-  MoreHorizontal, X, ChevronUp, ChevronDown, Moon, Sun
+  MoreHorizontal, X, ChevronUp, ChevronDown, Moon, Sun, Share2
 } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -13,6 +13,8 @@ import Loader from '../UISkeleton/Loader';
 import { usePageLoading } from '../../utils/PageLoadingContext';
 import Header from './Header';
 import { useDarkMode } from '../../utils/BuyerDarkModeContext';
+import ShareModal from './ShareModal';
+import { getProductShareLink, copyToClipboard } from '../../utils/shareUtils';
 
 const formatCurrency = (amount) => {
   return `UGX ${parseFloat(amount).toLocaleString('en-UG')}`;
@@ -78,6 +80,9 @@ const BuyerHomePage = () => {
   const [quickDeals, setQuickDeals] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchToast, setSearchToast] = useState('');
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [shareToast, setShareToast] = useState('');
   const navigate = useNavigate();
   const { startChat } = useChat();
   const { cartItems, addToCart, removeFromCart } = useCart();
@@ -125,7 +130,7 @@ const BuyerHomePage = () => {
     }
   }, []);
 
-  // Fetch products with search parameters (supports search text and/or category)
+  // Fetch products with search parameters
   const fetchProductsWithParams = useCallback(async (params = {}) => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
@@ -168,6 +173,7 @@ const BuyerHomePage = () => {
           like_count: product.like_count || 0,
           sellerId: product.seller,
           sellerUserId: product.seller_user_id,
+          unit_price: product.unit_price,
         };
       });
 
@@ -184,7 +190,7 @@ const BuyerHomePage = () => {
     }
   }, [navigate, setIsPageLoading]);
 
-  // Handle search (called from Header)
+  // Handle search
   const handleSearch = useCallback((query, category) => {
     if (query && query.trim() !== '') {
       addToRecentSearches(query);
@@ -192,20 +198,16 @@ const BuyerHomePage = () => {
     fetchProductsWithParams({ search: query, category });
   }, [addToRecentSearches, fetchProductsWithParams]);
 
-  // Enhanced category handler – does NOT overwrite the input box
+  // Handle category search
   const handleCategorySearch = useCallback((query, category) => {
-    // If a category is selected and the query is empty (or whitespace)
     if (category && category !== 'all' && (!query || query.trim() === '')) {
-      // Perform search by category only (no text query)
       fetchProductsWithParams({ category });
-      // Optionally add category name to recent searches
       const categoryObj = categories.find(c => c.id === category);
       if (categoryObj) {
         addToRecentSearches(categoryObj.name);
       }
       return;
     }
-    // Otherwise, perform a normal combined search (text + category)
     handleSearch(query, category);
   }, [categories, addToRecentSearches, fetchProductsWithParams, handleSearch]);
 
@@ -221,10 +223,9 @@ const BuyerHomePage = () => {
     handleSearch(searchTerm, null);
   };
 
-  // Attach listeners to search input after Header mounts
+  // Attach listeners to search input
   useEffect(() => {
     const timeout = setTimeout(() => {
-      // Adjust selector to match your Header's search input
       const input = document.querySelector('input[placeholder*="Search"]');
       if (input) {
         searchInputRef.current = input;
@@ -256,13 +257,20 @@ const BuyerHomePage = () => {
     return () => clearTimeout(timeout);
   }, [updateDropdownPosition]);
 
-  // Clear toast after 3 seconds
+  // Clear toasts after 3 seconds
   useEffect(() => {
     if (searchToast) {
       const timer = setTimeout(() => setSearchToast(''), 3000);
       return () => clearTimeout(timer);
     }
   }, [searchToast]);
+
+  useEffect(() => {
+    if (shareToast) {
+      const timer = setTimeout(() => setShareToast(''), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [shareToast]);
 
   const cartPosts = cartItems.reduce((acc, item) => {
     if (item.product?.id) acc[item.product.id] = true;
@@ -399,6 +407,39 @@ const BuyerHomePage = () => {
     }
   };
 
+  const handleCopyLink = async (postId) => {
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+    
+    const shareLink = getProductShareLink(postId);
+    await copyToClipboard(
+      shareLink,
+      () => {
+        setShareToast('Link copied to clipboard! ✓');
+        setTimeout(() => setShareToast(''), 2000);
+      },
+      () => {
+        setShareToast('Failed to copy link');
+        setTimeout(() => setShareToast(''), 2000);
+      }
+    );
+    closeDropdown();
+  };
+
+  const handleShareTo = (post) => {
+    setSelectedProduct({
+      id: post.id,
+      name: post.product,
+      product: post.product,
+      price: post.price,
+      images: post.images,
+      sellerName: post.sellerName,
+      sellerId: post.sellerId
+    });
+    setShareModalOpen(true);
+    closeDropdown();
+  };
+
   const toggleDescriptionExpansion = (postId, event) => {
     if (expandedDescriptionId === postId) {
       setExpandedDescriptionId(null);
@@ -436,28 +477,22 @@ const BuyerHomePage = () => {
     }
   };
 
-  if (contextLoading || !initialFetchDone || isLoading) {
-    return (
-      <div className={`p-3 sm:p-4 md:p-6 max-w-4xl mx-auto min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-        <Loader />
-      </div>
-    );
-  }
-
-  const dropdownItems = (postId) => {
-    const post = posts.find(p => p.id === postId);
+  const dropdownItems = (post) => {
     return [
-      { label: 'Report', action: () => {} },
+      { label: 'Report', action: () => { closeDropdown(); } },
       { 
         label: 'Message Seller', 
         action: async () => {
           closeDropdown();
           let targetUserId = post?.sellerUserId;
           if (!targetUserId && post?.sellerId) {
-            // Fallback: fetch the seller profile to get the user ID
-            const r = await api.getSellerUserID(post.sellerId);
-            if (!r.error && r.data?.user) {
-              targetUserId = r.data.user;
+            try {
+              const r = await api.getSellerUserID(post.sellerId);
+              if (!r.error && r.data?.user) {
+                targetUserId = r.data.user;
+              }
+            } catch (e) {
+              console.error('Error fetching seller user ID:', e);
             }
           }
           if (targetUserId) {
@@ -465,17 +500,31 @@ const BuyerHomePage = () => {
             navigate('/chat');
           } else {
             console.warn('Could not resolve seller user ID', post);
+            setShareToast('Unable to message seller');
+            setTimeout(() => setShareToast(''), 2000);
           }
         }
       },
-      { label: 'Go to Post', action: () => { closeDropdown(); navigate(`/product/${postId}`); } },
-      { label: 'Share to', action: () => {} },
-      { label: 'Copy Link', action: () => {} },
-      { label: 'Remove from Cart', action: () => {} },
-      { label: 'Unfollow', action: () => {} },
+      { label: 'Go to Post', action: () => { closeDropdown(); navigate(`/product/${post.id}`); } },
+      { 
+        label: 'Share to', 
+        action: () => handleShareTo(post)
+      },
+      { 
+        label: 'Copy Link', 
+        action: () => handleCopyLink(post.id)
+      },
       { label: 'Cancel', action: closeDropdown },
     ];
   };
+
+  if (contextLoading || !initialFetchDone || isLoading) {
+    return (
+      <div className={`p-3 sm:p-4 md:p-6 max-w-4xl mx-auto min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -490,14 +539,25 @@ const BuyerHomePage = () => {
 
         {/* Search Toast */}
         {searchToast && (
-          <div className="fixed top-4 right-4 z-50 animate-slideDown">
-            <div className="px-6 py-3 rounded-full shadow-lg bg-red-600 text-white">
-              <span className="font-medium">{searchToast}</span>
+          <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 animate-slideDown">
+            <div className="px-4 py-2 rounded-lg shadow-lg bg-red-600 text-white text-sm font-medium">
+              {searchToast}
             </div>
           </div>
         )}
 
-        {/* Recent searches dropdown – now positioned absolutely relative to the input */}
+        {/* Share Toast */}
+        {shareToast && (
+          <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[100] animate-slideDown">
+            <div className={`px-4 py-2 rounded-lg shadow-lg text-sm font-medium ${
+              shareToast.includes('Failed') ? 'bg-red-500' : 'bg-green-500'
+            } text-white`}>
+              {shareToast}
+            </div>
+          </div>
+        )}
+
+        {/* Recent searches dropdown */}
         {showRecentSearches && recentSearches.length > 0 && (
           <div
             className="recent-searches-dropdown fixed z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden"
@@ -702,21 +762,33 @@ const BuyerHomePage = () => {
                             <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                           </button>
                         </div>
-                        <button
-                          onClick={() => handleToggleFavorite(post.id)}
-                          className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full ${isBookmarked(post.id) 
-                            ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/30' 
-                            : isDarkMode 
+                        <div className="flex space-x-1">
+                          <button
+                            onClick={() => handleShareTo(post)}
+                            className={`p-1 rounded-full transition-colors ${isDarkMode 
                               ? 'text-gray-400 hover:text-blue-400' 
                               : 'text-gray-600 hover:text-blue-500'
-                          }`}
-                          style={{
-                            transform: animatingFavorite === post.id ? 'scale(1.2)' : 'scale(1)',
-                            animation: animatingFavorite === post.id ? 'bookmarkPop 0.5s ease-out' : 'none'
-                          }}
-                        >
-                          <Bookmark className="w-3 h-3 sm:w-4 sm:h-4" fill={isBookmarked(post.id) ? 'currentColor' : 'none'} />
-                        </button>
+                            }`}
+                            aria-label="Share"
+                          >
+                            <Share2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleToggleFavorite(post.id)}
+                            className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full ${isBookmarked(post.id) 
+                              ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/30' 
+                              : isDarkMode 
+                                ? 'text-gray-400 hover:text-blue-400' 
+                                : 'text-gray-600 hover:text-blue-500'
+                            }`}
+                            style={{
+                              transform: animatingFavorite === post.id ? 'scale(1.2)' : 'scale(1)',
+                              animation: animatingFavorite === post.id ? 'bookmarkPop 0.5s ease-out' : 'none'
+                            }}
+                          >
+                            <Bookmark className="w-3 h-3 sm:w-4 sm:h-4" fill={isBookmarked(post.id) ? 'currentColor' : 'none'} />
+                          </button>
+                        </div>
                       </div>
                       <div className="flex items-center space-x-1 sm:justify-end">
                         <div className="flex">
@@ -744,7 +816,7 @@ const BuyerHomePage = () => {
                       <button
                         onClick={(e) => toggleDescriptionExpansion(post.id, e)}
                         className={`description-toggle-button text-xs text-left w-full p-1 rounded transition-colors flex items-start ${isDarkMode 
-                          ? 'text-gray-300 hover:text-blue-400 bg-gray-700 hover:bg-gray-600' 
+                          ? 'text-gray-300 hover:text-blue-400 bg-gray-800 hover:bg-gray-700' 
                           : 'text-gray-600 hover:text-blue-500 bg-gray-50 hover:bg-gray-100'
                         }`}
                       >
@@ -809,14 +881,14 @@ const BuyerHomePage = () => {
             onClick={closeDropdown}
           >
             <div 
-              className={`rounded-xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`} 
+              className={`rounded-xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'} w-72 max-w-[90%]`}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className={`p-4 border text-center ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+              <div className={`p-4 border-b text-center ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                 <h3 className={`font-semibold text-lg ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Post Options</h3>
               </div>
               <div className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
-                {dropdownItems(dropdownOpen).map((item, index) => (
+                {dropdownOpen && dropdownItems(posts.find(p => p.id === dropdownOpen)).map((item, index) => (
                   <button
                     key={index}
                     onClick={item.action}
@@ -831,6 +903,19 @@ const BuyerHomePage = () => {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Share Modal */}
+        {shareModalOpen && selectedProduct && (
+          <ShareModal
+            isOpen={shareModalOpen}
+            onClose={() => {
+              setShareModalOpen(false);
+              setSelectedProduct(null);
+            }}
+            product={selectedProduct}
+            isDarkMode={isDarkMode}
+          />
         )}
 
         <style>{`
@@ -854,8 +939,15 @@ const BuyerHomePage = () => {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
           }
+          @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+          }
           .animate-slideDown {
             animation: slideDown 0.3s ease-out;
+          }
+          .animate-slideUp {
+            animation: slideUp 0.3s ease-out;
           }
           .animate-fadeIn {
             animation: fadeIn 0.2s ease-out;
@@ -872,7 +964,7 @@ const BuyerHomePage = () => {
             -webkit-text-fill-color: #000000 !important;
           }
 
-          /* Placeholder should be gray, not disappearing or too light */
+          /* Placeholder should be gray */
           input::placeholder {
             color: #6b7280 !important;
             opacity: 1 !important;
@@ -883,7 +975,7 @@ const BuyerHomePage = () => {
             color: #000000 !important;
           }
 
-          /* Prevent dark mode / system preferences from overriding */
+          /* Prevent dark mode from overriding */
           @media (prefers-color-scheme: dark) {
             input[type="text"],
             input[type="search"] {
