@@ -47,14 +47,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Third party
     "corsheaders",
     "rest_framework",
     "channels",
     "rest_framework_simplejwt",
     "django_filters",
     "djoser",
-    # Local apps
     "trendsync",
     "products",
 ]

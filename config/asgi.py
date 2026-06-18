@@ -1,17 +1,18 @@
+# config/asgi.py
 import os
 from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter, URLRouter
-from channels.auth import AuthMiddlewareStack
-from trendsync.routing import websocket_urlpatterns
-from trendsync.middleware import TokenAuthMiddleware
+from django.urls import path
+from trendsync.consumers import TrendsyncConsumer
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
+import django
+django.setup()
+
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
-    "websocket": TokenAuthMiddleware(
-        AuthMiddlewareStack(
-            URLRouter(websocket_urlpatterns)
-        )
-    ),
+    "websocket": URLRouter([
+        path('ws/', TrendsyncConsumer.as_asgi()),
+    ]),
 })

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, MessageCircle, Wifi, WifiOff } from 'lucide-react';
+import { ArrowLeft, Send, MessageCircle, Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import { useChat } from '../../utils/ChatContext';
 import api from '../../utils/api';
 
@@ -19,17 +19,11 @@ const formatDate = (ts) => {
 // ── Contact filter ────────────────────────────────────────────────────────────
 
 const CONTACT_PATTERNS = [
-  // Email
   /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/,
-  // Phone: +256701234567 | 0701 234 567 | (070) 123-4567
   /(\+?\d[\d\s\-().]{6,18}\d)/,
-  // URLs with protocol or www
   /(https?:\/\/|www\.)\S+/i,
-  // Bare domains with common TLDs
   /\S+\.(com|net|org|io|co|app|me|ly|gg)\b/i,
-  // Social handles
   /@[a-zA-Z0-9_]{3,}/,
-  // Telegram / WhatsApp invite links
   /t\.me\/\S+/i,
   /wa\.me\/\S+/i,
 ];
@@ -145,19 +139,43 @@ const ChatPanel = ({
   onSend,
   onBack,
   blockedMessage,
+  isTyping,
+  onTyping,
+  isRefreshing,
+  onRefresh,
+  retryMessage,
+  failedMessages,
 }) => {
   const isBlocked = containsContactInfo(inputText);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const messagesContainerRef = useRef(null);
 
-  // Auto-focus input when chat loads
   useEffect(() => {
     if (inputRef.current) {
       const timer = setTimeout(() => {
         inputRef.current?.focus();
-        inputRef.current?.click(); // Some mobile browsers need this
+        inputRef.current?.click();
       }, 300);
       return () => clearTimeout(timer);
     }
   }, [currentChatPartner, inputRef]);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+
+  const handleScroll = () => {
+    if (!messagesContainerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+    setShowScrollButton(!isNearBottom);
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const handleInputClick = (e) => {
     e.preventDefault();
@@ -166,7 +184,6 @@ const ChatPanel = ({
   };
 
   const handleInputTouch = (e) => {
-    // For mobile devices
     e.preventDefault();
     inputRef.current?.focus();
   };
@@ -187,37 +204,102 @@ const ChatPanel = ({
           <p className="font-semibold text-gray-900 text-sm truncate">{currentChatPartner}</p>
           <ConnectionBadge isConnected={isConnected} short />
         </div>
+        {isRefreshing && (
+          <RefreshCw className="w-4 h-4 text-blue-500 animate-spin" />
+        )}
       </div>
 
+      {/* Disconnected Banner */}
+      {!isConnected && (
+        <div className="px-3 py-1.5 bg-yellow-50 border-b border-yellow-200 text-center">
+          <p className="text-xs text-yellow-700 flex items-center justify-center gap-1">
+            <WifiOff className="w-3 h-3 inline" />
+            Reconnecting to chat server...
+          </p>
+        </div>
+      )}
+
       {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-2">
+      <div 
+        ref={messagesContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-2"
+        onTouchStart={(e) => {
+          if (messagesContainerRef.current?.scrollTop === 0) {
+            const touchStartY = e.touches[0].clientY;
+            const handleTouchMove = (ev) => {
+              const touchMoveY = ev.touches[0].clientY;
+              if (touchMoveY - touchStartY > 80 && !isRefreshing) {
+                onRefresh?.();
+              }
+            };
+            document.addEventListener('touchmove', handleTouchMove, { once: true });
+          }
+        }}
+      >
         {messages.length === 0 && (
           <div className="flex-1 flex items-center justify-center text-center py-12">
             <div>
               <MessageCircle className="w-10 h-10 text-gray-300 mx-auto mb-2" />
-              <p className="text-gray-400 text-sm">Tap the input below to start chatting</p>
+              <p className="text-gray-400 text-sm">No messages yet</p>
+              <p className="text-xs text-gray-300 mt-1">Start the conversation!</p>
             </div>
           </div>
         )}
+        
         {messages.map((msg, idx) => {
           const isMe = msg.sender === currentUser?.id;
+          const isFailed = msg.status === 'failed';
+          const isSending = msg.status === 'sending' || (typeof msg.id === 'string' && msg.id.startsWith('temp-'));
+          
+          // Create a unique key that won't conflict
+          const key = msg.id || `msg-${idx}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+          
           return (
-            <div key={msg.id || idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+            <div key={key} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
               {!isMe && <Avatar name={currentChatPartner} size="sm" />}
               <div className={`max-w-[75%] sm:max-w-[65%] rounded-2xl px-3.5 py-2 ml-2
                 ${isMe
-                  ? 'bg-blue-500 text-white rounded-br-sm'
+                  ? `bg-blue-500 text-white rounded-br-sm ${isFailed ? 'opacity-70' : ''}`
                   : 'bg-white text-gray-800 border border-gray-200 rounded-bl-sm shadow-sm'}`}>
                 <p className="text-sm leading-relaxed break-words">{msg.content}</p>
-                <p className={`text-[10px] mt-1 text-right ${isMe ? 'text-blue-200' : 'text-gray-400'}`}>
-                  {formatTime(msg.timestamp)}
-                </p>
+                <div className="flex items-center justify-end gap-1 mt-0.5">
+                  <span className={`text-[10px] ${isMe ? 'text-blue-200' : 'text-gray-400'}`}>
+                    {formatTime(msg.timestamp)}
+                  </span>
+                  {isMe && isSending && (
+                    <span className="text-[10px] text-blue-200 animate-pulse">Sending...</span>
+                  )}
+                  {isMe && isFailed && (
+                    <button 
+                      onClick={() => retryMessage?.(msg.id)}
+                      className="text-[10px] text-red-300 hover:text-red-100 transition-colors flex items-center gap-0.5"
+                    >
+                      <RefreshCw className="w-3 h-3" /> Retry
+                    </button>
+                  )}
+                  {isMe && !isSending && !isFailed && (
+                    <span className="text-[10px] text-blue-200">✓</span>
+                  )}
+                </div>
               </div>
             </div>
           );
         })}
+        
         <div ref={messagesEndRef} />
       </div>
+
+      {/* Scroll to bottom button */}
+      {showScrollButton && (
+        <button
+          onClick={scrollToBottom}
+          className="absolute bottom-20 right-4 bg-white rounded-full shadow-lg p-2 border border-gray-200
+            hover:bg-gray-50 transition-colors"
+        >
+          <MessageCircle className="w-4 h-4 text-blue-500 rotate-180" />
+        </button>
+      )}
 
       {/* Warning Messages */}
       {isBlocked && (
@@ -236,14 +318,14 @@ const ChatPanel = ({
         </div>
       )}
 
-      {/* Input Area - Fixed for mobile keyboard */}
+      {/* Input Area */}
       <div className="px-3 py-3 bg-white border-t shrink-0 relative z-10">
         <form onSubmit={onSend} className="flex items-center gap-2">
           <input
             ref={inputRef}
             type="text"
             value={inputText}
-            onChange={e => setInputText(e.target.value)}
+            onChange={onTyping}
             onClick={handleInputClick}
             onTouchStart={handleInputTouch}
             placeholder="Type a message…"
@@ -253,7 +335,8 @@ const ChatPanel = ({
               focus:bg-white transition-colors cursor-text"
             style={{ 
               WebkitAppearance: 'none',
-              WebkitTapHighlightColor: 'transparent'
+              WebkitTapHighlightColor: 'transparent',
+              fontSize: '16px'
             }}
           />
           <button
@@ -266,14 +349,57 @@ const ChatPanel = ({
             <Send className="w-4 h-4" />
           </button>
         </form>
+        {isTyping && (
+          <div className="text-xs text-gray-400 mt-1 ml-3 animate-pulse">
+            {currentChatPartner} is typing...
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-// ── ChatPage ─────────────────────────────────────────────────────────────────
+// ── Chat Error Boundary ──────────────────────────────────────────────────────
 
-const ChatPage = () => {
+class ChatErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('Chat error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex items-center justify-center h-full p-8 text-center bg-gray-50">
+          <div>
+            <p className="text-red-600 font-semibold text-lg">Something went wrong</p>
+            <p className="text-gray-500 text-sm mt-2">We're having trouble loading your messages</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              Refresh Page
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+// ── Main ChatPage ─────────────────────────────────────────────────────────────
+
+const ChatPageContent = () => {
   const {
     messages, setMessages,
     inbox, fetchInbox,
@@ -282,17 +408,22 @@ const ChatPage = () => {
   } = useChat();
 
   const [searchParams] = useSearchParams();
-  const location = useLocation();
-  const navigate = useNavigate();
   
   const [inputText, setInputText] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
   const [mobileView, setMobileView] = useState(activeChatId ? 'chat' : 'inbox');
   const [blockedMessage, setBlockedMessage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [failedMessages, setFailedMessages] = useState([]);
+  const [partnerTyping, setPartnerTyping] = useState(false);
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
+  const wsRef = useRef(null);
+  const sentMessagesRef = useRef(new Set());
 
   // Get current user info
   useEffect(() => {
@@ -306,29 +437,31 @@ const ChatPage = () => {
     }
   }, []);
 
+  // Get WebSocket connection from ChatContext
+  useEffect(() => {
+    const ws = window.__ws;
+    if (ws) {
+      wsRef.current = ws;
+    }
+  }, []);
+
   // Auto-select chat when coming from seller page
-// Update the autoSelectChat effect in ChatPage.jsx:
   useEffect(() => {
     const autoSelectChat = async () => {
-      if (isLoading) return;
+      if (isLoading || activeChatId) return;
       
       const sellerId = searchParams.get('sellerId');
       const buyerId = searchParams.get('buyerId');
       const userId = searchParams.get('userId');
       const targetUserId = sellerId || buyerId || userId;
       
-      console.log('Auto-select chat - targetUserId:', targetUserId);
-      console.log('Current activeChatId:', activeChatId);
-      
-      if (targetUserId && !activeChatId) {
+      if (targetUserId) {
         setIsLoading(true);
         try {
           const targetId = parseInt(targetUserId);
-          console.log('Setting active chat ID to:', targetId);
           setActiveChatId(targetId);
           
           const historyResult = await api.getChatHistory(targetId);
-          console.log('Chat history result:', historyResult);
           
           if (!historyResult.error && historyResult.data) {
             setMessages(historyResult.data);
@@ -359,7 +492,8 @@ const ChatPage = () => {
       const result = await api.getChatHistory(activeChatId);
       if (!result.error && result.data) {
         setMessages(result.data);
-        fetchInbox();
+        await fetchInbox();
+        await api.markMessagesAsRead?.(activeChatId);
       }
     };
     
@@ -367,10 +501,45 @@ const ChatPage = () => {
     setMobileView('chat');
   }, [activeChatId, setMessages, fetchInbox]);
 
-  // Scroll to bottom when messages change
+  // Mark messages as read
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (!activeChatId || !messages.length) return;
+    
+    const markMessagesAsRead = async () => {
+      try {
+        await api.markMessagesAsRead?.(activeChatId);
+        setMessages(prev => prev.map(msg => 
+          msg.sender === activeChatId ? { ...msg, is_read: true } : msg
+        ));
+        fetchInbox();
+      } catch (error) {
+        console.error('Error marking messages as read:', error);
+      }
+    };
+    
+    const timeoutId = setTimeout(markMessagesAsRead, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [activeChatId, messages.length, setMessages, fetchInbox]);
+
+  // Clean up duplicate temp messages
+  useEffect(() => {
+    const tempMessages = messages.filter(m => typeof m.id === 'string' && m.id.startsWith('temp-'));
+    const seen = new Set();
+    const duplicateIds = [];
+    
+    tempMessages.forEach(msg => {
+      const key = `${msg.content}-${msg.sender}`;
+      if (seen.has(key)) {
+        duplicateIds.push(msg.id);
+      } else {
+        seen.add(key);
+      }
+    });
+    
+    if (duplicateIds.length > 0) {
+      setMessages(prev => prev.filter(m => !duplicateIds.includes(m.id)));
+    }
+  }, [messages, setMessages]);
 
   // Listen for server-side contact-filter rejections
   useEffect(() => {
@@ -386,31 +555,155 @@ const ChatPage = () => {
     return () => window.removeEventListener('chatError', handleChatError);
   }, [setMessages]);
 
+  // Handle typing indicator
+  const handleTyping = useCallback((e) => {
+    const value = e.target.value;
+    setInputText(value);
+    
+    if (value.trim() && !isTyping) {
+      setIsTyping(true);
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({
+          type: 'typing',
+          recipient_id: activeChatId,
+          is_typing: true
+        }));
+      }
+    }
+    
+    clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      if (isTyping) {
+        setIsTyping(false);
+        if (wsRef.current?.readyState === WebSocket.OPEN) {
+          wsRef.current.send(JSON.stringify({
+            type: 'typing',
+            recipient_id: activeChatId,
+            is_typing: false
+          }));
+        }
+      }
+    }, 2000);
+  }, [activeChatId, isTyping]);
+
+  // Listen for typing indicators from other users
+  useEffect(() => {
+    const handleTypingIndicator = (e) => {
+      if (e.detail?.type === 'typing' && e.detail?.sender_id === activeChatId) {
+        setPartnerTyping(e.detail.is_typing);
+      }
+    };
+    
+    window.addEventListener('typingIndicator', handleTypingIndicator);
+    return () => window.removeEventListener('typingIndicator', handleTypingIndicator);
+  }, [activeChatId]);
+
+  // Retry failed message
+  const retryMessage = useCallback((messageId) => {
+    const message = messages.find(m => m.id === messageId);
+    if (!message) return;
+    
+    setFailedMessages(prev => prev.filter(id => id !== messageId));
+    sendMessage(activeChatId, message.content);
+  }, [messages, activeChatId, sendMessage]);
+
+  // Handle send message - FIXED DUPLICATE ISSUE
   const handleSend = useCallback((e) => {
     e.preventDefault();
     if (!inputText.trim() || !activeChatId) return;
     if (containsContactInfo(inputText)) return;
 
-    sendMessage(activeChatId, inputText);
-    setMessages(prev => [...prev, {
-      id: 'temp-' + Date.now(),
+    // Check for duplicate submission
+    const messageKey = `${inputText}-${activeChatId}`;
+    if (sentMessagesRef.current.has(messageKey)) {
+      console.log('Prevented duplicate message submission');
+      return;
+    }
+    sentMessagesRef.current.add(messageKey);
+    
+    setTimeout(() => {
+      sentMessagesRef.current.delete(messageKey);
+    }, 2000);
+
+    const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const newMessage = {
+      id: tempId,
       sender: currentUser?.id,
       recipient: activeChatId,
       content: inputText,
       timestamp: new Date().toISOString(),
-    }]);
-    setInputText('');
+      status: 'sending',
+    };
+
+    setMessages(prev => {
+      // Check for existing duplicate
+      const exists = prev.some(m => 
+        m.content === inputText && 
+        m.sender === currentUser?.id && 
+        (m.status === 'sending' || m.status === 'sent')
+      );
+      if (exists) {
+        sentMessagesRef.current.delete(messageKey);
+        return prev;
+      }
+      return [...prev, newMessage];
+    });
     
-    // Keep focus on input after sending
+    setInputText('');
+
+    try {
+      sendMessage(activeChatId, inputText);
+      
+      setTimeout(() => {
+        setMessages(prev => prev.map(msg => 
+          msg.id === tempId ? { ...msg, status: 'sent' } : msg
+        ));
+      }, 1000);
+      
+    } catch (error) {
+      console.error('Error sending message:', error);
+      setMessages(prev => prev.map(msg => 
+        msg.id === tempId ? { ...msg, status: 'failed' } : msg
+      ));
+      setFailedMessages(prev => [...prev, tempId]);
+    }
+    
     setTimeout(() => {
       inputRef.current?.focus();
     }, 100);
   }, [inputText, activeChatId, currentUser, sendMessage, setMessages]);
 
+  // Refresh messages
+  const handleRefresh = useCallback(async () => {
+    if (!activeChatId || isRefreshing) return;
+    
+    setIsRefreshing(true);
+    try {
+      const result = await api.getChatHistory(activeChatId);
+      if (!result.error && result.data) {
+        setMessages(result.data);
+      }
+      await fetchInbox();
+    } catch (error) {
+      console.error('Error refreshing messages:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [activeChatId, isRefreshing, setMessages, fetchInbox]);
+
+  // Handle conversation selection
   const handleSelectConversation = useCallback((partnerId) => {
     setActiveChatId(partnerId);
     setMobileView('chat');
   }, [setActiveChatId]);
+
+  // Clear blocked message after timeout
+  useEffect(() => {
+    if (blockedMessage) {
+      const timer = setTimeout(() => setBlockedMessage(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [blockedMessage]);
 
   const currentChatPartner = inbox.find(c => c.partner_id === activeChatId)?.partner_name || 'Chat';
 
@@ -433,6 +726,12 @@ const ChatPage = () => {
     onSend: handleSend,
     onBack: () => setMobileView('inbox'),
     blockedMessage,
+    isTyping: partnerTyping,
+    onTyping: handleTyping,
+    isRefreshing,
+    onRefresh: handleRefresh,
+    retryMessage,
+    failedMessages,
   };
 
   return (
@@ -468,4 +767,12 @@ const ChatPage = () => {
   );
 };
 
-export default ChatPage;
+// ── Export with Error Boundary ──────────────────────────────────────────────
+
+export default function ChatPage() {
+  return (
+    <ChatErrorBoundary>
+      <ChatPageContent />
+    </ChatErrorBoundary>
+  );
+}
