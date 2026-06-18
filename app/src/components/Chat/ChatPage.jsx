@@ -252,7 +252,6 @@ const ChatPanel = ({
           const isFailed = msg.status === 'failed';
           const isSending = msg.status === 'sending' || (typeof msg.id === 'string' && msg.id.startsWith('temp-'));
           
-          // Create a unique key that won't conflict
           const key = msg.id || `msg-${idx}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
           
           return (
@@ -408,6 +407,7 @@ const ChatPageContent = () => {
   } = useChat();
 
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   
   const [inputText, setInputText] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
@@ -445,48 +445,66 @@ const ChatPageContent = () => {
     }
   }, []);
 
-  // Auto-select chat when coming from seller page
+  // Auto-select chat from URL params - FIXED to update when URL changes
   useEffect(() => {
-    const autoSelectChat = async () => {
-      if (isLoading || activeChatId) return;
-      
-      const sellerId = searchParams.get('sellerId');
-      const buyerId = searchParams.get('buyerId');
-      const userId = searchParams.get('userId');
-      const targetUserId = sellerId || buyerId || userId;
-      
-      if (targetUserId) {
-        setIsLoading(true);
-        try {
-          const targetId = parseInt(targetUserId);
-          setActiveChatId(targetId);
-          
-          const historyResult = await api.getChatHistory(targetId);
-          
-          if (!historyResult.error && historyResult.data) {
-            setMessages(historyResult.data);
-          }
-          
-          await fetchInbox();
-          setMobileView('chat');
-          
-          setTimeout(() => {
-            inputRef.current?.focus();
-          }, 500);
-        } catch (error) {
-          console.error('Error auto-selecting chat:', error);
-        } finally {
-          setIsLoading(false);
+    const userId = searchParams.get('userId');
+    const sellerId = searchParams.get('sellerId');
+    const buyerId = searchParams.get('buyerId');
+    const targetUserId = userId || sellerId || buyerId;
+    
+    console.log('Auto-select chat - targetUserId:', targetUserId);
+    console.log('Current activeChatId:', activeChatId);
+    console.log('URL params - userId:', userId, 'sellerId:', sellerId, 'buyerId:', buyerId);
+    
+    if (!targetUserId) {
+      // If no user ID in URL, don't change anything
+      return;
+    }
+    
+    const targetId = parseInt(targetUserId);
+    
+    // If already on this chat, don't reload
+    if (activeChatId === targetId) {
+      console.log('Already on chat with user:', targetId);
+      return;
+    }
+    
+    // Set loading state and fetch chat
+    setIsLoading(true);
+    
+    const loadChat = async () => {
+      try {
+        console.log('Setting active chat ID to:', targetId);
+        setActiveChatId(targetId);
+        
+        const historyResult = await api.getChatHistory(targetId);
+        console.log('Chat history result:', historyResult);
+        
+        if (!historyResult.error && historyResult.data) {
+          setMessages(historyResult.data);
+        } else {
+          setMessages([]);
         }
+        
+        await fetchInbox();
+        setMobileView('chat');
+        
+        setTimeout(() => {
+          inputRef.current?.focus();
+        }, 500);
+      } catch (error) {
+        console.error('Error loading chat:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
     
-    autoSelectChat();
-  }, [searchParams, activeChatId, setActiveChatId, setMessages, fetchInbox, isLoading]);
+    loadChat();
+  }, [searchParams, activeChatId, setActiveChatId, setMessages, fetchInbox]);
 
-  // Fetch chat history when activeChatId changes
+  // Fetch chat history when activeChatId changes (but only if not already loading from URL)
   useEffect(() => {
-    if (!activeChatId) return;
+    if (!activeChatId || isLoading) return;
     
     const fetchChat = async () => {
       const result = await api.getChatHistory(activeChatId);
@@ -499,7 +517,7 @@ const ChatPageContent = () => {
     
     fetchChat();
     setMobileView('chat');
-  }, [activeChatId, setMessages, fetchInbox]);
+  }, [activeChatId, setMessages, fetchInbox, isLoading]);
 
   // Mark messages as read
   useEffect(() => {
@@ -607,13 +625,12 @@ const ChatPageContent = () => {
     sendMessage(activeChatId, message.content);
   }, [messages, activeChatId, sendMessage]);
 
-  // Handle send message - FIXED DUPLICATE ISSUE
+  // Handle send message
   const handleSend = useCallback((e) => {
     e.preventDefault();
     if (!inputText.trim() || !activeChatId) return;
     if (containsContactInfo(inputText)) return;
 
-    // Check for duplicate submission
     const messageKey = `${inputText}-${activeChatId}`;
     if (sentMessagesRef.current.has(messageKey)) {
       console.log('Prevented duplicate message submission');
@@ -636,7 +653,6 @@ const ChatPageContent = () => {
     };
 
     setMessages(prev => {
-      // Check for existing duplicate
       const exists = prev.some(m => 
         m.content === inputText && 
         m.sender === currentUser?.id && 
@@ -705,7 +721,14 @@ const ChatPageContent = () => {
     }
   }, [blockedMessage]);
 
-  const currentChatPartner = inbox.find(c => c.partner_id === activeChatId)?.partner_name || 'Chat';
+  // Get the chat partner name - prioritize URL name parameter
+  const nameFromUrl = searchParams.get('name');
+  const inboxPartner = inbox.find(c => c.partner_id === activeChatId);
+  
+  // Use name from URL first (most reliable), then inbox, then fallback
+  const currentChatPartner = nameFromUrl 
+    ? decodeURIComponent(nameFromUrl) 
+    : (inboxPartner?.partner_name || `User ${activeChatId || ''}`);
 
   const sharedInboxProps = {
     inbox,

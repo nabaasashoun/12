@@ -850,12 +850,14 @@ class Api {
   }
 
   // Add to Api class
+// api.js - Update getWebSocketURL method
   getWebSocketURL() {
     const token = this.getToken();
-    // Use ws:// for local development, wss:// for production
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = 'localhost:8000'; // or use window.location.host for production
-    return `${protocol}//${host}/ws/trendsync/?token=${token}`;
+    const host = window.location.hostname || 'localhost';
+    const port = '8000';
+    // Remove '/trendsync/' from the path - just use '/ws/'
+    return `${protocol}//${host}:${port}/ws/?token=${token}`;
   }
 
   setupWebSocket(onMessage, onOpen, onClose, onError) {

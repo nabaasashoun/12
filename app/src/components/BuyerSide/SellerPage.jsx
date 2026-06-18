@@ -135,7 +135,52 @@ const SellerPage = () => {
     }
   };
 
-  // Navigate to chat with seller
+  // Get the seller's user ID (the actual User model ID, not the Seller profile ID)
+  const getSellerUserId = () => {
+    if (!seller) return null;
+    
+    console.log('Getting seller user ID from seller data:', seller);
+    
+    // The seller data from the API has a 'user' object with the user's ID
+    if (seller.user?.id) {
+      console.log('Found user.id:', seller.user.id);
+      return seller.user.id;
+    }
+    
+    // Check if there's a user_id field directly on the seller
+    if (seller.user_id) {
+      console.log('Found user_id:', seller.user_id);
+      return seller.user_id;
+    }
+    
+    // Check seller_user_id (from ProductSerializer)
+    if (seller.seller_user_id) {
+      console.log('Found seller_user_id:', seller.seller_user_id);
+      return seller.seller_user_id;
+    }
+    
+    // Sometimes the seller ID IS the user ID, but check the products
+    // Products have seller_user_id in the serializer
+    if (seller.products && seller.products.length > 0) {
+      // Try to get user ID from the first product
+      const firstProduct = seller.products[0];
+      if (firstProduct.sellerUserId) {
+        console.log('Found sellerUserId from product:', firstProduct.sellerUserId);
+        return firstProduct.sellerUserId;
+      }
+    }
+    
+    console.error('Could not find user ID in seller data');
+    return null;
+  };
+
+  // Get seller name safely
+  const getSellerName = () => {
+    if (!seller) return 'Seller';
+    return seller.name || 'Seller';
+  };
+
+  // Navigate to chat with seller - FIXED
   const handleStartChat = () => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
@@ -143,26 +188,49 @@ const SellerPage = () => {
       return;
     }
     
-    // More robust way to get the seller's user ID
-    let sellerUserId = null;
+    const sellerUserId = getSellerUserId();
+    const sellerName = getSellerName();
     
-    if (seller.user?.id) {
-      sellerUserId = seller.user.id;
-    } else if (seller.user_id) {
-      sellerUserId = seller.user_id;
-    } else if (seller.id && !seller.is_seller) {
-      // If seller.id is actually the user ID
-      sellerUserId = seller.id;
-    }
-    
-    console.log('Starting chat with seller user ID:', sellerUserId);
+    console.log('Starting chat with seller - User ID:', sellerUserId, 'Name:', sellerName);
     console.log('Seller data:', seller);
     
     if (sellerUserId) {
-      navigate(`/chat?sellerId=${sellerUserId}`);
+      // Pass the seller's name as a URL parameter
+      const encodedName = encodeURIComponent(sellerName);
+      navigate(`/chat?userId=${sellerUserId}&name=${encodedName}`);
     } else {
       console.error('Could not determine seller user ID');
-      // Show error to user
+      setFollowMessageType('error');
+      setFollowMessage('Could not start chat. Please try again.');
+      setTimeout(() => setFollowMessage(''), 3000);
+    }
+  };
+
+  // Handle message from product card - FIXED
+  const handleMessageFromProduct = (e, post) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    
+    let sellerUserId = post.sellerUserId || getSellerUserId();
+    const sellerName = getSellerName();
+    
+    console.log('Message from product - Seller User ID:', sellerUserId, 'Name:', sellerName);
+    console.log('Product:', post);
+    
+    if (sellerUserId) {
+      const encodedName = encodeURIComponent(sellerName);
+      navigate(`/chat?userId=${sellerUserId}&name=${encodedName}`);
+    } else {
+      console.error('Could not determine seller user ID for messaging');
+      setFollowMessageType('error');
+      setFollowMessage('Could not start chat. Please try again.');
+      setTimeout(() => setFollowMessage(''), 3000);
     }
   };
 
@@ -181,6 +249,10 @@ const SellerPage = () => {
         }
 
         const sellerData = sellerResult.data;
+        console.log('Fetched seller data:', sellerData);
+
+        // Get the user ID from multiple possible sources
+        const userId = sellerData.user?.id || sellerData.user_id || sellerData.seller_user_id || null;
 
         let products = (sellerData.products || []).map(product => ({
           id: product.id,
@@ -193,10 +265,17 @@ const SellerPage = () => {
           rating: Math.floor(product.rating_magnitude) || 0,
           ratingCount: product.rating_number || 0,
           like_count: product.like_count || 0,
-          sellerId: sellerId
+          sellerId: sellerId,
+          // Store the seller's user ID in each product for messaging
+          sellerUserId: product.seller_user_id || userId || sellerData.id
         }));
 
-        setSeller({ ...sellerData, products, user_id: sellerData.user?.id || sellerData.user_id });
+        // Store the seller data with user_id properly set
+        setSeller({ 
+          ...sellerData, 
+          products,
+          user_id: userId || sellerData.id
+        });
         setIsFollowing(sellerData.is_following || false);
 
       } catch (error) {
@@ -351,7 +430,7 @@ const SellerPage = () => {
             </div>
           )}
 
-          {/* Action Buttons - UPDATED with MessageSquare icon that navigates to chat */}
+          {/* Action Buttons - Both message buttons work */}
           <div className="flex gap-3 justify-center w-full mb-4">
             {[
               {
@@ -388,6 +467,11 @@ const SellerPage = () => {
                   {btn.icon}
                 </button>
                 {btn.tooltip && showLocationTooltip && index === 0 && (
+                  <span className={`absolute top-full mt-2 left-1/2 transform -translate-x-1/2 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-10 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-800'}`}>
+                    {btn.tooltip}
+                  </span>
+                )}
+                {btn.tooltip && index >= 2 && (
                   <span className={`absolute top-full mt-2 left-1/2 transform -translate-x-1/2 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-10 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-800'}`}>
                     {btn.tooltip}
                   </span>
@@ -477,7 +561,12 @@ const SellerPage = () => {
                             <Heart className="w-4 h-4" fill={isLiked(post.id) ? 'currentColor' : 'none'} />
                           </button>
 
-                          <button className={`p-1 rounded-full transition-all hover:scale-110 active:scale-95 ${isDarkMode ? 'text-gray-400 hover:text-indigo-400 hover:bg-indigo-900/30' : 'text-gray-600 hover:text-indigo-500 hover:bg-indigo-50'}`}>
+                          {/* Message Square - Leads to chat with this specific seller */}
+                          <button
+                            onClick={(e) => handleMessageFromProduct(e, post)}
+                            className={`p-1 rounded-full transition-all hover:scale-110 active:scale-95 ${isDarkMode ? 'text-gray-400 hover:text-indigo-400 hover:bg-indigo-900/30' : 'text-gray-600 hover:text-indigo-500 hover:bg-indigo-50'}`}
+                            aria-label="Message seller"
+                          >
                             <MessageSquare className="w-4 h-4" />
                           </button>
 
