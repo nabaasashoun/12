@@ -1,10 +1,10 @@
-// BuyerHomePage.jsx - Completely fixed version
+// BuyerHomePage.jsx - Updated with unified Header containing Settings navigation
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BuyerCard, BuyerCardContent } from './BuyerCard';
 import {
   Heart, MessageSquare, Star, Bookmark, Plus, Settings,
-  MoreHorizontal, X, ChevronUp, ChevronDown, Moon, Sun, Share2,
+  MoreHorizontal, X, ChevronUp, ChevronDown, Share2,
   Search, MapPin, Filter, Check
 } from 'lucide-react';
 import api from '../../utils/api';
@@ -16,6 +16,7 @@ import { usePageLoading } from '../../utils/PageLoadingContext';
 import { useDarkMode } from '../../utils/BuyerDarkModeContext';
 import ShareModal from './ShareModal';
 import { getProductShareLink, copyToClipboard } from '../../utils/shareUtils';
+import Header from './Header';
 
 const formatCurrency = (amount) => {
   return `UGX ${parseFloat(amount).toLocaleString('en-UG')}`;
@@ -59,326 +60,6 @@ const sampleQuickDeals = [
   { id: 2, title: 'Fitness', product: 'Smart Tracker', image: '/sample2.jpg', color: 'bg-pink-100 dark:bg-pink-900/30' }
 ];
 
-const DEFAULT_LOCATIONS = [
-  'Kampala', 'Entebbe', 'Jinja', 'Mbarara', 'Gulu',
-  'Arua', 'Mbale', 'Masaka', 'Kasese', 'Fort Portal',
-  'Lira', 'Soroti', 'Kabale', 'Mukono', 'Njeru',
-  'Busia', 'Tororo', 'Moroto', 'Kotido', 'Adjumani'
-];
-
-// FilterBar Component - Completely reworked
-const FilterBar = ({ onFilter, categories = [], isDarkMode, initialCategory = '', initialLocation = '' }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(initialCategory || '');
-  const [selectedLocation, setSelectedLocation] = useState(initialLocation || '');
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
-  const [locations, setLocations] = useState(DEFAULT_LOCATIONS);
-  const [isLoadingLocations, setIsLoadingLocations] = useState(false);
-  const [locationsFetched, setLocationsFetched] = useState(false);
-  
-  const categoryRef = useRef(null);
-  const locationRef = useRef(null);
-  const searchTimeoutRef = useRef(null);
-
-// In BuyerHomePage.jsx, replace the FilterBar component's locations useEffect with:
-
-  // Fetch locations from API - ONLY ONCE with proper caching
-  useEffect(() => {
-    if (locationsFetched) return;
-    
-    const fetchLocations = async () => {
-      setIsLoadingLocations(true);
-      try {
-        // Use the cached version from api
-        const locationData = await api.getLocations();
-        if (locationData && locationData.length > 0) {
-          setLocations(locationData);
-        }
-      } catch (error) {
-        console.log('Using default locations');
-      } finally {
-        setIsLoadingLocations(false);
-        setLocationsFetched(true);
-      }
-    };
-    
-    fetchLocations();
-  }, [locationsFetched]);
-
-
-
-  // Handle filter changes with debounce
-  const applyFilters = useCallback(() => {
-    onFilter({
-      search: searchQuery,
-      category: selectedCategory,
-      location: selectedLocation
-    });
-  }, [searchQuery, selectedCategory, selectedLocation, onFilter]);
-
-  // Debounced search
-  useEffect(() => {
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-    searchTimeoutRef.current = setTimeout(() => {
-      applyFilters();
-    }, 300);
-    return () => clearTimeout(searchTimeoutRef.current);
-  }, [searchQuery, applyFilters]);
-
-  // Apply filters when category or location changes
-  useEffect(() => {
-    // Skip initial mount
-    if (!searchQuery && !selectedCategory && !selectedLocation) return;
-    applyFilters();
-  }, [selectedCategory, selectedLocation, applyFilters]);
-
-  // Clear all filters
-  const clearFilters = () => {
-    setSearchQuery('');
-    setSelectedCategory('');
-    setSelectedLocation('');
-    onFilter({ search: '', category: '', location: '' });
-  };
-
-  // Close dropdowns on outside click
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (categoryRef.current && !categoryRef.current.contains(event.target)) {
-        setShowCategoryDropdown(false);
-      }
-      if (locationRef.current && !locationRef.current.contains(event.target)) {
-        setShowLocationDropdown(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const hasActiveFilters = searchQuery || selectedCategory || selectedLocation;
-
-  return (
-    <div className={`w-full space-y-2 ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-      <div className="flex items-center gap-2">
-        <div className="flex-1 relative">
-          <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${
-            isDarkMode ? 'text-gray-400' : 'text-gray-400'
-          }`} />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search products..."
-            className={`w-full pl-9 pr-3 py-2.5 rounded-xl text-sm transition-all duration-200 ${
-              isDarkMode 
-                ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-blue-500' 
-                : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400 focus:border-blue-500'
-            } border focus:outline-none focus:ring-2 focus:ring-blue-500/20`}
-          />
-        </div>
-        {hasActiveFilters && (
-          <button
-            onClick={clearFilters}
-            className={`p-2 rounded-xl transition-all duration-200 ${
-              isDarkMode 
-                ? 'hover:bg-gray-700 text-gray-400 hover:text-gray-200' 
-                : 'hover:bg-gray-100 text-gray-400 hover:text-gray-600'
-            }`}
-            aria-label="Clear filters"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        )}
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2">
-        {/* Category Filter */}
-        <div className="relative" ref={categoryRef}>
-          <button
-            onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
-              selectedCategory
-                ? isDarkMode
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-blue-500 text-white'
-                : isDarkMode
-                  ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            <Filter className="w-3 h-3" />
-            {selectedCategory 
-              ? categories.find(c => c.id === selectedCategory)?.name || 'Category'
-              : 'Category'
-            }
-            <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${
-              showCategoryDropdown ? 'rotate-180' : ''
-            }`} />
-          </button>
-
-          {showCategoryDropdown && (
-            <div className={`absolute top-full left-0 mt-1 w-48 max-h-60 overflow-y-auto rounded-xl shadow-lg z-50 ${
-              isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
-            }`}>
-              <button
-                onClick={() => {
-                  setSelectedCategory('');
-                  setShowCategoryDropdown(false);
-                }}
-                className={`w-full text-left px-3 py-2 text-sm transition-colors ${
-                  !selectedCategory
-                    ? isDarkMode ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-600'
-                    : isDarkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-50 text-gray-700'
-                }`}
-              >
-                All Categories
-              </button>
-              {categories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => {
-                    setSelectedCategory(category.id);
-                    setShowCategoryDropdown(false);
-                  }}
-                  className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center justify-between ${
-                    selectedCategory === category.id
-                      ? isDarkMode ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-600'
-                      : isDarkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-50 text-gray-700'
-                  }`}
-                >
-                  {category.name}
-                  {selectedCategory === category.id && (
-                    <Check className="w-3 h-3" />
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Location Filter */}
-        <div className="relative" ref={locationRef}>
-          <button
-            onClick={() => setShowLocationDropdown(!showLocationDropdown)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
-              selectedLocation
-                ? isDarkMode
-                  ? 'bg-green-600 text-white'
-                  : 'bg-green-500 text-white'
-                : isDarkMode
-                  ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            <MapPin className="w-3 h-3" />
-            {selectedLocation || 'Location'}
-            <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${
-              showLocationDropdown ? 'rotate-180' : ''
-            }`} />
-          </button>
-
-          {showLocationDropdown && (
-            <div className={`absolute top-full left-0 mt-1 w-48 max-h-60 overflow-y-auto rounded-xl shadow-lg z-50 ${
-              isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
-            }`}>
-              <button
-                onClick={() => {
-                  setSelectedLocation('');
-                  setShowLocationDropdown(false);
-                }}
-                className={`w-full text-left px-3 py-2 text-sm transition-colors ${
-                  !selectedLocation
-                    ? isDarkMode ? 'bg-green-600 text-white' : 'bg-green-50 text-green-600'
-                    : isDarkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-50 text-gray-700'
-                }`}
-              >
-                All Locations
-              </button>
-              {isLoadingLocations ? (
-                <div className="px-3 py-2 text-sm text-gray-400 flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-                  Loading locations...
-                </div>
-              ) : (
-                locations.map((location) => (
-                  <button
-                    key={location}
-                    onClick={() => {
-                      setSelectedLocation(location);
-                      setShowLocationDropdown(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center justify-between ${
-                      selectedLocation === location
-                        ? isDarkMode ? 'bg-green-600 text-white' : 'bg-green-50 text-green-600'
-                        : isDarkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-50 text-gray-700'
-                    }`}
-                  >
-                    {location}
-                    {selectedLocation === location && (
-                      <Check className="w-3 h-3" />
-                    )}
-                  </button>
-                ))
-              )}
-            </div>
-          )}
-        </div>
-
-        {hasActiveFilters && (
-          <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            ({[searchQuery, selectedCategory, selectedLocation].filter(Boolean).length} filters)
-          </span>
-        )}
-      </div>
-
-      {/* Filter Chips */}
-      <div className="flex flex-wrap gap-1.5 mt-1">
-        {searchQuery && (
-          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${
-            isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'
-          }`}>
-            {searchQuery}
-            <button
-              onClick={() => setSearchQuery('')}
-              className="hover:text-red-500 transition-colors"
-            >
-              <X className="w-3 h-3" />
-            </button>
-          </span>
-        )}
-        {selectedCategory && categories.find(c => c.id === selectedCategory) && (
-          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${
-            isDarkMode ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-50 text-blue-600'
-          }`}>
-            {categories.find(c => c.id === selectedCategory)?.name}
-            <button
-              onClick={() => setSelectedCategory('')}
-              className="hover:text-red-500 transition-colors"
-            >
-              <X className="w-3 h-3" />
-            </button>
-          </span>
-        )}
-        {selectedLocation && (
-          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${
-            isDarkMode ? 'bg-green-900/30 text-green-300' : 'bg-green-50 text-green-600'
-          }`}>
-            📍 {selectedLocation}
-            <button
-              onClick={() => setSelectedLocation('')}
-              className="hover:text-red-500 transition-colors"
-            >
-              <X className="w-3 h-3" />
-            </button>
-          </span>
-        )}
-      </div>
-    </div>
-  );
-};
-
 const BuyerHomePage = () => {
   const { isDarkMode } = useDarkMode();
   const [dropdownOpen, setDropdownOpen] = useState(null);
@@ -413,47 +94,6 @@ const BuyerHomePage = () => {
   // Filter state
   const [filterCategory, setFilterCategory] = useState('');
   const [filterLocation, setFilterLocation] = useState('');
-  
-  // Recent searches
-  const [recentSearches, setRecentSearches] = useState([]);
-  const [showRecentSearches, setShowRecentSearches] = useState(false);
-  const searchInputRef = useRef(null);
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
-
-  // Load recent searches from localStorage
-  useEffect(() => {
-    const stored = localStorage.getItem('recentSearches');
-    if (stored) {
-      try {
-        setRecentSearches(JSON.parse(stored));
-      } catch (e) {}
-    }
-  }, []);
-
-  // Save recent searches to localStorage
-  const addToRecentSearches = useCallback((term) => {
-    if (!term || term.trim() === '') return;
-    const trimmed = term.trim();
-    setRecentSearches(prev => {
-      const filtered = prev.filter(s => s !== trimmed);
-      const updated = [trimmed, ...filtered].slice(0, 5);
-      localStorage.setItem('recentSearches', JSON.stringify(updated));
-      return updated;
-    });
-  }, []);
-
-  // Update dropdown position relative to the search input
-  const updateDropdownPosition = useCallback(() => {
-    if (searchInputRef.current) {
-      const rect = searchInputRef.current.getBoundingClientRect();
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      setDropdownPosition({
-        top: rect.bottom + scrollTop + 5,
-        left: rect.left,
-        width: rect.width,
-      });
-    }
-  }, []);
 
   // fetchProductsWithParams with location support
   const fetchProductsWithParams = useCallback(async (params = {}) => {
@@ -521,8 +161,15 @@ const BuyerHomePage = () => {
     }
   }, [navigate, setIsPageLoading]);
 
-  // Handle filter
-  const handleFilter = useCallback((filters) => {
+  // Handle search from Header
+  const handleSearch = useCallback((query, category, location) => {
+    setFilterCategory(category || '');
+    setFilterLocation(location || '');
+    fetchProductsWithParams({ search: query, category, location });
+  }, [fetchProductsWithParams]);
+
+  // Handle filter change
+  const handleFilterChange = useCallback((filters) => {
     setFilterCategory(filters.category || '');
     setFilterLocation(filters.location || '');
     fetchProductsWithParams({
@@ -531,73 +178,6 @@ const BuyerHomePage = () => {
       location: filters.location || '',
     });
   }, [fetchProductsWithParams]);
-
-  // Handle search
-  const handleSearch = useCallback((query, category) => {
-    if (query && query.trim() !== '') {
-      addToRecentSearches(query);
-    }
-    fetchProductsWithParams({ search: query, category });
-  }, [addToRecentSearches, fetchProductsWithParams]);
-
-  // Handle category search
-  const handleCategorySearch = useCallback((query, category) => {
-    if (category && category !== 'all' && (!query || query.trim() === '')) {
-      fetchProductsWithParams({ category });
-      const categoryObj = categories.find(c => c.id === category);
-      if (categoryObj) {
-        addToRecentSearches(categoryObj.name);
-      }
-      return;
-    }
-    handleSearch(query, category);
-  }, [categories, addToRecentSearches, fetchProductsWithParams, handleSearch]);
-
-  const onSearchWrapper = useCallback((query, category) => {
-    handleCategorySearch(query, category);
-  }, [handleCategorySearch]);
-
-  const selectRecentSearch = (searchTerm) => {
-    if (searchInputRef.current) {
-      searchInputRef.current.value = searchTerm;
-    }
-    setShowRecentSearches(false);
-    handleSearch(searchTerm, null);
-  };
-
-  // Attach listeners to search input
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      const input = document.querySelector('input[placeholder*="Search"]');
-      if (input) {
-        searchInputRef.current = input;
-        
-        const handleFocus = () => {
-          updateDropdownPosition();
-          setShowRecentSearches(true);
-        };
-        const handleBlur = () => {
-          setTimeout(() => {
-            if (!document.activeElement || !document.activeElement.closest('.recent-searches-dropdown')) {
-              setShowRecentSearches(false);
-            }
-          }, 200);
-        };
-        input.addEventListener('focus', handleFocus);
-        input.addEventListener('blur', handleBlur);
-        window.addEventListener('resize', updateDropdownPosition);
-        window.addEventListener('scroll', updateDropdownPosition, true);
-        
-        return () => {
-          input.removeEventListener('focus', handleFocus);
-          input.removeEventListener('blur', handleBlur);
-          window.removeEventListener('resize', updateDropdownPosition);
-          window.removeEventListener('scroll', updateDropdownPosition, true);
-        };
-      }
-    }, 100);
-    return () => clearTimeout(timeout);
-  }, [updateDropdownPosition]);
 
   // Clear toasts after 3 seconds
   useEffect(() => {
@@ -821,7 +401,6 @@ const BuyerHomePage = () => {
     }
   };
 
-  // dropdownItems with fixed Message Seller navigation
   const dropdownItems = useCallback((post) => {
     return [
       { label: 'Report', action: () => { closeDropdown(); } },
@@ -876,16 +455,19 @@ const BuyerHomePage = () => {
     <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="p-2 sm:p-4 md:p-6 max-w-6xl mx-auto relative">
 
-        {/* FilterBar */}
-        <div className="mb-4">
-          <FilterBar
-            onFilter={handleFilter}
-            categories={categories}
-            isDarkMode={isDarkMode}
-            initialCategory={filterCategory}
-            initialLocation={filterLocation}
-          />
-        </div>
+        {/* Header with Search, Filters, and Settings Icon */}
+        <Header
+          showBackButton={false}
+          onSearch={handleSearch}
+          onFilterChange={handleFilterChange}
+          categories={categories}
+          isDarkMode={isDarkMode}
+          initialCategory={filterCategory}
+          initialLocation={filterLocation}
+          showFilters={true}
+          showSettings={true}
+          settingsPath="/settings"
+        />
 
         {/* Search Toast */}
         {searchToast && (
@@ -904,33 +486,6 @@ const BuyerHomePage = () => {
             } text-white`}>
               {shareToast}
             </div>
-          </div>
-        )}
-
-        {/* Recent searches dropdown */}
-        {showRecentSearches && recentSearches.length > 0 && (
-          <div
-            className="recent-searches-dropdown fixed z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden animate-slideDown"
-            style={{
-              top: `${dropdownPosition.top}px`,
-              left: `${dropdownPosition.left}px`,
-              width: `${dropdownPosition.width}px`,
-              maxHeight: '200px',
-              overflowY: 'auto'
-            }}
-          >
-            <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-              Recent searches
-            </div>
-            {recentSearches.map((term, idx) => (
-              <button
-                key={idx}
-                onClick={() => selectRecentSearch(term)}
-                className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              >
-                {term}
-              </button>
-            ))}
           </div>
         )}
 

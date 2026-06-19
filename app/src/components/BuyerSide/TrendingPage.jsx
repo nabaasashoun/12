@@ -1,3 +1,4 @@
+// TrendingPage.jsx - Updated to use Header with Settings navigation
 import { BuyerCard, BuyerCardContent } from './BuyerCard';
 import {
   Heart, MessageSquare, Star, Bookmark, Plus, MoreHorizontal
@@ -30,6 +31,8 @@ const TrendingPage = () => {
   const [loading, setLoading] = useState(true);
   const [posts, setPosts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [filterCategory, setFilterCategory] = useState('');
+  const [filterLocation, setFilterLocation] = useState('');
 
   // Animations
   const [animatingLike, setAnimatingLike] = useState(null);
@@ -73,10 +76,8 @@ const TrendingPage = () => {
       const hasLocation = params.location && params.location.trim() !== '';
 
       if (hasSearch || hasCategory || hasLocation) {
-        // Search with term and/or category and/or location
         productsResult = await api.searchProducts(params.search || '', params.category, params.location || '');
       } else {
-        // No search, fetch trending (ordered by like_count)
         productsResult = await api.getProducts({ ordering: '-like_count' });
       }
 
@@ -98,6 +99,7 @@ const TrendingPage = () => {
         like_count: product.like_count || 0,
         sellerId: product.seller,
         sellerUserId: product.seller_user_id,
+        location: product.location || product.seller?.location || '',
       }));
       setPosts(transformedPosts);
     } catch (error) {
@@ -116,7 +118,20 @@ const TrendingPage = () => {
 
   // Handle search from Header
   const handleSearch = useCallback((query, category, location) => {
+    setFilterCategory(category || '');
+    setFilterLocation(location || '');
     fetchProducts({ search: query, category, location });
+  }, [fetchProducts]);
+
+  // Handle filter change
+  const handleFilterChange = useCallback((filters) => {
+    setFilterCategory(filters.category || '');
+    setFilterLocation(filters.location || '');
+    fetchProducts({ 
+      search: filters.search || '', 
+      category: filters.category || '', 
+      location: filters.location || '' 
+    });
   }, [fetchProducts]);
 
   // Image carousel navigation
@@ -130,7 +145,7 @@ const TrendingPage = () => {
   };
   const closeDropdown = () => setDropdownOpen(null);
 
-  // Like handler (uses context)
+  // Like handler
   const handleToggleLike = async (postId) => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
@@ -178,7 +193,6 @@ const TrendingPage = () => {
           closeDropdown();
           let targetUserId = post?.sellerUserId;
           if (!targetUserId && post?.sellerId) {
-            // Fallback: fetch seller profile to resolve user ID
             const r = await api.getSellerUserID(post.sellerId);
             if (!r.error && r.data?.user) {
               targetUserId = r.data.user;
@@ -212,12 +226,18 @@ const TrendingPage = () => {
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="p-2 sm:p-4 md:p-6 max-w-6xl mx-auto relative">
-        {/* Header with back button, search bar, and settings */}
+        {/* Header with back button, search bar, filters, and Settings icon */}
         <Header
           showBackButton={true}
           onSearch={handleSearch}
+          onFilterChange={handleFilterChange}
           categories={categories}
           isDarkMode={isDarkMode}
+          initialCategory={filterCategory}
+          initialLocation={filterLocation}
+          showFilters={true}
+          showSettings={true}
+          settingsPath="/settings"
         />
 
         {/* Trending Posts Grid */}
@@ -370,105 +390,4 @@ const TrendingPage = () => {
                                 ? 'text-yellow-500'
                                 : isDarkMode ? 'text-gray-600' : 'text-gray-300'
                               }`}
-                              fill={star <= post.rating ? 'currentColor' : 'none'}
-                            />
-                          ))}
-                        </div>
-                        <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>({post.ratingCount})</span>
-                      </div>
-                    </div>
-                    <Link
-                      to={`/product/${post.id}`}
-                      className={`text-xs font-medium truncate mt-1 ${isDarkMode ? 'text-gray-200 hover:text-blue-400' : 'text-black hover:underline'}`}
-                    >
-                      {post.product}
-                    </Link>
-                    <p className={`text-xs truncate ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{post.content.length > 60 ? post.content.substring(0, 60) + '...' : post.content}</p>
-                  </div>
-                </BuyerCardContent>
-              </BuyerCard>
-            );
-          })}
-        </div>
-
-        {/* Dropdown Modal */}
-        {dropdownOpen && (
-          <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={closeDropdown}
-          >
-            <div
-              className={`rounded-xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className={`p-4 border text-center ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                <h3 className={`font-semibold text-lg ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Post Options</h3>
-              </div>
-              <div className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
-                {dropdownItems(dropdownOpen).map((item, index) => (
-                  <button
-                    key={index}
-                    onClick={item.action}
-                    className={`w-full text-center px-4 py-3 text-sm transition-colors first:rounded-t-lg last:rounded-b-lg ${isDarkMode
-                      ? 'text-gray-300 hover:bg-gray-700'
-                      : 'text-black hover:bg-gray-50'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        <style>{`
-          @keyframes heartBeat {
-            0% { transform: scale(1); }
-            25% { transform: scale(1.3); }
-            50% { transform: scale(1); }
-            75% { transform: scale(1.3); }
-            100% { transform: scale(1); }
-          }
-          @keyframes bookmarkPop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
-          }
-
-          /* Force search inputs to have black text in ALL situations */
-          input[type="text"],
-          input[type="search"],
-          input[placeholder*="Search"],
-          input.search-input,
-          input[type="text"]::placeholder,
-          input[type="search"]::placeholder {
-            color: #000000 !important;
-            -webkit-text-fill-color: #000000 !important;
-          }
-
-          /* Placeholder should be gray, not disappearing or too light */
-          input::placeholder {
-            color: #6b7280 !important;
-            opacity: 1 !important;
-          }
-
-          /* When focused — still keep text black */
-          input:focus {
-            color: #000000 !important;
-          }
-
-          /* Prevent dark mode / system preferences from overriding */
-          @media (prefers-color-scheme: dark) {
-            input[type="text"],
-            input[type="search"] {
-              color: #000000 !important;
-            }
-          }
-        `}</style>
-      </div>
-    </div>
-  );
-};
-
-export default TrendingPage;
+                             
