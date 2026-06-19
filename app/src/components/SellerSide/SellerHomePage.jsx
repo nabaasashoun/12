@@ -393,6 +393,8 @@ const SellerHomePage = () => {
     }
   };
 
+  
+
   const getDropdownItems = (post) => [
     { label: 'Report', action: () => closeDropdown() },
     { 
@@ -422,6 +424,11 @@ const SellerHomePage = () => {
       </div>
     );
   }
+
+  const startChatWithBuyer = (buyerId, buyerName) => {
+    const encodedName = encodeURIComponent(buyerName || 'Buyer');
+    navigate(`/seller/chat?userId=${buyerId}&name=${encodedName}`);
+  };
 
   return (
     <div className={`p-2 sm:p-4 md:p-6 max-w-4xl mx-auto relative min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>

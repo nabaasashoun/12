@@ -1,3 +1,5 @@
+# urls.py - Fixed version
+
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
@@ -9,8 +11,12 @@ router.register(r'sellers', views.SellerViewSet)
 router.register(r'categories', views.CategoryViewSet, basename='category')
 
 urlpatterns = [
+    # ===== MOVED LOCATIONS HERE - BEFORE the router include =====
+    path('locations/', views.get_locations, name='get-locations'),
+    
+    # ===== Everything else after =====
     path('sellers/rate/', views.rate_seller, name='rate-seller'),
-    path('', include(router.urls)),
+    path('', include(router.urls)),  # Router is now AFTER locations
 
     path('cart/', views.CartView.as_view()),
     path('cart/merge/', views.merge_cart),
@@ -51,7 +57,6 @@ urlpatterns = [
     
     path('comments/<int:comment_id>/', views.comment_detail, name='comment-detail'),
     path('comments/<int:comment_id>/helpful/', views.mark_helpful, name='comment-helpful'),
-
 
     path('sellers/<int:seller_id>/follow/', views.toggle_follow_seller, name='toggle-follow-seller'),    
     

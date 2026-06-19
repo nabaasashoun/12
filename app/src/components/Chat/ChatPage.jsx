@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+// ChatPage.jsx
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Send, MessageCircle, Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import { useChat } from '../../utils/ChatContext';
@@ -63,7 +64,7 @@ export const ConnectionBadge = ({ isConnected, short = false }) =>
 
 // ── InboxPanel ───────────────────────────────────────────────────────────────
 
-const InboxPanel = ({ inbox, activeChatId, isConnected, onSelectConversation }) => (
+const InboxPanel = React.memo(({ inbox, activeChatId, isConnected, onSelectConversation }) => (
   <div className="flex flex-col h-full">
     <div className="px-4 py-3 border-b bg-white flex items-center justify-between shrink-0">
       <div>
@@ -81,7 +82,7 @@ const InboxPanel = ({ inbox, activeChatId, isConnected, onSelectConversation }) 
           <MessageCircle className="w-12 h-12 text-gray-200 mb-3" />
           <p className="text-gray-500 font-medium">No conversations yet</p>
           <p className="text-sm text-gray-400 mt-1">
-            Go to a product and tap "Message Seller" to start chatting.
+            When you start chatting with someone, they'll appear here.
           </p>
         </div>
       ) : (
@@ -123,11 +124,13 @@ const InboxPanel = ({ inbox, activeChatId, isConnected, onSelectConversation }) 
       )}
     </div>
   </div>
-);
+));
+
+InboxPanel.displayName = 'InboxPanel';
 
 // ── ChatPanel ────────────────────────────────────────────────────────────────
 
-const ChatPanel = ({
+const ChatPanel = React.memo(({
   messages,
   currentUser,
   currentChatPartner,
@@ -154,7 +157,6 @@ const ChatPanel = ({
     if (inputRef.current) {
       const timer = setTimeout(() => {
         inputRef.current?.focus();
-        inputRef.current?.click();
       }, 300);
       return () => clearTimeout(timer);
     }
@@ -177,19 +179,8 @@ const ChatPanel = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleInputClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    inputRef.current?.focus();
-  };
-
-  const handleInputTouch = (e) => {
-    e.preventDefault();
-    inputRef.current?.focus();
-  };
-
   return (
-    <div className="flex flex-col h-full bg-gray-50">
+    <div className="flex flex-col h-full bg-gray-50 relative">
       {/* Header */}
       <div className="px-3 py-3 border-b bg-white flex items-center gap-3 shrink-0">
         <button
@@ -224,18 +215,6 @@ const ChatPanel = ({
         ref={messagesContainerRef}
         onScroll={handleScroll}
         className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-2"
-        onTouchStart={(e) => {
-          if (messagesContainerRef.current?.scrollTop === 0) {
-            const touchStartY = e.touches[0].clientY;
-            const handleTouchMove = (ev) => {
-              const touchMoveY = ev.touches[0].clientY;
-              if (touchMoveY - touchStartY > 80 && !isRefreshing) {
-                onRefresh?.();
-              }
-            };
-            document.addEventListener('touchmove', handleTouchMove, { once: true });
-          }
-        }}
       >
         {messages.length === 0 && (
           <div className="flex-1 flex items-center justify-center text-center py-12">
@@ -325,8 +304,6 @@ const ChatPanel = ({
             type="text"
             value={inputText}
             onChange={onTyping}
-            onClick={handleInputClick}
-            onTouchStart={handleInputTouch}
             placeholder="Type a message…"
             autoFocus={true}
             className="flex-1 bg-gray-100 rounded-full px-4 py-2.5 text-sm text-gray-900
@@ -356,7 +333,9 @@ const ChatPanel = ({
       </div>
     </div>
   );
-};
+});
+
+ChatPanel.displayName = 'ChatPanel';
 
 // ── Chat Error Boundary ──────────────────────────────────────────────────────
 
@@ -408,26 +387,36 @@ const ChatPageContent = () => {
 
   const [searchParams] = useSearchParams();
   const location = useLocation();
+  const navigate = useNavigate();
   
   const [inputText, setInputText] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
-  const [mobileView, setMobileView] = useState(activeChatId ? 'chat' : 'inbox');
+  const [userRole, setUserRole] = useState(null);
+  const [mobileView, setMobileView] = useState(() => 
+    searchParams.get('userId') || searchParams.get('sellerId') || searchParams.get('buyerId') 
+      ? 'chat' 
+      : 'inbox'
+  );
   const [blockedMessage, setBlockedMessage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [failedMessages, setFailedMessages] = useState([]);
   const [partnerTyping, setPartnerTyping] = useState(false);
+  const [loadingChat, setLoadingChat] = useState(false);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const wsRef = useRef(null);
   const sentMessagesRef = useRef(new Set());
+  const loadChatTimeoutRef = useRef(null);
 
-  // Get current user info
+  // Get current user info and role
   useEffect(() => {
     const stored = localStorage.getItem('user');
+    const role = localStorage.getItem('userRole');
     if (stored) {
       try {
         setCurrentUser(JSON.parse(stored));
@@ -435,59 +424,51 @@ const ChatPageContent = () => {
         console.error('Error parsing user:', e);
       }
     }
+    setUserRole(role);
   }, []);
 
-  // Get WebSocket connection from ChatContext
+  // Auto-select chat from URL params - with debounce to prevent loops
   useEffect(() => {
-    const ws = window.__ws;
-    if (ws) {
-      wsRef.current = ws;
+    // Clear any pending load
+    if (loadChatTimeoutRef.current) {
+      clearTimeout(loadChatTimeoutRef.current);
     }
-  }, []);
 
-  // Auto-select chat from URL params - FIXED to update when URL changes
-  useEffect(() => {
     const userId = searchParams.get('userId');
     const sellerId = searchParams.get('sellerId');
     const buyerId = searchParams.get('buyerId');
     const targetUserId = userId || sellerId || buyerId;
     
-    console.log('Auto-select chat - targetUserId:', targetUserId);
-    console.log('Current activeChatId:', activeChatId);
-    console.log('URL params - userId:', userId, 'sellerId:', sellerId, 'buyerId:', buyerId);
-    
     if (!targetUserId) {
-      // If no user ID in URL, don't change anything
+      setMobileView('inbox');
+      setInitialLoadDone(true);
       return;
     }
     
     const targetId = parseInt(targetUserId);
     
-    // If already on this chat, don't reload
-    if (activeChatId === targetId) {
-      console.log('Already on chat with user:', targetId);
+    // If already on this chat and initial load done, just refresh
+    if (activeChatId === targetId && initialLoadDone) {
       return;
     }
     
-    // Set loading state and fetch chat
-    setIsLoading(true);
+    setLoadingChat(true);
+    setMobileView('chat');
     
-    const loadChat = async () => {
+    // Debounce the load
+    loadChatTimeoutRef.current = setTimeout(async () => {
       try {
-        console.log('Setting active chat ID to:', targetId);
+        console.log('Loading chat for user:', targetId);
         setActiveChatId(targetId);
+        setMessages([]);
         
         const historyResult = await api.getChatHistory(targetId);
-        console.log('Chat history result:', historyResult);
-        
         if (!historyResult.error && historyResult.data) {
           setMessages(historyResult.data);
-        } else {
-          setMessages([]);
         }
         
         await fetchInbox();
-        setMobileView('chat');
+        setInitialLoadDone(true);
         
         setTimeout(() => {
           inputRef.current?.focus();
@@ -495,49 +476,43 @@ const ChatPageContent = () => {
       } catch (error) {
         console.error('Error loading chat:', error);
       } finally {
-        setIsLoading(false);
+        setLoadingChat(false);
+      }
+    }, 300);
+
+    return () => {
+      if (loadChatTimeoutRef.current) {
+        clearTimeout(loadChatTimeoutRef.current);
       }
     };
-    
-    loadChat();
-  }, [searchParams, activeChatId, setActiveChatId, setMessages, fetchInbox]);
+  }, [searchParams, setActiveChatId, setMessages, fetchInbox, activeChatId, initialLoadDone]);
 
-  // Fetch chat history when activeChatId changes (but only if not already loading from URL)
+  // Mark messages as read - with debounce
   useEffect(() => {
-    if (!activeChatId || isLoading) return;
-    
-    const fetchChat = async () => {
-      const result = await api.getChatHistory(activeChatId);
-      if (!result.error && result.data) {
-        setMessages(result.data);
-        await fetchInbox();
-        await api.markMessagesAsRead?.(activeChatId);
-      }
-    };
-    
-    fetchChat();
-    setMobileView('chat');
-  }, [activeChatId, setMessages, fetchInbox, isLoading]);
-
-  // Mark messages as read
-  useEffect(() => {
-    if (!activeChatId || !messages.length) return;
+    if (!activeChatId || !messages.length || loadingChat) return;
     
     const markMessagesAsRead = async () => {
       try {
-        await api.markMessagesAsRead?.(activeChatId);
-        setMessages(prev => prev.map(msg => 
-          msg.sender === activeChatId ? { ...msg, is_read: true } : msg
-        ));
-        fetchInbox();
+        // Only mark if there are unread messages from the other user
+        const hasUnread = messages.some(m => 
+          m.sender === activeChatId && !m.is_read
+        );
+        
+        if (hasUnread) {
+          await api.markMessagesAsRead?.(activeChatId);
+          setMessages(prev => prev.map(msg => 
+            msg.sender === activeChatId ? { ...msg, is_read: true } : msg
+          ));
+          fetchInbox();
+        }
       } catch (error) {
         console.error('Error marking messages as read:', error);
       }
     };
     
-    const timeoutId = setTimeout(markMessagesAsRead, 1000);
+    const timeoutId = setTimeout(markMessagesAsRead, 1500);
     return () => clearTimeout(timeoutId);
-  }, [activeChatId, messages.length, setMessages, fetchInbox]);
+  }, [activeChatId, messages.length, loadingChat]);
 
   // Clean up duplicate temp messages
   useEffect(() => {
@@ -628,10 +603,14 @@ const ChatPageContent = () => {
   // Handle send message
   const handleSend = useCallback((e) => {
     e.preventDefault();
-    if (!inputText.trim() || !activeChatId) return;
-    if (containsContactInfo(inputText)) return;
+    if (!inputText.trim() || !activeChatId || !isConnected) return;
+    if (containsContactInfo(inputText)) {
+      setBlockedMessage('Contact information cannot be shared in chat');
+      setTimeout(() => setBlockedMessage(null), 5000);
+      return;
+    }
 
-    const messageKey = `${inputText}-${activeChatId}`;
+    const messageKey = `${inputText}-${activeChatId}-${Date.now()}`;
     if (sentMessagesRef.current.has(messageKey)) {
       console.log('Prevented duplicate message submission');
       return;
@@ -640,42 +619,24 @@ const ChatPageContent = () => {
     
     setTimeout(() => {
       sentMessagesRef.current.delete(messageKey);
-    }, 2000);
+    }, 3000);
 
-    const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const tempId = `temp-${Date.now()}`;
     const newMessage = {
       id: tempId,
       sender: currentUser?.id,
       recipient: activeChatId,
-      content: inputText,
+      content: inputText.trim(),
       timestamp: new Date().toISOString(),
       status: 'sending',
     };
 
-    setMessages(prev => {
-      const exists = prev.some(m => 
-        m.content === inputText && 
-        m.sender === currentUser?.id && 
-        (m.status === 'sending' || m.status === 'sent')
-      );
-      if (exists) {
-        sentMessagesRef.current.delete(messageKey);
-        return prev;
-      }
-      return [...prev, newMessage];
-    });
-    
+    setMessages(prev => [...prev, newMessage]);
+    const contentToSend = inputText.trim();
     setInputText('');
 
     try {
-      sendMessage(activeChatId, inputText);
-      
-      setTimeout(() => {
-        setMessages(prev => prev.map(msg => 
-          msg.id === tempId ? { ...msg, status: 'sent' } : msg
-        ));
-      }, 1000);
-      
+      sendMessage(activeChatId, contentToSend);
     } catch (error) {
       console.error('Error sending message:', error);
       setMessages(prev => prev.map(msg => 
@@ -687,7 +648,7 @@ const ChatPageContent = () => {
     setTimeout(() => {
       inputRef.current?.focus();
     }, 100);
-  }, [inputText, activeChatId, currentUser, sendMessage, setMessages]);
+  }, [inputText, activeChatId, currentUser, sendMessage, setMessages, isConnected]);
 
   // Refresh messages
   const handleRefresh = useCallback(async () => {
@@ -711,7 +672,18 @@ const ChatPageContent = () => {
   const handleSelectConversation = useCallback((partnerId) => {
     setActiveChatId(partnerId);
     setMobileView('chat');
-  }, [setActiveChatId]);
+    setMessages([]);
+    setInitialLoadDone(false);
+    
+    const loadChat = async () => {
+      const result = await api.getChatHistory(partnerId);
+      if (!result.error && result.data) {
+        setMessages(result.data);
+      }
+      setInitialLoadDone(true);
+    };
+    loadChat();
+  }, [setActiveChatId, setMessages]);
 
   // Clear blocked message after timeout
   useEffect(() => {
@@ -721,14 +693,19 @@ const ChatPageContent = () => {
     }
   }, [blockedMessage]);
 
-  // Get the chat partner name - prioritize URL name parameter
+  // Get the chat partner name
   const nameFromUrl = searchParams.get('name');
   const inboxPartner = inbox.find(c => c.partner_id === activeChatId);
   
-  // Use name from URL first (most reliable), then inbox, then fallback
-  const currentChatPartner = nameFromUrl 
-    ? decodeURIComponent(nameFromUrl) 
-    : (inboxPartner?.partner_name || `User ${activeChatId || ''}`);
+  const currentChatPartner = useMemo(() => {
+    if (nameFromUrl) {
+      return decodeURIComponent(nameFromUrl);
+    }
+    if (inboxPartner?.partner_name) {
+      return inboxPartner.partner_name;
+    }
+    return `User ${activeChatId || ''}`;
+  }, [nameFromUrl, inboxPartner, activeChatId]);
 
   const sharedInboxProps = {
     inbox,

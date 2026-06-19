@@ -33,6 +33,7 @@ import ChatPage from "./components/Chat/ChatPage";
 import { DarkModeProvider } from "./utils/BuyerDarkModeContext";
 import { LikeBookmarkProvider } from "./utils/LikeBookmarkContext";
 import { SellerDarkModeProvider } from "./utils/SellerDarkModeContext";
+import { DataProvider } from './context/DataProvider';
 
 const BuyerRoute = ({ children, userRole, isAuthenticated }) => {
   if (!isAuthenticated) return <Navigate to="/login" />;
@@ -214,29 +215,31 @@ const App = () => {
   }
 
   return (
-    <BrowserRouter>
-      <DarkModeProvider>
-        <SellerDarkModeProvider>
-          <LikeBookmarkProvider>
-            <ChatProvider>
-              <PageLoadingProvider>
-                <NotificationProvider>
-                  <AddProductProvider>
-                    <AuthenticatedContent
-                      isAuthenticated={isAuthenticated}
-                      userRole={userRole}
-                      handleLogout={handleLogout}
-                      setIsAuthenticated={setIsAuthenticated}
-                      setUserRole={setUserRole}
-                    />
-                  </AddProductProvider>
-                </NotificationProvider>
-              </PageLoadingProvider>
-            </ChatProvider>
-          </LikeBookmarkProvider>
-        </SellerDarkModeProvider>
-      </DarkModeProvider>
-    </BrowserRouter>
+    <DataProvider>
+      <BrowserRouter>    
+        <DarkModeProvider>
+          <SellerDarkModeProvider>
+            <LikeBookmarkProvider>
+              <ChatProvider>
+                <PageLoadingProvider>
+                  <NotificationProvider>
+                    <AddProductProvider>
+                      <AuthenticatedContent
+                        isAuthenticated={isAuthenticated}
+                        userRole={userRole}
+                        handleLogout={handleLogout}
+                        setIsAuthenticated={setIsAuthenticated}
+                        setUserRole={setUserRole}
+                      />
+                    </AddProductProvider>
+                  </NotificationProvider>
+                </PageLoadingProvider>
+              </ChatProvider>
+            </LikeBookmarkProvider>
+          </SellerDarkModeProvider>
+        </DarkModeProvider>
+      </BrowserRouter>
+    </DataProvider>
   );
 };
 

@@ -1,287 +1,245 @@
-// src/components/BuyerSide/ShareModal.jsx
-import { useState, useEffect } from 'react';
+// ShareModal.jsx - Fixed WhatsApp icon import
+import React, { useState, useEffect } from 'react';
 import { 
   X, 
+  Share2, 
   Copy, 
-  Check, 
-  Share2,
-  Facebook,
-  Twitter,
-  Instagram,
-  Send,
-  Mail,
+  Facebook, 
+  Twitter, 
+  // WhatsApp icon might not exist in lucide-react
+  // Using MessageCircle as alternative or we can create a custom WhatsApp icon
   MessageCircle,
-  Linkedin,
-  Smartphone
+  Link2, 
+  Check,
+  Send
 } from 'lucide-react';
-import { 
-  getProductShareLink, 
-  copyToClipboard, 
-  shareUsingWebShare,
-  shareToPlatform 
-} from '../../utils/shareUtils';
+import { getProductShareLink, copyToClipboard } from '../../utils/shareUtils';
 
-const ShareModal = ({ isOpen, onClose, product, isDarkMode = false }) => {
+// Custom WhatsApp SVG icon
+const WhatsAppIcon = ({ className }) => (
+  <svg 
+    className={className} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+  >
+    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+  </svg>
+);
+
+const ShareModal = ({ isOpen, onClose, product, isDarkMode }) => {
   const [copied, setCopied] = useState(false);
-  const [shareLink, setShareLink] = useState('');
-  const [showToast, setShowToast] = useState('');
+  const [shareUrl, setShareUrl] = useState('');
 
   useEffect(() => {
-    if (isOpen && product) {
-      setShareLink(getProductShareLink(product.id));
-      setCopied(false);
+    if (product?.id) {
+      setShareUrl(getProductShareLink(product.id));
     }
-  }, [isOpen, product]);
+  }, [product]);
 
-  useEffect(() => {
-    if (showToast) {
-      const timer = setTimeout(() => setShowToast(''), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [showToast]);
+  if (!isOpen || !product) return null;
 
   const handleCopyLink = async () => {
-    const success = await copyToClipboard(
-      shareLink,
+    await copyToClipboard(
+      shareUrl,
       () => {
         setCopied(true);
-        setShowToast('Link copied to clipboard! ✓');
-        setTimeout(() => {
-          setCopied(false);
-        }, 2000);
+        setTimeout(() => setCopied(false), 2000);
       },
-      (error) => {
-        setShowToast('Failed to copy link');
+      () => {
+        // Fallback
+        navigator.clipboard?.writeText(shareUrl).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        });
       }
     );
   };
 
-  const handleNativeShare = async () => {
-    const title = product.product || product.name || 'Check out this product';
-    const text = `Check out ${title} on TendSync! Price: ${product.price || 'Check price'}`;
+  const shareToPlatform = (platform) => {
+    const url = encodeURIComponent(shareUrl);
+    const title = encodeURIComponent(`${product.product} - ${product.price}`);
+    const text = encodeURIComponent(`Check out this amazing product: ${product.product} - ${product.price}`);
     
-    const success = await shareUsingWebShare(title, text, shareLink);
-    if (!success) {
-      setShowToast('Native sharing not supported. Try copying the link instead.');
-    } else {
-      onClose();
+    let shareLink = '';
+    switch (platform) {
+      case 'facebook':
+        shareLink = `https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}`;
+        break;
+      case 'twitter':
+        shareLink = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+        break;
+      case 'whatsapp':
+        shareLink = `https://api.whatsapp.com/send?text=${text}%20${url}`;
+        break;
+      case 'email':
+        shareLink = `mailto:?subject=${title}&body=${text}%0A%0A${url}`;
+        break;
+      case 'telegram':
+        shareLink = `https://t.me/share/url?url=${url}&text=${text}`;
+        break;
+      default:
+        return;
     }
+    
+    window.open(shareLink, '_blank', 'width=600,height=500');
   };
 
-  const handleShareToPlatform = (platform) => {
-    const title = product.product || product.name || 'Check out this product';
-    const text = `Check out ${title} on TendSync!`;
-    shareToPlatform(platform, shareLink, title, text);
-    setTimeout(() => onClose(), 500);
-  };
-
-  if (!isOpen) return null;
-
-  const shareOptions = [
-    { id: 'whatsapp', name: 'WhatsApp', icon: <MessageCircle size={24} />, color: 'bg-green-500', action: () => handleShareToPlatform('whatsapp') },
-    { id: 'facebook', name: 'Facebook', icon: <Facebook size={24} />, color: 'bg-blue-600', action: () => handleShareToPlatform('facebook') },
-    { id: 'twitter', name: 'Twitter', icon: <Twitter size={24} />, color: 'bg-sky-500', action: () => handleShareToPlatform('twitter') },
-    { id: 'telegram', name: 'Telegram', icon: <Send size={24} />, color: 'bg-blue-500', action: () => handleShareToPlatform('telegram') },
-    { id: 'instagram', name: 'Instagram', icon: <Instagram size={24} />, color: 'bg-pink-600', action: () => handleShareToPlatform('instagram') },
-    { id: 'linkedin', name: 'LinkedIn', icon: <Linkedin size={24} />, color: 'bg-blue-700', action: () => handleShareToPlatform('linkedin') },
-    { id: 'email', name: 'Email', icon: <Mail size={24} />, color: 'bg-gray-600', action: () => handleShareToPlatform('email') },
-    { id: 'sms', name: 'SMS', icon: <Smartphone size={24} />, color: 'bg-green-600', action: () => handleShareToPlatform('sms') },
-  ];
+  // Get first image or fallback
+  const productImage = product.images && product.images.length > 0 
+    ? product.images[0] 
+    : '/placeholder-product.jpg';
 
   return (
-    <>
-      {/* Toast Notification */}
-      {showToast && (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[100] animate-slideDown">
-          <div className={`px-4 py-2 rounded-lg shadow-lg text-sm font-medium ${
-            showToast.includes('Failed') ? 'bg-red-500' : 'bg-gray-800'
-          } text-white`}>
-            {showToast}
-          </div>
-        </div>
-      )}
-
-      {/* Modal Overlay */}
+    <div 
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-fadeIn"
+      onClick={onClose}
+    >
       <div 
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
-        onClick={onClose}
+        className={`rounded-2xl max-w-md w-full overflow-hidden shadow-2xl ${
+          isDarkMode ? 'bg-gray-800' : 'bg-white'
+        }`}
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* Modal Content */}
-        <div 
-          className={`w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl overflow-hidden ${
-            isDarkMode ? 'bg-gray-800' : 'bg-white'
-          } shadow-xl animate-slideUp`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Header */}
-          <div className={`flex justify-between items-center p-4 border-b ${
-            isDarkMode ? 'border-gray-700' : 'border-gray-100'
-          }`}>
-            <div className="flex items-center space-x-2">
-              <Share2 size={20} className={isDarkMode ? 'text-gray-400' : 'text-gray-600'} />
-              <h3 className={`font-semibold text-lg ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+        {/* Header */}
+        <div className={`p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+          <div className="flex justify-between items-start">
+            <div className="flex-1">
+              <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                 Share Product
               </h3>
+              <p className={`text-sm mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                Share this product with your friends
+              </p>
             </div>
             <button
               onClick={onClose}
               className={`p-1 rounded-full transition-colors ${
-                isDarkMode 
-                  ? 'hover:bg-gray-700 text-gray-400' 
-                  : 'hover:bg-gray-100 text-gray-500'
+                isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
               }`}
             >
-              <X size={20} />
-            </button>
-          </div>
-
-          {/* Product Preview */}
-          <div className={`p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
-            <div className="flex items-center space-x-3">
-              {product.images && product.images[0] && (
-                <img 
-                  src={product.images[0]} 
-                  alt={product.product}
-                  className="w-12 h-12 rounded-lg object-cover"
-                />
-              )}
-              <div className="flex-1 min-w-0">
-                <p className={`font-medium truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                  {product.product || product.name}
-                </p>
-                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  {product.price}
-                </p>
-                <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'} truncate`}>
-                  by {product.sellerName}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Native Share Button (Mobile) */}
-          {typeof navigator !== 'undefined' && navigator.share && (
-            <div className="p-4">
-              <button
-                onClick={handleNativeShare}
-                className={`w-full flex items-center justify-center space-x-2 py-3 rounded-xl font-medium transition-all ${
-                  isDarkMode
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                    : 'bg-blue-500 hover:bg-blue-600 text-white'
-                }`}
-              >
-                <Share2 size={20} />
-                <span>Share via Device</span>
-              </button>
-            </div>
-          )}
-
-          {/* Copy Link Section */}
-          <div className={`px-4 pb-2 ${typeof navigator !== 'undefined' && navigator.share ? '' : 'pt-4'}`}>
-            <p className={`text-xs font-medium mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              OR COPY LINK
-            </p>
-            <div className="flex items-center space-x-2">
-              <div className={`flex-1 flex items-center px-3 py-2 rounded-lg border ${
-                isDarkMode 
-                  ? 'bg-gray-700 border-gray-600 text-gray-300' 
-                  : 'bg-gray-50 border-gray-200 text-gray-600'
-              }`}>
-                <span className="text-xs truncate">{shareLink}</span>
-              </div>
-              <button
-                onClick={handleCopyLink}
-                className={`p-2 rounded-lg transition-all flex items-center space-x-1 ${
-                  copied
-                    ? 'bg-green-500 text-white'
-                    : isDarkMode
-                      ? 'bg-gray-700 hover:bg-gray-600 text-gray-300'
-                      : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                }`}
-              >
-                {copied ? <Check size={18} /> : <Copy size={18} />}
-                <span className="text-xs font-medium hidden sm:inline">
-                  {copied ? 'Copied!' : 'Copy'}
-                </span>
-              </button>
-            </div>
-          </div>
-
-          {/* Share Platforms Grid */}
-          <div className="p-4">
-            <p className={`text-xs font-medium mb-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              SHARE TO
-            </p>
-            <div className="grid grid-cols-4 gap-3">
-              {shareOptions.map((option) => (
-                <button
-                  key={option.id}
-                  onClick={option.action}
-                  className={`flex flex-col items-center space-y-2 p-2 rounded-xl transition-all ${
-                    isDarkMode
-                      ? 'hover:bg-gray-700'
-                      : 'hover:bg-gray-50'
-                  }`}
-                >
-                  <div className={`w-10 h-10 rounded-full ${option.color} flex items-center justify-center text-white shadow-md`}>
-                    {option.icon}
-                  </div>
-                  <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {option.name}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Close Button */}
-          <div className={`p-4 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
-            <button
-              onClick={onClose}
-              className={`w-full py-2 rounded-lg font-medium transition-colors ${
-                isDarkMode
-                  ? 'hover:bg-gray-700 text-gray-400'
-                  : 'hover:bg-gray-100 text-gray-600'
-              }`}
-            >
-              Cancel
+              <X className={`w-5 h-5 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
             </button>
           </div>
         </div>
-      </div>
 
-      <style>{`
-        @keyframes slideUp {
-          from {
-            transform: translateY(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-        
-        @keyframes slideDown {
-          from {
-            transform: translate(-50%, -20px);
-            opacity: 0;
-          }
-          to {
-            transform: translate(-50%, 0);
-            opacity: 1;
-          }
-        }
-        
-        .animate-slideUp {
-          animation: slideUp 0.3s ease-out;
-        }
-        
-        .animate-slideDown {
-          animation: slideDown 0.3s ease-out;
-        }
-      `}</style>
-    </>
+        {/* Product Preview with Image */}
+        <div className={`p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+          <div className="flex items-center gap-3">
+            <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
+              <img 
+                src={productImage} 
+                alt={product.product}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.src = '/placeholder-product.jpg';
+                }}
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className={`font-medium text-sm truncate ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                {product.product}
+              </p>
+              <p className={`text-sm font-semibold ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>
+                {product.price}
+              </p>
+              <p className={`text-xs truncate ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                by {product.sellerName || 'Seller'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Share Options */}
+        <div className="p-4 space-y-3">
+          <div className="grid grid-cols-4 gap-2">
+            <button
+              onClick={() => shareToPlatform('facebook')}
+              className="flex flex-col items-center gap-1 p-3 rounded-xl bg-[#1877F2]/10 hover:bg-[#1877F2]/20 transition-all transform hover:scale-105 hover:-translate-y-0.5 active:scale-95"
+            >
+              <Facebook className="w-6 h-6 text-[#1877F2]" />
+              <span className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Facebook</span>
+            </button>
+            <button
+              onClick={() => shareToPlatform('twitter')}
+              className="flex flex-col items-center gap-1 p-3 rounded-xl bg-black/10 hover:bg-black/20 transition-all transform hover:scale-105 hover:-translate-y-0.5 active:scale-95"
+            >
+              <Twitter className="w-6 h-6 text-black dark:text-white" />
+              <span className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Twitter</span>
+            </button>
+            <button
+              onClick={() => shareToPlatform('whatsapp')}
+              className="flex flex-col items-center gap-1 p-3 rounded-xl bg-[#25D366]/10 hover:bg-[#25D366]/20 transition-all transform hover:scale-105 hover:-translate-y-0.5 active:scale-95"
+            >
+              <WhatsAppIcon className="w-6 h-6 text-[#25D366]" />
+              <span className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>WhatsApp</span>
+            </button>
+            <button
+              onClick={() => shareToPlatform('telegram')}
+              className="flex flex-col items-center gap-1 p-3 rounded-xl bg-[#0088cc]/10 hover:bg-[#0088cc]/20 transition-all transform hover:scale-105 hover:-translate-y-0.5 active:scale-95"
+            >
+              <Send className="w-6 h-6 text-[#0088cc]" />
+              <span className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Telegram</span>
+            </button>
+          </div>
+
+          {/* Copy Link */}
+          <div className="flex items-center gap-2 mt-2">
+            <div className="flex-1 relative">
+              <input
+                type="text"
+                value={shareUrl}
+                readOnly
+                className={`w-full px-3 py-2 rounded-lg text-sm ${
+                  isDarkMode 
+                    ? 'bg-gray-700 text-gray-200 border-gray-600' 
+                    : 'bg-gray-50 text-gray-800 border-gray-200'
+                } border focus:outline-none focus:ring-2 focus:ring-blue-500`}
+              />
+            </div>
+            <button
+              onClick={handleCopyLink}
+              className={`p-2 rounded-lg transition-all transform hover:scale-105 active:scale-95 ${
+                copied
+                  ? 'bg-green-500 text-white'
+                  : isDarkMode
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                    : 'bg-blue-500 hover:bg-blue-600 text-white'
+              }`}
+            >
+              {copied ? (
+                <Check className="w-5 h-5" />
+              ) : (
+                <Copy className="w-5 h-5" />
+              )}
+            </button>
+          </div>
+
+          {copied && (
+            <p className="text-sm text-green-500 animate-slideDown text-center">
+              ✓ Link copied to clipboard!
+            </p>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className={`p-3 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+          <button
+            onClick={onClose}
+            className={`w-full py-2 rounded-lg text-sm font-medium transition-colors ${
+              isDarkMode 
+                ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' 
+                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+            }`}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 

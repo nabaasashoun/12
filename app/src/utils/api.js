@@ -1,13 +1,22 @@
+// api.js - Fully updated with request deduplication and caching
 const API_BASE_URL = 'http://localhost:8000/api';
 
 class Api {
+  constructor() {
+    // Request deduplication cache
+    this.pendingRequests = new Map();
+    this.cache = new Map();
+    this.cacheTTL = 60000; // 1 minute cache
+    this.locationsCache = null;
+    this.locationsCacheTime = null;
+    this.locationsCacheTTL = 300000; // 5 minutes for locations
+  }
+
   getToken() {
-    // Try both possible token keys
     return localStorage.getItem('accessToken') || localStorage.getItem('access');
   }
 
   getRefreshToken() {
-    // Try both possible refresh token keys
     return localStorage.getItem('refreshToken') || localStorage.getItem('refresh');
   }
 
@@ -26,57 +35,162 @@ class Api {
     return headers;
   }
 
+  // Deduplicated request with caching
   async request(endpoint, options = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
+    const method = options.method || 'GET';
+    
+    // Only cache GET requests
+    const isGet = method === 'GET';
+    const cacheKey = `${method}:${url}:${JSON.stringify(options.body || {})}`;
+    
+    // Check if this exact request is already in progress
+    if (this.pendingRequests.has(cacheKey)) {
+      console.log(`🔄 Deduplicating request: ${method} ${url}`);
+      return this.pendingRequests.get(cacheKey);
+    }
+    
+    // Check cache for GET requests
+    if (isGet && this.cache.has(cacheKey)) {
+      const cached = this.cache.get(cacheKey);
+      if (Date.now() - cached.timestamp < this.cacheTTL) {
+        console.log(`📦 Cache hit: ${url}`);
+        return cached.data;
+      } else {
+        this.cache.delete(cacheKey);
+      }
+    }
+    
     const headers = options.headers || this.getHeaders(!options.public);
     
-    try {
-      console.log(`API Request: ${options.method || 'GET'} ${url}`);
-      
-      const response = await fetch(url, {
-        ...options,
-        headers: {
-          ...headers,
-          ...options.headers,
-        },
-      });
-      
-      let data;
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        data = await response.json();
-      } else {
-        data = await response.text();
-      }
-      
-      if (!response.ok) {
-        console.log(`API Error ${response.status}:`, data);
+    const requestPromise = (async () => {
+      try {
+        console.log(`📡 API Request: ${method} ${url}`);
         
-        if (response.status === 401) {
-          console.log('401 Unauthorized, attempting token refresh...');
-          const refreshed = await this.refreshToken();
-          if (refreshed) {
-            console.log('Token refreshed, retrying request...');
-            return this.request(endpoint, options);
-          } else {
-            console.log('Token refresh failed, clearing auth data...');
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('access');
-            localStorage.removeItem('refreshToken');
-            localStorage.removeItem('refresh');
-            localStorage.removeItem('user');
-            localStorage.removeItem('userRole');
-            window.dispatchEvent(new Event('authStateChanged'));
-          }
+        const response = await fetch(url, {
+          ...options,
+          headers: {
+            ...headers,
+            ...options.headers,
+          },
+        });
+        
+        let data;
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          data = await response.json();
+        } else {
+          data = await response.text();
         }
-        return { error: true, status: response.status, data };
+        
+        if (!response.ok) {
+          console.log(`API Error ${response.status}:`, data);
+          
+          if (response.status === 401) {
+            console.log('401 Unauthorized, attempting token refresh...');
+            const refreshed = await this.refreshToken();
+            if (refreshed) {
+              console.log('Token refreshed, retrying request...');
+              return this.request(endpoint, options);
+            } else {
+              console.log('Token refresh failed, clearing auth data...');
+              localStorage.removeItem('accessToken');
+              localStorage.removeItem('access');
+              localStorage.removeItem('refreshToken');
+              localStorage.removeItem('refresh');
+              localStorage.removeItem('user');
+              localStorage.removeItem('userRole');
+              window.dispatchEvent(new Event('authStateChanged'));
+            }
+          }
+          return { error: true, status: response.status, data };
+        }
+        
+        const result = { data, status: response.status };
+        
+        // Cache GET requests
+        if (isGet) {
+          this.cache.set(cacheKey, {
+            data: result,
+            timestamp: Date.now()
+          });
+        }
+        
+        return result;
+      } catch (error) {
+        console.error('API request error:', error);
+        return { error: true, message: error.message };
+      } finally {
+        // Remove from pending requests
+        this.pendingRequests.delete(cacheKey);
       }
-      
-      return { data, status: response.status };
-    } catch (error) {
-      console.error('API request error:', error);
-      return { error: true, message: error.message };
+    })();
+    
+    this.pendingRequests.set(cacheKey, requestPromise);
+    return requestPromise;
+  }
+
+  // Clear cache for specific endpoints or all
+  clearCache(endpoint = null) {
+    if (endpoint) {
+      const keysToDelete = [];
+      for (const key of this.cache.keys()) {
+        if (key.includes(endpoint)) {
+          keysToDelete.push(key);
+        }
+      }
+      keysToDelete.forEach(key => this.cache.delete(key));
+    } else {
+      this.cache.clear();
     }
+    // Also clear locations cache
+    if (!endpoint || endpoint.includes('locations')) {
+      this.locationsCache = null;
+      this.locationsCacheTime = null;
+    }
+  }
+
+  // Specialized locations fetch with longer cache
+  async getLocations() {
+    // Check memory cache first
+    if (this.locationsCache && this.locationsCacheTime) {
+      if (Date.now() - this.locationsCacheTime < this.locationsCacheTTL) {
+        console.log('📦 Locations cache hit (memory)');
+        return this.locationsCache;
+      }
+    }
+
+    try {
+      const response = await this.request('/locations/');
+      if (!response.error && response.data) {
+        let locationData = [];
+        if (Array.isArray(response.data)) {
+          locationData = response.data;
+        } else if (response.data.data && Array.isArray(response.data.data)) {
+          locationData = response.data.data;
+        }
+        if (locationData.length > 0) {
+          // Cache in memory
+          this.locationsCache = locationData;
+          this.locationsCacheTime = Date.now();
+          return locationData;
+        }
+      }
+      // If API fails, return defaults
+      return this.getDefaultLocations();
+    } catch (error) {
+      console.error('Error fetching locations:', error);
+      return this.getDefaultLocations();
+    }
+  }
+
+  getDefaultLocations() {
+    return [
+      'Kampala', 'Entebbe', 'Jinja', 'Mbarara', 'Gulu',
+      'Arua', 'Mbale', 'Masaka', 'Kasese', 'Fort Portal',
+      'Lira', 'Soroti', 'Kabale', 'Mukono', 'Njeru',
+      'Busia', 'Tororo', 'Moroto', 'Kotido', 'Adjumani'
+    ];
   }
 
   async refreshToken() {
@@ -96,7 +210,6 @@ class Api {
       if (response.ok) {
         const data = await response.json();
         console.log('Token refresh successful');
-        // Store new access token in both possible locations
         localStorage.setItem('accessToken', data.access);
         localStorage.setItem('access', data.access);
         if (data.refresh) {
@@ -120,7 +233,6 @@ class Api {
       public: true,
     });
     
-    // If login successful, store tokens in both locations for consistency
     if (!response.error && response.data) {
       if (response.data.access) {
         localStorage.setItem('accessToken', response.data.access);
@@ -155,6 +267,7 @@ class Api {
     localStorage.removeItem('refresh');
     localStorage.removeItem('user');
     localStorage.removeItem('userRole');
+    this.clearCache();
     return { success: true };
   }
 
@@ -546,11 +659,26 @@ class Api {
   }
 
   async searchProducts(query, category = 'all', location = '') {
-    const params = new URLSearchParams();
-    if (query) params.append('search', query);
-    if (category && category !== 'all') params.append('category', category);
-    if (location && location !== 'all') params.append('location', location);
-    return this.request(`/products/?${params.toString()}`);
+    if (typeof query === 'object') {
+      const params = query;
+      query = params.search || '';
+      category = params.category || '';
+      location = params.location || '';
+    }
+    
+    const queryParams = new URLSearchParams();
+    if (query && query.trim()) {
+      queryParams.append('search', query.trim());
+    }
+    if (category && category !== 'all' && category !== '') {
+      queryParams.append('category', category);
+    }
+    if (location && location.trim()) {
+      queryParams.append('location', location.trim());
+    }
+    
+    const url = `/products/${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+    return this.request(url);
   }
 
   async changeEmail(newEmail, password) {
@@ -570,27 +698,6 @@ class Api {
     });
   }
 
-  async updateBuyerProfile(profileData) {
-    console.log('========== API: UPDATE BUYER PROFILE ==========');
-    console.log('Sending profile data:', profileData);
-    
-    try {
-      const response = await this.request('/buyer/profile/', {
-        method: 'PUT',
-        body: JSON.stringify(profileData),
-      });
-      
-      console.log('API Response:', response);
-      console.log('========== API UPDATE COMPLETE ==========');
-      
-      return response;
-    } catch (error) {
-      console.error('API Error in updateBuyerProfile:', error);
-      return { error: true, message: error.message };
-    }
-  }
-
-  // Get seller profile
   async getSellerProfile() {
     try {
       const token = this.getToken();
@@ -614,64 +721,11 @@ class Api {
     }
   }
 
-  // Update seller profile
-  async updateSellerProfile(profileData) {
-    console.log('========== SELLER PROFILE UPDATE ==========');
-    console.log('Sending profile data:', profileData);
-    
-    try {
-      const token = this.getToken();
-      console.log('Token present:', !!token);
-      
-      // Log the exact payload being sent
-      const payload = JSON.stringify(profileData);
-      console.log('Payload:', payload);
-      
-      const response = await fetch(`${API_BASE_URL}/seller/profile/`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: payload
-      });
-      
-      console.log('Response status:', response.status);
-      
-      // Try to get the response body
-      const responseText = await response.text();
-      console.log('Response text:', responseText);
-      
-      let responseData;
-      try {
-        responseData = JSON.parse(responseText);
-      } catch (e) {
-        responseData = { error: 'Invalid JSON response', raw: responseText };
-      }
-      
-      if (!response.ok) {
-        console.error('Error response data:', responseData);
-        return { error: true, status: response.status, data: responseData };
-      }
-      
-      console.log('Success response:', responseData);
-      console.log('========== UPDATE COMPLETE ==========');
-      
-      return { error: false, data: responseData };
-    } catch (error) {
-      console.error('Error in updateSellerProfile:', error);
-      return { error: true, message: error.message };
-    }
-  }
-
   async updateSellerTrustRating(data) {
     return this.request('/sellers/rate/', {
       method: 'POST',
       body: JSON.stringify(data),
     });
-  }
-  async getOrders() {
-    return this.request('/orders/');
   }
 
   async getOrderDetail(orderId) {
@@ -698,16 +752,13 @@ class Api {
     }
   }
 
-  // Get seller's quick deals
   async getSellerQuickDeals() {
     return this.request('/seller/quick-deals/');
   }
 
-  // Create a quick deal
   async createQuickDeal(dealData) {
     const token = this.getToken();
     
-    // If there's a file (picture), use FormData
     if (dealData.picture instanceof File) {
       const formData = new FormData();
       formData.append('product_id', dealData.product_id);
@@ -736,14 +787,12 @@ class Api {
         return { error: true, message: error.message };
       }
     } else {
-      // No file, use regular JSON request
       return this.request('/seller/quick-deals/', {
         method: 'POST',
         body: JSON.stringify(dealData),
       });
     }
   }
-
 
   async deleteQuickDeal(dealId) {
     return this.request(`/seller/quick-deals/${dealId}/`, {
@@ -799,64 +848,62 @@ class Api {
     return this.request(`/payments/status/${orderId}/`);
   }
 
-  async initiatePayment(paymentData) {
-    const token = this.getToken();
-    return this.request('/payments/initiate/', {
-      method: 'POST',
-      body: JSON.stringify(paymentData),
-    });
-  }
-
   async getChatInbox() {
     return this.request('/chat/inbox/');
   }
 
   async getChatHistory(userId) {
     console.log(`Fetching chat history for user ID: ${userId}`);
-    const response = await this.request(`/chat/${userId}/`);
-    console.log('Chat history response:', response);
-    
-    // Ensure we return data consistently
-    if (response.error) {
-      return { error: true, data: [] };
+    try {
+      const response = await this.request(`/chat/${userId}/`);
+      console.log('Chat history response:', response);
+      
+      if (response.error) {
+        return { error: true, data: [] };
+      }
+      
+      if (Array.isArray(response.data)) {
+        return { data: response.data, error: false };
+      }
+      
+      if (response.data && Array.isArray(response.data.data)) {
+        return { data: response.data.data, error: false };
+      }
+      
+      if (response.data && Array.isArray(response.data.messages)) {
+        return { data: response.data.messages, error: false };
+      }
+      
+      return { data: [], error: false };
+    } catch (error) {
+      console.error('Error fetching chat history:', error);
+      return { error: true, data: [], message: error.message };
     }
-    
-    // If response.data is an array, return it directly
-    if (Array.isArray(response.data)) {
-      return { data: response.data, error: false };
-    }
-    
-    // If response.data has a data property (nested)
-    if (response.data && Array.isArray(response.data.data)) {
-      return { data: response.data.data, error: false };
-    }
-    
-    // Fallback
-    return { data: [], error: false };
   }
 
   async getSellerUserID(sellerProfileId) {
     return this.request(`/sellers/${sellerProfileId}/`);
   }
 
-    // Add this method to the Api class in api.js
   async sendChatMessage(recipientId, content) {
-    // This is a fallback HTTP endpoint if WebSocket fails
-    // Make sure this endpoint exists in your backend urls.py
     return this.request('/chat/send/', {
       method: 'POST',
       body: JSON.stringify({ recipient_id: recipientId, content }),
     });
   }
 
-  // Add to Api class
-// api.js - Update getWebSocketURL method
+  async markMessagesAsRead(senderId) {
+    return this.request('/chat/mark-read/', {
+      method: 'POST',
+      body: JSON.stringify({ sender_id: senderId }),
+    });
+  }
+
   getWebSocketURL() {
     const token = this.getToken();
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = window.location.hostname || 'localhost';
     const port = '8000';
-    // Remove '/trendsync/' from the path - just use '/ws/'
     return `${protocol}//${host}:${port}/ws/?token=${token}`;
   }
 
@@ -894,7 +941,6 @@ class Api {
     return ws;
   }
 
-  // Add to Api class
   async getSellerUserInfo(sellerId) {
     console.log(`Getting user info for seller profile ID: ${sellerId}`);
     const response = await this.request(`/sellers/${sellerId}/`);

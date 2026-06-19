@@ -1,3 +1,4 @@
+// ChatContext.jsx
 import {
   createContext, useContext, useState, useEffect,
   useRef, useCallback, useMemo,
@@ -12,13 +13,16 @@ export function ChatProvider({ children }) {
   const [activeChatId, setActiveChatId] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const wsRef = useRef(null);
   const reconnectDelayRef = useRef(2000);
   const reconnectTimerRef = useRef(null);
   const reconnectAttemptsRef = useRef(0);
-  const maxReconnectAttempts = 10;
   const fetchInboxRef = useRef(null);
+  const isConnectingRef = useRef(false);
+  const maxReconnectAttempts = 10;
+  const messageDedupRef = useRef(new Set());
 
   const fetchInbox = useCallback(async () => {
     if (!api.getToken()) return;
@@ -43,6 +47,12 @@ export function ChatProvider({ children }) {
       return;
     }
 
+    // Prevent multiple connection attempts
+    if (isConnectingRef.current) {
+      console.log('WebSocket connection already in progress');
+      return;
+    }
+
     // Check if already connected or connecting
     const ws = wsRef.current;
     if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
@@ -57,12 +67,13 @@ export function ChatProvider({ children }) {
       wsRef.current = null;
     }
 
+    isConnectingRef.current = true;
+
     // Build WebSocket URL
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = window.location.hostname || 'localhost';
-    const port = '8000'; // Your Django server port
+    const port = '8000';
     
-    // Use environment variable if available
     const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
     const baseUrl = apiBaseUrl.replace('/api', '');
     const wsBaseUrl = baseUrl.replace('http', 'ws');
@@ -82,6 +93,7 @@ export function ChatProvider({ children }) {
         setConnectionError(null);
         reconnectDelayRef.current = 2000;
         reconnectAttemptsRef.current = 0;
+        isConnectingRef.current = false;
         
         // Send initial ping to verify connection
         socket.send(JSON.stringify({ type: 'ping' }));
@@ -110,8 +122,21 @@ export function ChatProvider({ children }) {
 
         // Handle chat messages
         if (payload.type === 'chat_message') {
+          // Deduplicate messages
+          const messageId = payload.id || `msg-${payload.timestamp}`;
+          if (messageDedupRef.current.has(messageId)) {
+            console.log('Duplicate message ignored:', messageId);
+            return;
+          }
+          messageDedupRef.current.add(messageId);
+          
+          // Clean up dedup set periodically
+          if (messageDedupRef.current.size > 1000) {
+            messageDedupRef.current.clear();
+          }
+
           const newMsg = {
-            id: payload.id || Date.now(),
+            id: messageId,
             sender: payload.sender_id,
             recipient: payload.recipient_id,
             content: payload.content,
@@ -119,8 +144,8 @@ export function ChatProvider({ children }) {
           };
 
           setMessages(prev => {
-            // Deduplicate messages
-            if (prev.some(m => m.id === payload.id)) return prev;
+            // Check if message already exists
+            if (prev.some(m => m.id === messageId)) return prev;
 
             // Replace optimistic temp message if present
             const tempIdx = prev.findIndex(
@@ -138,7 +163,9 @@ export function ChatProvider({ children }) {
           });
 
           // Refresh inbox to update unread counts
-          fetchInboxRef.current?.();
+          if (fetchInboxRef.current) {
+            fetchInboxRef.current();
+          }
           
           // Dispatch event for other components
           window.dispatchEvent(new CustomEvent('chatMessageReceived', { detail: payload }));
@@ -157,6 +184,7 @@ export function ChatProvider({ children }) {
 
       socket.onclose = (event) => {
         console.log(`WebSocket closed: Code ${event.code} - ${event.reason || 'No reason'}`);
+        isConnectingRef.current = false;
         
         if (socket._intentional) {
           console.log('Intentional close, not reconnecting');
@@ -193,27 +221,33 @@ export function ChatProvider({ children }) {
       socket.onerror = (error) => {
         console.error('WebSocket error:', error);
         setConnectionError('WebSocket connection error');
+        isConnectingRef.current = false;
         // onclose will fire after onerror
       };
 
     } catch (error) {
       console.error('Error creating WebSocket:', error);
       setConnectionError('Failed to create WebSocket connection');
+      isConnectingRef.current = false;
     }
-  }, []); // No dependencies - uses refs
+  }, []);
 
   // Initial connection setup
   useEffect(() => {
+    if (isInitialized) return;
+    
     const token = api.getToken();
     if (token) {
       connectWs();
       fetchInbox();
+      setIsInitialized(true);
     }
 
     const handleAuthChange = () => {
       console.log('Auth state changed, reconnecting WebSocket...');
       reconnectAttemptsRef.current = 0;
       reconnectDelayRef.current = 2000;
+      messageDedupRef.current.clear();
       connectWs();
       fetchInbox();
     };
@@ -241,7 +275,7 @@ export function ChatProvider({ children }) {
         wsRef.current = null;
       }
     };
-  }, [connectWs, fetchInbox]);
+  }, [connectWs, fetchInbox, isInitialized]);
 
   // Send message function
   const sendMessage = useCallback((recipientId, content) => {
@@ -271,7 +305,17 @@ export function ChatProvider({ children }) {
           timestamp: new Date().toISOString(),
           isOptimistic: true,
         };
-        setMessages(prev => [...prev, optimisticMessage]);
+        setMessages(prev => {
+          // Prevent duplicate optimistic messages
+          if (prev.some(m => 
+            m.content === optimisticMessage.content && 
+            m.sender === optimisticMessage.sender &&
+            m.id.startsWith('temp-')
+          )) {
+            return prev;
+          }
+          return [...prev, optimisticMessage];
+        });
         
       } catch (error) {
         console.error('Error sending message:', error);
@@ -292,6 +336,8 @@ export function ChatProvider({ children }) {
       setActiveChatId(userId);
       // Clear messages when switching chats
       setMessages([]);
+      // Clear dedup set
+      messageDedupRef.current.clear();
       // Fetch messages for this user
       api.getChatHistory(userId).then(response => {
         if (!response.error && response.data) {
@@ -304,7 +350,6 @@ export function ChatProvider({ children }) {
   // Mark messages as read
   const markAsRead = useCallback((senderId) => {
     // This will be handled by the backend
-    // The chat history endpoint already marks messages as read
   }, []);
 
   // Calculate unread count
@@ -316,6 +361,7 @@ export function ChatProvider({ children }) {
   // Clear all messages
   const clearMessages = useCallback(() => {
     setMessages([]);
+    messageDedupRef.current.clear();
   }, []);
 
   const value = useMemo(() => ({

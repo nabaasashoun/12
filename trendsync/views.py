@@ -2289,44 +2289,99 @@ def get_chat_inbox(request):
     inbox.sort(key=lambda x: x['timestamp'], reverse=True)
     return Response(inbox, status=status.HTTP_200_OK)
 
+# In views.py - Update get_chat_history function
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_chat_history(request, user_id):
+    """
+    Get chat history between the authenticated user and another user.
+    Only returns messages between these two specific users.
+    """
     from django.db.models import Q
     from .models import ChatMessage
     from .serializers import ChatMessageSerializer
     
+    # Get the current user
+    current_user = request.user
+    
+    # Query messages where:
+    # - Current user is sender AND other user is recipient
+    # OR
+    # - Other user is sender AND current user is recipient
     messages = ChatMessage.objects.filter(
-        (Q(sender=request.user) & Q(recipient_id=user_id)) | 
-        (Q(sender_id=user_id) & Q(recipient=request.user))
+        (Q(sender=current_user) & Q(recipient_id=user_id)) | 
+        (Q(sender_id=user_id) & Q(recipient=current_user))
     ).order_by('timestamp')
     
-    ChatMessage.objects.filter(sender_id=user_id, recipient=request.user, is_read=False).update(is_read=True)
+    # Mark unread messages from the other user as read
+    ChatMessage.objects.filter(
+        sender_id=user_id, 
+        recipient=current_user, 
+        is_read=False
+    ).update(is_read=True)
     
+    # Serialize and return the messages
     serializer = ChatMessageSerializer(messages, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+# views.py - Add this at the end of the file
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_locations(request):
+    """
+    Get list of unique locations from all sellers that have products.
+    Returns locations that have at least one product.
+    """
+    try:
+        # Get distinct locations from sellers that have products
+        locations = Seller.objects.filter(
+            products__isnull=False,
+            location__isnull=False
+        ).exclude(location='').values_list('location', flat=True).distinct().order_by('location')
+        
+        # Convert to list and clean up
+        location_list = [loc.strip() for loc in locations if loc and loc.strip()]
+        
+        # If no locations found, return a default list
+        if not location_list:
+            default_locations = [
+                'Kampala', 'Entebbe', 'Jinja', 'Mbarara', 'Gulu',
+                'Arua', 'Mbale', 'Masaka', 'Kasese', 'Fort Portal',
+                'Lira', 'Soroti', 'Kabale', 'Mukono', 'Njeru',
+                'Busia', 'Tororo', 'Moroto', 'Kotido', 'Adjumani'
+            ]
+            return Response({
+                'status': 'success',
+                'data': default_locations,
+                'is_default': True,
+                'count': len(default_locations)
+            })
+        
+        return Response({
+            'status': 'success',
+            'data': location_list,
+            'is_default': False,
+            'count': len(location_list)
+        })
+        
+    except Exception as e:
+        print(f"Error fetching locations: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        
+        # Return default locations as fallback
+        default_locations = [
+            'Kampala', 'Entebbe', 'Jinja', 'Mbarara', 'Gulu',
+            'Arua', 'Mbale', 'Masaka', 'Kasese', 'Fort Portal',
+            'Lira', 'Soroti', 'Kabale', 'Mukono', 'Njeru',
+            'Busia', 'Tororo', 'Moroto', 'Kotido', 'Adjumani'
+        ]
+        return Response({
+            'status': 'success',
+            'data': default_locations,
+            'is_default': True,
+            'count': len(default_locations),
+            'error': str(e)
+        })
