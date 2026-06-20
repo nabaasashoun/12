@@ -1,7 +1,7 @@
-// TrendingPage.jsx - Updated to use Header with Settings navigation
+// TrendingPage.jsx - Updated with main product image and share UI
 import { BuyerCard, BuyerCardContent } from './BuyerCard';
 import {
-  Heart, MessageSquare, Star, Bookmark, Plus, MoreHorizontal
+  Heart, MessageSquare, Star, Bookmark, Plus, MoreHorizontal, Share2, ExternalLink
 } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -33,6 +33,7 @@ const TrendingPage = () => {
   const [categories, setCategories] = useState([]);
   const [filterCategory, setFilterCategory] = useState('');
   const [filterLocation, setFilterLocation] = useState('');
+  const [showShareModal, setShowShareModal] = useState(null);
 
   // Animations
   const [animatingLike, setAnimatingLike] = useState(null);
@@ -88,6 +89,8 @@ const TrendingPage = () => {
         sellerUsername: product.seller?.user?.username || 'seller',
         authorAvatar: (product.seller_name || product.seller?.name || 'S').charAt(0),
         price: formatCurrency(product.unit_price || 0),
+        // Use product_photo as main image, fallback to first image, then placeholder
+        mainImage: product.product_photo || (product.images && product.images.length > 0 ? product.images[0] : null),
         images: product.images && product.images.length > 0
           ? product.images
           : (product.product_photo ? [product.product_photo] : ['/sample1.jpg']),
@@ -144,6 +147,58 @@ const TrendingPage = () => {
     setDropdownOpen(dropdownOpen === postId ? null : postId);
   };
   const closeDropdown = () => setDropdownOpen(null);
+
+  // Share handlers
+  const handleShare = (postId) => {
+    setShowShareModal(postId);
+    closeDropdown();
+  };
+
+  const closeShareModal = () => setShowShareModal(null);
+
+  const handleCopyLink = async (postId) => {
+    const url = `${window.location.origin}/product/${postId}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      alert('Link copied to clipboard!');
+    } catch (err) {
+      // Fallback
+      const textArea = document.createElement('textarea');
+      textArea.value = url;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert('Link copied to clipboard!');
+    }
+    closeShareModal();
+  };
+
+  const handleShareSocial = (postId, platform) => {
+    const url = `${window.location.origin}/product/${postId}`;
+    const text = `Check out this product on TrendSync!`;
+    let shareUrl = '';
+    
+    switch(platform) {
+      case 'whatsapp':
+        shareUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
+        break;
+      case 'facebook':
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+        break;
+      case 'twitter':
+        shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+        break;
+      case 'email':
+        shareUrl = `mailto:?subject=Check out this product&body=${encodeURIComponent(text + '\n\n' + url)}`;
+        break;
+      default:
+        return;
+    }
+    
+    window.open(shareUrl, '_blank', 'width=600,height=400');
+    closeShareModal();
+  };
 
   // Like handler
   const handleToggleLike = async (postId) => {
@@ -207,8 +262,8 @@ const TrendingPage = () => {
         }
       },
       { label: 'Go to Post', action: () => { closeDropdown(); navigate(`/product/${postId}`); } },
-      { label: 'Share to', action: () => {} },
-      { label: 'Copy Link', action: () => {} },
+      { label: 'Share', action: () => handleShare(postId) },
+      { label: 'Copy Link', action: () => { handleCopyLink(postId); closeDropdown(); } },
       { label: 'Remove from Cart', action: () => {} },
       { label: 'Unfollow', action: () => {} },
       { label: 'Cancel', action: closeDropdown },
@@ -245,6 +300,8 @@ const TrendingPage = () => {
           {posts.map((post) => {
             const currentIndex = currentImageIndex[post.id] || 0;
             const totalImages = post.images.length;
+            // Use mainImage if available, otherwise use the first image from the carousel
+            const displayImage = post.mainImage || post.images[currentIndex] || '/sample1.jpg';
 
             return (
               <BuyerCard key={post.id} variant="elevated" className="overflow-hidden flex flex-col">
@@ -275,51 +332,33 @@ const TrendingPage = () => {
                     </div>
                   </div>
 
-                  {/* Image */}
-                  <div
-                    className="relative aspect-square w-full bg-gray-200 dark:bg-gray-700 flex-1"
-                    onTouchStart={(e) => {
-                      const touchStartX = e.touches[0].clientX;
-                      setCurrentImageIndex((prev) => ({ ...prev, touchStartX }));
-                    }}
-                    onTouchMove={(e) => {
-                      const touchEndX = e.touches[0].clientX;
-                      setCurrentImageIndex((prev) => ({ ...prev, touchEndX }));
-                    }}
-                    onTouchEnd={() => {
-                      const startX = currentImageIndex.touchStartX;
-                      const endX = currentImageIndex.touchEndX;
-                      const diff = startX - endX;
-                      if (Math.abs(diff) > 50) {
-                        if (diff > 0 && currentIndex < totalImages - 1) goToImage(post.id, currentIndex + 1);
-                        if (diff < 0 && currentIndex > 0) goToImage(post.id, currentIndex - 1);
-                      }
-                      setCurrentImageIndex((prev) => ({ ...prev, touchStartX: null, touchEndX: null }));
-                    }}
-                  >
+                  {/* Image - Main product image with link */}
+                  <Link to={`/product/${post.id}`} className="relative aspect-square w-full bg-gray-200 dark:bg-gray-700 flex-1 block">
+                    <img
+                      src={displayImage}
+                      alt={post.product}
+                      className="absolute inset-0 w-full h-full object-cover select-none"
+                      onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=No+Image'; }}
+                    />
+                    {/* Image indicator dots for carousel */}
                     {totalImages > 1 && (
-                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-10 flex space-x-1 px-2 py-1">
+                      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 z-10 flex space-x-1 px-2 py-1 bg-black/30 rounded-full backdrop-blur-sm">
                         {post.images.map((_, index) => (
                           <button
                             key={index}
-                            onClick={() => goToImage(post.id, index)}
-                            className={`w-1 h-1 rounded-full transition-all ${index === currentIndex
-                              ? isDarkMode ? 'bg-gray-400' : 'bg-gray-300'
-                              : isDarkMode ? 'bg-gray-600' : 'bg-gray-100'
+                            onClick={(e) => {
+                              e.preventDefault();
+                              goToImage(post.id, index);
+                            }}
+                            className={`w-1.5 h-1.5 rounded-full transition-all ${index === currentIndex
+                              ? 'bg-white'
+                              : 'bg-white/50 hover:bg-white/75'
                             }`}
                           />
                         ))}
                       </div>
                     )}
-                    <Link to={`/product/${post.id}`}>
-                      <img
-                        src={post.images[currentIndex]}
-                        alt={post.product}
-                        className="absolute inset-0 w-full h-full object-cover select-none"
-                        onError={(e) => { e.target.src = 'https://via.placeholder.com/300'; }}
-                      />
-                    </Link>
-                  </div>
+                  </Link>
 
                   {/* Footer */}
                   <div className="p-1 sm:p-3 flex flex-col mt-0">
@@ -365,21 +404,32 @@ const TrendingPage = () => {
                             <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                           </button>
                         </div>
-                        <button
-                          onClick={() => handleToggleFavorite(post.id)}
-                          className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full ${isBookmarked(post.id)
-                            ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/30'
-                            : isDarkMode
-                              ? 'text-gray-400 hover:text-blue-400'
-                              : 'text-gray-600 hover:text-blue-500'
-                          }`}
-                          style={{
-                            transform: animatingFavorite === post.id ? 'scale(1.2)' : 'scale(1)',
-                            animation: animatingFavorite === post.id ? 'bookmarkPop 0.5s ease-out' : 'none'
-                          }}
-                        >
-                          <Bookmark className="w-3 h-3 sm:w-4 sm:h-4" fill={isBookmarked(post.id) ? 'currentColor' : 'none'} />
-                        </button>
+                        <div className="flex space-x-1">
+                          <button
+                            onClick={() => handleShare(post.id)}
+                            className={`p-1 rounded-full transition-colors ${isDarkMode
+                              ? 'text-gray-400 hover:text-blue-400 hover:bg-blue-900/30'
+                              : 'text-gray-600 hover:text-blue-500 hover:bg-blue-50'
+                            }`}
+                          >
+                            <Share2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleToggleFavorite(post.id)}
+                            className={`p-1 rounded-full transition-colors sm:p-1 sm:rounded-full ${isBookmarked(post.id)
+                              ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/30'
+                              : isDarkMode
+                                ? 'text-gray-400 hover:text-blue-400'
+                                : 'text-gray-600 hover:text-blue-500'
+                            }`}
+                            style={{
+                              transform: animatingFavorite === post.id ? 'scale(1.2)' : 'scale(1)',
+                              animation: animatingFavorite === post.id ? 'bookmarkPop 0.5s ease-out' : 'none'
+                            }}
+                          >
+                            <Bookmark className="w-3 h-3 sm:w-4 sm:h-4" fill={isBookmarked(post.id) ? 'currentColor' : 'none'} />
+                          </button>
+                        </div>
                       </div>
                       <div className="flex items-center space-x-1 sm:justify-end">
                         <div className="flex">
@@ -390,4 +440,134 @@ const TrendingPage = () => {
                                 ? 'text-yellow-500'
                                 : isDarkMode ? 'text-gray-600' : 'text-gray-300'
                               }`}
-                             
+                              fill={star <= post.rating ? 'currentColor' : 'none'}
+                            />
+                          ))}
+                        </div>
+                        <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                          ({post.ratingCount})
+                        </span>
+                      </div>
+                      <Link
+                        to={`/product/${post.id}`}
+                        className={`text-xs sm:text-sm font-medium truncate mt-0.5 hover:underline ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}
+                      >
+                        {post.product}
+                      </Link>
+                      <p className={`text-xs truncate ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        {post.content.length > 50 ? post.content.substring(0, 50) + '...' : post.content}
+                      </p>
+                    </div>
+                  </div>
+                </BuyerCardContent>
+              </BuyerCard>
+            );
+          })}
+        </div>
+
+        {/* Share Modal */}
+        {showShareModal && (
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={closeShareModal}
+          >
+            <div className={`rounded-xl max-w-sm w-full transition-colors duration-300 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`} onClick={(e) => e.stopPropagation()}>
+              <div className={`p-4 border-b text-center ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                <h3 className={`font-semibold text-lg ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>Share Product</h3>
+                <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Share this product with your friends</p>
+              </div>
+              <div className="p-4">
+                <div className="grid grid-cols-3 gap-3">
+                  <button
+                    onClick={() => handleShareSocial(showShareModal, 'whatsapp')}
+                    className={`p-3 rounded-lg text-center transition-all hover:scale-105 ${isDarkMode ? 'bg-green-900/30 hover:bg-green-900/50' : 'bg-green-50 hover:bg-green-100'}`}
+                  >
+                    <div className="text-2xl mb-1">💬</div>
+                    <span className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>WhatsApp</span>
+                  </button>
+                  <button
+                    onClick={() => handleShareSocial(showShareModal, 'facebook')}
+                    className={`p-3 rounded-lg text-center transition-all hover:scale-105 ${isDarkMode ? 'bg-blue-900/30 hover:bg-blue-900/50' : 'bg-blue-50 hover:bg-blue-100'}`}
+                  >
+                    <div className="text-2xl mb-1">📘</div>
+                    <span className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Facebook</span>
+                  </button>
+                  <button
+                    onClick={() => handleShareSocial(showShareModal, 'twitter')}
+                    className={`p-3 rounded-lg text-center transition-all hover:scale-105 ${isDarkMode ? 'bg-blue-900/30 hover:bg-blue-900/50' : 'bg-blue-50 hover:bg-blue-100'}`}
+                  >
+                    <div className="text-2xl mb-1">🐦</div>
+                    <span className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Twitter</span>
+                  </button>
+                  <button
+                    onClick={() => handleShareSocial(showShareModal, 'email')}
+                    className={`p-3 rounded-lg text-center transition-all hover:scale-105 ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}
+                  >
+                    <div className="text-2xl mb-1">📧</div>
+                    <span className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Email</span>
+                  </button>
+                  <button
+                    onClick={() => handleCopyLink(showShareModal)}
+                    className={`p-3 rounded-lg text-center transition-all hover:scale-105 ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} col-span-1`}
+                  >
+                    <div className="text-2xl mb-1">🔗</div>
+                    <span className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Copy Link</span>
+                  </button>
+                </div>
+              </div>
+              <div className={`p-3 border-t text-center ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                <button
+                  onClick={closeShareModal}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Dropdown Modal */}
+        {dropdownOpen && (
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={closeDropdown}
+          >
+            <div className={`rounded-xl max-w-sm w-full transition-colors duration-300 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`} onClick={(e) => e.stopPropagation()}>
+              <div className={`p-4 border-b text-center ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                <h3 className={`font-semibold text-lg ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>Post Options</h3>
+              </div>
+              <div className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
+                {dropdownItems(dropdownOpen).map((item, index) => (
+                  <button
+                    key={index}
+                    onClick={item.action}
+                    className={`w-full text-center px-4 py-3 text-sm transition-all first:rounded-t-lg last:rounded-b-lg ${isDarkMode ? 'text-gray-300 hover:bg-gray-700 hover:text-indigo-400' : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600'}`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <style>{`
+        @keyframes heartBeat {
+          0%, 100% { transform: scale(1); }
+          25% { transform: scale(1.3); }
+          50% { transform: scale(1); }
+          75% { transform: scale(1.3); }
+        }
+        @keyframes bookmarkPop {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.2); }
+          100% { transform: scale(1); }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default TrendingPage;
