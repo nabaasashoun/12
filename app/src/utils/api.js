@@ -954,6 +954,13 @@ class Api {
     
     return { userId: null, seller: null };
   }
+
+  async markChatRead(userId) {
+    return this.request(`/chat/mark-read/${userId}/`, {
+      method: 'POST',
+    });
+  }
+
 }
 
 const api = new Api();

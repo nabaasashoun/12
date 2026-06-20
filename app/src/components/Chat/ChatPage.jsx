@@ -1,7 +1,7 @@
-// ChatPage.jsx
+// ChatPage.jsx - Mobile-optimized with separate conversation view
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, MessageCircle, Wifi, WifiOff, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Send, MessageCircle, Wifi, WifiOff, RefreshCw, ChevronLeft } from 'lucide-react';
 import { useChat } from '../../utils/ChatContext';
 import api from '../../utils/api';
 
@@ -34,12 +34,23 @@ const containsContactInfo = (text) =>
 
 // ── Small reusable components ────────────────────────────────────────────────
 
-const Avatar = ({ name, size = 'md', active = false }) => {
+const Avatar = ({ name, size = 'md', active = false, imageUrl = null }) => {
   const initial = (name || '?').charAt(0).toUpperCase();
   const sizeClass =
-    size === 'sm' ? 'w-7 h-7 text-xs'
-      : size === 'lg' ? 'w-11 h-11 text-base'
-        : 'w-9 h-9 text-sm';
+    size === 'sm' ? 'w-8 h-8 text-xs'
+      : size === 'lg' ? 'w-12 h-12 text-base'
+        : 'w-10 h-10 text-sm';
+  
+  if (imageUrl) {
+    return (
+      <img 
+        src={imageUrl} 
+        alt={name}
+        className={`${sizeClass} rounded-full object-cover shrink-0 border-2 ${active ? 'border-blue-500' : 'border-transparent'}`}
+      />
+    );
+  }
+  
   return (
     <div className={`${sizeClass} rounded-full flex items-center justify-center
       text-white font-semibold shrink-0
@@ -65,10 +76,10 @@ export const ConnectionBadge = ({ isConnected, short = false }) =>
 // ── InboxPanel ───────────────────────────────────────────────────────────────
 
 const InboxPanel = React.memo(({ inbox, activeChatId, isConnected, onSelectConversation }) => (
-  <div className="flex flex-col h-full">
-    <div className="px-4 py-3 border-b bg-white flex items-center justify-between shrink-0">
+  <div className="flex flex-col h-full bg-white">
+    <div className="px-4 py-4 border-b bg-white flex items-center justify-between shrink-0 sticky top-0 z-10">
       <div>
-        <h1 className="text-lg font-bold text-gray-900">Messages</h1>
+        <h1 className="text-xl font-bold text-gray-900">Messages</h1>
         <p className="text-xs text-gray-500">
           {inbox.length} conversation{inbox.length !== 1 ? 's' : ''}
         </p>
@@ -79,9 +90,9 @@ const InboxPanel = React.memo(({ inbox, activeChatId, isConnected, onSelectConve
     <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
       {inbox.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-full py-16 text-center px-6">
-          <MessageCircle className="w-12 h-12 text-gray-200 mb-3" />
+          <MessageCircle className="w-16 h-16 text-gray-200 mb-4" />
           <p className="text-gray-500 font-medium">No conversations yet</p>
-          <p className="text-sm text-gray-400 mt-1">
+          <p className="text-sm text-gray-400 mt-1 max-w-xs">
             When you start chatting with someone, they'll appear here.
           </p>
         </div>
@@ -91,8 +102,11 @@ const InboxPanel = React.memo(({ inbox, activeChatId, isConnected, onSelectConve
           return (
             <button
               key={conv.partner_id}
-              onClick={() => onSelectConversation(conv.partner_id)}
-              className={`w-full text-left px-4 py-3.5 flex items-center gap-3 transition-colors
+              onClick={() => {
+                console.log('🖱️ Clicking conversation:', conv.partner_id, conv.partner_name);
+                onSelectConversation(conv.partner_id);
+              }}
+              className={`w-full text-left px-4 py-4 flex items-center gap-3 transition-all active:scale-[0.98]
                 ${isActive
                   ? 'bg-blue-50 border-l-4 border-blue-500'
                   : 'hover:bg-gray-50 border-l-4 border-transparent'}`}
@@ -100,7 +114,7 @@ const InboxPanel = React.memo(({ inbox, activeChatId, isConnected, onSelectConve
               <Avatar name={conv.partner_name} size="lg" active={isActive} />
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-baseline">
-                  <span className={`font-semibold text-sm truncate
+                  <span className={`font-semibold text-base truncate
                     ${isActive ? 'text-blue-700' : 'text-gray-900'}`}>
                     {conv.partner_name}
                   </span>
@@ -108,13 +122,13 @@ const InboxPanel = React.memo(({ inbox, activeChatId, isConnected, onSelectConve
                     {formatDate(conv.timestamp)}
                   </span>
                 </div>
-                <p className="text-xs text-gray-500 truncate mt-0.5">
+                <p className="text-sm text-gray-500 truncate mt-0.5">
                   {conv.last_message || 'No messages yet'}
                 </p>
               </div>
               {conv.unread_count > 0 && (
                 <span className="shrink-0 bg-blue-500 text-white text-xs font-bold
-                  w-5 h-5 rounded-full flex items-center justify-center">
+                  w-6 h-6 rounded-full flex items-center justify-center">
                   {conv.unread_count > 9 ? '9+' : conv.unread_count}
                 </span>
               )}
@@ -128,9 +142,9 @@ const InboxPanel = React.memo(({ inbox, activeChatId, isConnected, onSelectConve
 
 InboxPanel.displayName = 'InboxPanel';
 
-// ── ChatPanel ────────────────────────────────────────────────────────────────
+// ── ChatView ────────────────────────────────────────────────────────────────
 
-const ChatPanel = React.memo(({
+const ChatView = React.memo(({
   messages,
   currentUser,
   currentChatPartner,
@@ -153,6 +167,7 @@ const ChatPanel = React.memo(({
   const [showScrollButton, setShowScrollButton] = useState(false);
   const messagesContainerRef = useRef(null);
 
+  // Auto-focus input when chat loads
   useEffect(() => {
     if (inputRef.current) {
       const timer = setTimeout(() => {
@@ -162,6 +177,7 @@ const ChatPanel = React.memo(({
     }
   }, [currentChatPartner, inputRef]);
 
+  // Scroll to bottom when messages change
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -181,28 +197,37 @@ const ChatPanel = React.memo(({
 
   return (
     <div className="flex flex-col h-full bg-gray-50 relative">
-      {/* Header */}
-      <div className="px-3 py-3 border-b bg-white flex items-center gap-3 shrink-0">
+      {/* Header - Mobile optimized */}
+      <div className="px-3 py-3 border-b bg-white flex items-center gap-3 shrink-0 sticky top-0 z-10">
         <button
           onClick={onBack}
-          className="md:hidden p-1.5 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
+          className="p-2 -ml-2 rounded-full hover:bg-gray-100 text-gray-600 transition-colors active:bg-gray-200"
           aria-label="Back to inbox"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ChevronLeft className="w-6 h-6" />
         </button>
-        <Avatar name={currentChatPartner} />
+        <Avatar name={currentChatPartner} size="lg" />
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-gray-900 text-sm truncate">{currentChatPartner}</p>
-          <ConnectionBadge isConnected={isConnected} short />
+          <p className="font-semibold text-gray-900 text-base truncate">{currentChatPartner}</p>
+          <div className="flex items-center gap-2">
+            <ConnectionBadge isConnected={isConnected} short />
+            {isTyping && (
+              <span className="text-xs text-blue-500 animate-pulse">typing...</span>
+            )}
+          </div>
         </div>
-        {isRefreshing && (
-          <RefreshCw className="w-4 h-4 text-blue-500 animate-spin" />
-        )}
+        <button
+          onClick={onRefresh}
+          disabled={isRefreshing}
+          className="p-2 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-50 active:bg-gray-200"
+        >
+          <RefreshCw className={`w-5 h-5 text-gray-500 ${isRefreshing ? 'animate-spin' : ''}`} />
+        </button>
       </div>
 
       {/* Disconnected Banner */}
       {!isConnected && (
-        <div className="px-3 py-1.5 bg-yellow-50 border-b border-yellow-200 text-center">
+        <div className="px-3 py-2 bg-yellow-50 border-b border-yellow-200 text-center">
           <p className="text-xs text-yellow-700 flex items-center justify-center gap-1">
             <WifiOff className="w-3 h-3 inline" />
             Reconnecting to chat server...
@@ -216,54 +241,74 @@ const ChatPanel = React.memo(({
         onScroll={handleScroll}
         className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-2"
       >
-        {messages.length === 0 && (
+        {messages.length === 0 ? (
           <div className="flex-1 flex items-center justify-center text-center py-12">
             <div>
-              <MessageCircle className="w-10 h-10 text-gray-300 mx-auto mb-2" />
-              <p className="text-gray-400 text-sm">No messages yet</p>
-              <p className="text-xs text-gray-300 mt-1">Start the conversation!</p>
+              <MessageCircle className="w-12 h-12 text-gray-200 mx-auto mb-3" />
+              <p className="text-gray-400 text-sm font-medium">No messages yet</p>
+              <p className="text-xs text-gray-300 mt-1">Say hello to {currentChatPartner}!</p>
             </div>
           </div>
-        )}
-        
-        {messages.map((msg, idx) => {
-          const isMe = msg.sender === currentUser?.id;
-          const isFailed = msg.status === 'failed';
-          const isSending = msg.status === 'sending' || (typeof msg.id === 'string' && msg.id.startsWith('temp-'));
-          
-          const key = msg.id || `msg-${idx}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
-          
-          return (
-            <div key={key} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-              {!isMe && <Avatar name={currentChatPartner} size="sm" />}
-              <div className={`max-w-[75%] sm:max-w-[65%] rounded-2xl px-3.5 py-2 ml-2
-                ${isMe
-                  ? `bg-blue-500 text-white rounded-br-sm ${isFailed ? 'opacity-70' : ''}`
-                  : 'bg-white text-gray-800 border border-gray-200 rounded-bl-sm shadow-sm'}`}>
-                <p className="text-sm leading-relaxed break-words">{msg.content}</p>
-                <div className="flex items-center justify-end gap-1 mt-0.5">
-                  <span className={`text-[10px] ${isMe ? 'text-blue-200' : 'text-gray-400'}`}>
-                    {formatTime(msg.timestamp)}
-                  </span>
-                  {isMe && isSending && (
-                    <span className="text-[10px] text-blue-200 animate-pulse">Sending...</span>
-                  )}
-                  {isMe && isFailed && (
-                    <button 
-                      onClick={() => retryMessage?.(msg.id)}
-                      className="text-[10px] text-red-300 hover:text-red-100 transition-colors flex items-center gap-0.5"
-                    >
-                      <RefreshCw className="w-3 h-3" /> Retry
-                    </button>
-                  )}
-                  {isMe && !isSending && !isFailed && (
-                    <span className="text-[10px] text-blue-200">✓</span>
-                  )}
+        ) : (
+          messages.map((msg, idx) => {
+            const isMe = msg.sender === currentUser?.id;
+            const isFailed = msg.status === 'failed';
+            const isSending = msg.status === 'sending' || (typeof msg.id === 'string' && msg.id.startsWith('temp-'));
+            
+            const key = msg.id || `msg-${idx}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+            
+            // Show date separator for messages from different days
+            const showDate = idx === 0 || 
+              new Date(msg.timestamp).toDateString() !== new Date(messages[idx - 1]?.timestamp).toDateString();
+            
+            return (
+              <React.Fragment key={key}>
+                {showDate && (
+                  <div className="flex justify-center my-2">
+                    <span className="text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full">
+                      {new Date(msg.timestamp).toLocaleDateString([], { 
+                        weekday: 'short', 
+                        month: 'short', 
+                        day: 'numeric' 
+                      })}
+                    </span>
+                  </div>
+                )}
+                <div className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                  {!isMe && <Avatar name={currentChatPartner} size="sm" />}
+                  <div className={`max-w-[80%] sm:max-w-[70%] rounded-2xl px-4 py-2.5 ml-2
+                    ${isMe
+                      ? `bg-blue-500 text-white rounded-br-sm ${isFailed ? 'opacity-70' : ''}`
+                      : 'bg-white text-gray-800 border border-gray-200 rounded-bl-sm shadow-sm'}`}>
+                    <p className="text-sm leading-relaxed break-words">{msg.content}</p>
+                    <div className="flex items-center justify-end gap-1 mt-1">
+                      <span className={`text-[10px] ${isMe ? 'text-blue-200' : 'text-gray-400'}`}>
+                        {formatTime(msg.timestamp)}
+                      </span>
+                      {isMe && isSending && (
+                        <span className="text-[10px] text-blue-200 animate-pulse">Sending...</span>
+                      )}
+                      {isMe && isFailed && (
+                        <button 
+                          onClick={() => retryMessage?.(msg.id)}
+                          className="text-[10px] text-red-300 hover:text-red-100 transition-colors flex items-center gap-0.5"
+                        >
+                          <RefreshCw className="w-3 h-3" /> Retry
+                        </button>
+                      )}
+                      {isMe && !isSending && !isFailed && (
+                        <span className="text-[10px] text-blue-200">✓</span>
+                      )}
+                      {!isMe && msg.is_read && (
+                        <span className="text-[10px] text-gray-400">✓</span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          );
-        })}
+              </React.Fragment>
+            );
+          })
+        )}
         
         <div ref={messagesEndRef} />
       </div>
@@ -272,8 +317,8 @@ const ChatPanel = React.memo(({
       {showScrollButton && (
         <button
           onClick={scrollToBottom}
-          className="absolute bottom-20 right-4 bg-white rounded-full shadow-lg p-2 border border-gray-200
-            hover:bg-gray-50 transition-colors"
+          className="absolute bottom-24 right-4 bg-white rounded-full shadow-lg p-2.5 border border-gray-200
+            hover:bg-gray-50 transition-colors active:scale-95"
         >
           <MessageCircle className="w-4 h-4 text-blue-500 rotate-180" />
         </button>
@@ -296,7 +341,7 @@ const ChatPanel = React.memo(({
         </div>
       )}
 
-      {/* Input Area */}
+      {/* Input Area - Mobile optimized */}
       <div className="px-3 py-3 bg-white border-t shrink-0 relative z-10">
         <form onSubmit={onSend} className="flex items-center gap-2">
           <input
@@ -306,36 +351,31 @@ const ChatPanel = React.memo(({
             onChange={onTyping}
             placeholder="Type a message…"
             autoFocus={true}
-            className="flex-1 bg-gray-100 rounded-full px-4 py-2.5 text-sm text-gray-900
+            className="flex-1 bg-gray-100 rounded-full px-4 py-3 text-sm text-gray-900
               placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 
-              focus:bg-white transition-colors cursor-text"
+              focus:bg-white transition-colors"
             style={{ 
               WebkitAppearance: 'none',
               WebkitTapHighlightColor: 'transparent',
-              fontSize: '16px'
+              fontSize: '16px' // Prevents zoom on iOS
             }}
           />
           <button
             type="submit"
             disabled={!inputText.trim() || !isConnected || isBlocked}
-            className="shrink-0 w-10 h-10 bg-blue-500 hover:bg-blue-600
+            className="shrink-0 w-11 h-11 bg-blue-500 hover:bg-blue-600
               disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-full
-              flex items-center justify-center transition-colors"
+              flex items-center justify-center transition-colors active:scale-95"
           >
-            <Send className="w-4 h-4" />
+            <Send className="w-5 h-5" />
           </button>
         </form>
-        {isTyping && (
-          <div className="text-xs text-gray-400 mt-1 ml-3 animate-pulse">
-            {currentChatPartner} is typing...
-          </div>
-        )}
       </div>
     </div>
   );
 });
 
-ChatPanel.displayName = 'ChatPanel';
+ChatView.displayName = 'ChatView';
 
 // ── Chat Error Boundary ──────────────────────────────────────────────────────
 
@@ -362,7 +402,7 @@ class ChatErrorBoundary extends React.Component {
             <p className="text-gray-500 text-sm mt-2">We're having trouble loading your messages</p>
             <button 
               onClick={() => window.location.reload()}
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              className="mt-4 px-6 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
             >
               Refresh Page
             </button>
@@ -383,40 +423,30 @@ const ChatPageContent = () => {
     inbox, fetchInbox,
     activeChatId, setActiveChatId,
     sendMessage, isConnected,
+    markAsRead,
   } = useChat();
 
   const [searchParams] = useSearchParams();
-  const location = useLocation();
   const navigate = useNavigate();
   
   const [inputText, setInputText] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
-  const [userRole, setUserRole] = useState(null);
-  const [mobileView, setMobileView] = useState(() => 
-    searchParams.get('userId') || searchParams.get('sellerId') || searchParams.get('buyerId') 
-      ? 'chat' 
-      : 'inbox'
-  );
   const [blockedMessage, setBlockedMessage] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [failedMessages, setFailedMessages] = useState([]);
   const [partnerTyping, setPartnerTyping] = useState(false);
   const [loadingChat, setLoadingChat] = useState(false);
-  const [initialLoadDone, setInitialLoadDone] = useState(false);
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const typingTimeoutRef = useRef(null);
-  const wsRef = useRef(null);
   const sentMessagesRef = useRef(new Set());
   const loadChatTimeoutRef = useRef(null);
 
-  // Get current user info and role
+  // Get current user info
   useEffect(() => {
     const stored = localStorage.getItem('user');
-    const role = localStorage.getItem('userRole');
     if (stored) {
       try {
         setCurrentUser(JSON.parse(stored));
@@ -424,12 +454,10 @@ const ChatPageContent = () => {
         console.error('Error parsing user:', e);
       }
     }
-    setUserRole(role);
   }, []);
 
-  // Auto-select chat from URL params - with debounce to prevent loops
+  // Auto-select chat from URL params - Mobile optimized
   useEffect(() => {
-    // Clear any pending load
     if (loadChatTimeoutRef.current) {
       clearTimeout(loadChatTimeoutRef.current);
     }
@@ -440,22 +468,17 @@ const ChatPageContent = () => {
     const targetUserId = userId || sellerId || buyerId;
     
     if (!targetUserId) {
-      setMobileView('inbox');
-      setInitialLoadDone(true);
       return;
     }
     
     const targetId = parseInt(targetUserId);
     
-    // If already on this chat and initial load done, just refresh
-    if (activeChatId === targetId && initialLoadDone) {
+    if (activeChatId === targetId) {
       return;
     }
     
     setLoadingChat(true);
-    setMobileView('chat');
     
-    // Debounce the load
     loadChatTimeoutRef.current = setTimeout(async () => {
       try {
         console.log('Loading chat for user:', targetId);
@@ -468,7 +491,7 @@ const ChatPageContent = () => {
         }
         
         await fetchInbox();
-        setInitialLoadDone(true);
+        await markAsRead(targetId);
         
         setTimeout(() => {
           inputRef.current?.focus();
@@ -485,34 +508,17 @@ const ChatPageContent = () => {
         clearTimeout(loadChatTimeoutRef.current);
       }
     };
-  }, [searchParams, setActiveChatId, setMessages, fetchInbox, activeChatId, initialLoadDone]);
+  }, [searchParams, setActiveChatId, setMessages, fetchInbox, activeChatId, markAsRead]);
 
-  // Mark messages as read - with debounce
+  // Mark messages as read when chat is active
   useEffect(() => {
-    if (!activeChatId || !messages.length || loadingChat) return;
-    
-    const markMessagesAsRead = async () => {
-      try {
-        // Only mark if there are unread messages from the other user
-        const hasUnread = messages.some(m => 
-          m.sender === activeChatId && !m.is_read
-        );
-        
-        if (hasUnread) {
-          await api.markMessagesAsRead?.(activeChatId);
-          setMessages(prev => prev.map(msg => 
-            msg.sender === activeChatId ? { ...msg, is_read: true } : msg
-          ));
-          fetchInbox();
-        }
-      } catch (error) {
-        console.error('Error marking messages as read:', error);
+    if (activeChatId && messages.length > 0 && !loadingChat) {
+      const hasUnread = messages.some(m => m.sender === activeChatId && !m.is_read);
+      if (hasUnread) {
+        markAsRead(activeChatId);
       }
-    };
-    
-    const timeoutId = setTimeout(markMessagesAsRead, 1500);
-    return () => clearTimeout(timeoutId);
-  }, [activeChatId, messages.length, loadingChat]);
+    }
+  }, [activeChatId, messages, loadingChat, markAsRead]);
 
   // Clean up duplicate temp messages
   useEffect(() => {
@@ -553,43 +559,16 @@ const ChatPageContent = () => {
     const value = e.target.value;
     setInputText(value);
     
+    clearTimeout(typingTimeoutRef.current);
+    
     if (value.trim() && !isTyping) {
       setIsTyping(true);
-      if (wsRef.current?.readyState === WebSocket.OPEN) {
-        wsRef.current.send(JSON.stringify({
-          type: 'typing',
-          recipient_id: activeChatId,
-          is_typing: true
-        }));
-      }
     }
     
-    clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
-      if (isTyping) {
-        setIsTyping(false);
-        if (wsRef.current?.readyState === WebSocket.OPEN) {
-          wsRef.current.send(JSON.stringify({
-            type: 'typing',
-            recipient_id: activeChatId,
-            is_typing: false
-          }));
-        }
-      }
+      setIsTyping(false);
     }, 2000);
-  }, [activeChatId, isTyping]);
-
-  // Listen for typing indicators from other users
-  useEffect(() => {
-    const handleTypingIndicator = (e) => {
-      if (e.detail?.type === 'typing' && e.detail?.sender_id === activeChatId) {
-        setPartnerTyping(e.detail.is_typing);
-      }
-    };
-    
-    window.addEventListener('typingIndicator', handleTypingIndicator);
-    return () => window.removeEventListener('typingIndicator', handleTypingIndicator);
-  }, [activeChatId]);
+  }, [isTyping]);
 
   // Retry failed message
   const retryMessage = useCallback((messageId) => {
@@ -634,9 +613,20 @@ const ChatPageContent = () => {
     setMessages(prev => [...prev, newMessage]);
     const contentToSend = inputText.trim();
     setInputText('');
+    setIsTyping(false);
 
     try {
-      sendMessage(activeChatId, contentToSend);
+      const success = sendMessage(activeChatId, contentToSend);
+      if (success) {
+        setMessages(prev => prev.map(msg => 
+          msg.id === tempId ? { ...msg, status: 'sent' } : msg
+        ));
+      } else {
+        setMessages(prev => prev.map(msg => 
+          msg.id === tempId ? { ...msg, status: 'failed' } : msg
+        ));
+        setFailedMessages(prev => [...prev, tempId]);
+      }
     } catch (error) {
       console.error('Error sending message:', error);
       setMessages(prev => prev.map(msg => 
@@ -661,29 +651,52 @@ const ChatPageContent = () => {
         setMessages(result.data);
       }
       await fetchInbox();
+      await markAsRead(activeChatId);
     } catch (error) {
       console.error('Error refreshing messages:', error);
     } finally {
       setIsRefreshing(false);
     }
-  }, [activeChatId, isRefreshing, setMessages, fetchInbox]);
+  }, [activeChatId, isRefreshing, setMessages, fetchInbox, markAsRead]);
 
-  // Handle conversation selection
+  // Handle conversation selection - Mobile optimized
   const handleSelectConversation = useCallback((partnerId) => {
-    setActiveChatId(partnerId);
-    setMobileView('chat');
-    setMessages([]);
-    setInitialLoadDone(false);
+    console.log('🔄 Selecting conversation with partner:', partnerId);
     
-    const loadChat = async () => {
-      const result = await api.getChatHistory(partnerId);
+    // Set active chat ID
+    setActiveChatId(partnerId);
+    
+    // Clear previous messages
+    setMessages([]);
+    
+    // Fetch chat history
+    api.getChatHistory(partnerId).then(result => {
+      console.log('📥 Chat history result:', result);
       if (!result.error && result.data) {
+        console.log(`✅ Loaded ${result.data.length} messages`);
         setMessages(result.data);
       }
-      setInitialLoadDone(true);
-    };
-    loadChat();
-  }, [setActiveChatId, setMessages]);
+      fetchInbox();
+      markAsRead(partnerId);
+    }).catch(error => {
+      console.error('❌ Error fetching chat history:', error);
+    });
+    
+    // Focus input after chat loads
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }, 500);
+  }, [setActiveChatId, setMessages, fetchInbox, markAsRead]);
+
+  // Handle back from chat view - Mobile
+  const handleBack = useCallback(() => {
+    setActiveChatId(null);
+    setMessages([]);
+    // Navigate back to the chat page without params
+    navigate('/chat');
+  }, [setActiveChatId, setMessages, navigate]);
 
   // Clear blocked message after timeout
   useEffect(() => {
@@ -694,18 +707,14 @@ const ChatPageContent = () => {
   }, [blockedMessage]);
 
   // Get the chat partner name
-  const nameFromUrl = searchParams.get('name');
   const inboxPartner = inbox.find(c => c.partner_id === activeChatId);
   
   const currentChatPartner = useMemo(() => {
-    if (nameFromUrl) {
-      return decodeURIComponent(nameFromUrl);
-    }
     if (inboxPartner?.partner_name) {
       return inboxPartner.partner_name;
     }
     return `User ${activeChatId || ''}`;
-  }, [nameFromUrl, inboxPartner, activeChatId]);
+  }, [inboxPartner, activeChatId]);
 
   const sharedInboxProps = {
     inbox,
@@ -724,7 +733,7 @@ const ChatPageContent = () => {
     inputRef,
     messagesEndRef,
     onSend: handleSend,
-    onBack: () => setMobileView('inbox'),
+    onBack: handleBack,
     blockedMessage,
     isTyping: partnerTyping,
     onTyping: handleTyping,
@@ -736,27 +745,28 @@ const ChatPageContent = () => {
 
   return (
     <div className="flex h-[calc(100vh-56px)] bg-white overflow-hidden">
-      {/* Mobile View */}
+      {/* Mobile View - Full screen conversation */}
       <div className="flex flex-col flex-1 md:hidden">
-        {mobileView === 'inbox' || !activeChatId
-          ? <InboxPanel {...sharedInboxProps} />
-          : <ChatPanel {...sharedChatProps} />
-        }
+        {!activeChatId ? (
+          <InboxPanel {...sharedInboxProps} />
+        ) : (
+          <ChatView {...sharedChatProps} />
+        )}
       </div>
 
-      {/* Desktop View */}
+      {/* Desktop View - Split view */}
       <div className="hidden md:flex flex-1 overflow-hidden">
-        <div className="w-72 lg:w-80 border-r flex flex-col shrink-0 overflow-hidden">
+        <div className="w-80 border-r flex flex-col shrink-0 overflow-hidden">
           <InboxPanel {...sharedInboxProps} />
         </div>
         <div className="flex-1 flex flex-col overflow-hidden">
           {activeChatId ? (
-            <ChatPanel {...sharedChatProps} />
+            <ChatView {...sharedChatProps} />
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
-              <MessageCircle className="w-16 h-16 text-gray-200 mb-4" />
-              <p className="text-gray-500 font-medium text-lg">Select a conversation</p>
-              <p className="text-gray-400 text-sm mt-1">
+              <MessageCircle className="w-20 h-20 text-gray-200 mb-4" />
+              <p className="text-gray-500 font-medium text-xl">Select a conversation</p>
+              <p className="text-gray-400 text-sm mt-1 max-w-sm">
                 Choose a chat from the sidebar to start messaging
               </p>
             </div>

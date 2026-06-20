@@ -1,6 +1,8 @@
+// SellerHomePage.jsx - Fix for infinite loop
+
 import { SellerCard, SellerCardContent } from './SellerCard';
-import { Heart, MessageSquare, Star, Bookmark, Edit, Settings, Search, MoreHorizontal, X, Plus, ChevronUp, ChevronDown, Camera } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { Heart, MessageSquare, Star, Bookmark, Edit, Settings, Search, MoreHorizontal, X, Plus, ChevronUp, ChevronDown, RefreshCw } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import { useSellerDarkMode } from '../../utils/SellerDarkModeContext';
@@ -42,11 +44,18 @@ const SellerHomePage = () => {
     priority: 0,
   });
   const [isCreating, setIsCreating] = useState(false);
+  const [isFetchingDeals, setIsFetchingDeals] = useState(false);
+  const [initialFetchDone, setInitialFetchDone] = useState(false);
+  const fetchTimeoutRef = useRef(null);
 
   // Fetch seller's products
   useEffect(() => {
     fetchSellerProducts();
-    fetchQuickDeals();
+    // Only fetch quick deals once on mount
+    if (!initialFetchDone) {
+      fetchQuickDeals(true);
+      setInitialFetchDone(true);
+    }
   }, []);
 
   const fetchSellerProducts = async () => {
@@ -102,15 +111,35 @@ const SellerHomePage = () => {
     }
   };
 
-  // Fetch seller's quick deals
-  const fetchQuickDeals = async () => {
+  // Fetch seller's quick deals - with debounce and request cancellation
+  const fetchQuickDeals = useCallback(async (forceRefresh = false) => {
+    // Prevent multiple simultaneous requests
+    if (isFetchingDeals) {
+      console.log('Already fetching deals, skipping...');
+      return;
+    }
+    
+    // Clear any pending timeout
+    if (fetchTimeoutRef.current) {
+      clearTimeout(fetchTimeoutRef.current);
+    }
+
+    setIsFetchingDeals(true);
+    
     try {
+      // Clear cache if force refresh
+      if (forceRefresh) {
+        api.clearCache('quick-deals');
+        console.log('Cache cleared for quick deals');
+      }
+      
       const result = await api.getSellerQuickDeals();
-      console.log('Quick deals result:', result); 
+      console.log('Quick deals result:', result);
       
       // Check if result.data exists and is an array
       if (result.data && Array.isArray(result.data)) {
         const transformed = result.data
+          .filter(deal => deal && deal.id)
           .map(deal => ({
             id: deal.id,
             title: deal.product?.category?.name || 'Category',
@@ -121,37 +150,26 @@ const SellerHomePage = () => {
             views: deal.views,
             timestamp: deal.timestamp,
             productId: deal.product?.id,
-            is_expired: deal.is_expired,
-            time_remaining: deal.time_remaining,
+            is_expired: deal.is_expired || false,
+            time_remaining: deal.time_remaining || '',
           }))
           .filter(deal => !deal.is_expired);
+        
         setQuickDeals(transformed);
-      } else if (result.deals && Array.isArray(result.deals)) {
-        // Handle case where response is nested in a 'deals' property
-        const transformed = result.deals
-          .map(deal => ({
-            id: deal.id,
-            title: deal.product?.category?.name || 'Category',
-            product: deal.product?.name || 'Product',
-            image: deal.picture || deal.product?.product_photo || '/placeholder.jpg',
-            color: getRandomColor(),
-            caption: deal.caption,
-            views: deal.views,
-            timestamp: deal.timestamp,
-            productId: deal.product?.id,
-            is_expired: deal.is_expired,
-            time_remaining: deal.time_remaining,
-          }))
-          .filter(deal => !deal.is_expired);
-        setQuickDeals(transformed);
+        console.log(`✅ Loaded ${transformed.length} quick deals`);
       } else {
-        console.error('Failed to fetch quick deals:', result.error || 'Unknown error');
+        setQuickDeals([]);
+        console.log('No quick deals found or invalid response format');
       }
     } catch (error) {
       console.error('Error fetching quick deals:', error);
+      setQuickDeals([]);
+    } finally {
+      setIsFetchingDeals(false);
     }
-  };
+  }, [isFetchingDeals]);
 
+  // Update scroll index when deals change
   useEffect(() => {
     const maxValidIndex = Math.max(0, Math.floor((quickDeals.length - 1) / 4) * 4);
     if (currentVerticalIndex > maxValidIndex) {
@@ -168,7 +186,9 @@ const SellerHomePage = () => {
 
   // Handle quick deal click
   const handleQuickDealClick = (deal) => {
-    navigate(`/product/${deal.productId}`);
+    if (deal.productId) {
+      navigate(`/product/${deal.productId}`);
+    }
   };
 
   // Scroll quick deals vertically
@@ -198,7 +218,7 @@ const SellerHomePage = () => {
     }
   };
 
-  // Submit new quick deal 
+  // Submit new quick deal
   const handleCreateQuickDeal = async (e) => {
     e.preventDefault();
     if (!newQuickDeal.product_id) {
@@ -213,7 +233,6 @@ const SellerHomePage = () => {
         priority: newQuickDeal.priority || 0,
       };
       
-      // Only add picture if it exists
       if (newQuickDeal.picture) {
         dealData.picture = newQuickDeal.picture;
       }
@@ -222,11 +241,11 @@ const SellerHomePage = () => {
       
       console.log('Quick deal creation result:', result);
 
-      // Check for success (status 200-299 or data with id)
       if ((result.status >= 200 && result.status < 300) || result.data?.id) {
         setQuickDealModalOpen(false);
         setNewQuickDeal({ product_id: '', caption: '', picture: null, priority: 0 });
-        fetchQuickDeals();
+        // Force refresh with cache clearing
+        await fetchQuickDeals(true);
         localStorage.setItem('quickDealUpdated', Date.now().toString());
         window.dispatchEvent(new CustomEvent('quickDealCreated'));
       } else {
@@ -242,12 +261,6 @@ const SellerHomePage = () => {
     } finally {
       setIsCreating(false);
     }
-  };
-
-  // Function to format currency as UGX
-  const formatCurrency = (amount) => {
-    if (typeof amount === 'string' && amount.startsWith('UGX')) return amount;
-    return `UGX ${parseFloat(amount).toLocaleString('en-UG')}`;
   };
 
   // Toggle description expansion
@@ -393,16 +406,11 @@ const SellerHomePage = () => {
     }
   };
 
-  
-
   const getDropdownItems = (post) => [
     { label: 'Report', action: () => closeDropdown() },
     { 
       label: 'Chat with Buyer', 
       action: () => {
-        // Sellers can start chats from orders or comments, 
-        // but for a general "Message Buyer" on their own product, 
-        // we'll default to the last person who interacted or just open the inbox
         closeDropdown();
         navigate('/seller/chat');
       }
@@ -424,11 +432,6 @@ const SellerHomePage = () => {
       </div>
     );
   }
-
-  const startChatWithBuyer = (buyerId, buyerName) => {
-    const encodedName = encodeURIComponent(buyerName || 'Buyer');
-    navigate(`/seller/chat?userId=${buyerId}&name=${encodedName}`);
-  };
 
   return (
     <div className={`p-2 sm:p-4 md:p-6 max-w-4xl mx-auto relative min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -480,13 +483,13 @@ const SellerHomePage = () => {
         </div>
       </div>
 
-      {/* Quick Deals Section */}
+      {/* Quick Deals Section - Updated with refresh button */}
       <div className={`sticky top-0 z-40 pt-2 pb-2 mb-2 rounded-lg transition-colors ${
         isDarkMode ? 'bg-gray-800' : 'bg-gray-50'
       }`}>
         <div className="flex items-center justify-between w-full">
-          {/* Heading + Add button*/}
-          <div className="flex-shrink-0 mr-4 flex items-center">
+          {/* Heading + Add button + Refresh */}
+          <div className="flex-shrink-0 mr-4 flex items-center space-x-2">
             <div className="flex flex-col leading-tight mr-2">
               <span className={`text-lg font-bold ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>Quick</span>
               <span className={`text-lg font-bold ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>Deals</span>
@@ -504,88 +507,117 @@ const SellerHomePage = () => {
                 isDarkMode ? 'text-green-400' : 'text-green-600'
               }`} />
             </button>
+            <button
+              onClick={() => {
+                if (!isFetchingDeals) {
+                  fetchQuickDeals(true);
+                }
+              }}
+              className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-colors ${
+                isDarkMode 
+                  ? 'bg-blue-900 hover:bg-blue-800' 
+                  : 'bg-blue-100 hover:bg-blue-200'
+              }`}
+              title="Refresh Quick Deals"
+              disabled={isFetchingDeals}
+            >
+              <RefreshCw className={`w-4 h-4 ${
+                isDarkMode ? 'text-blue-400' : 'text-blue-600'
+              } ${isFetchingDeals ? 'animate-spin' : ''}`} />
+            </button>
           </div>
 
           {/* Deals container */}
           <div className="flex flex-1 justify-start space-x-3 sm:space-x-4">
-            {quickDeals.slice(currentVerticalIndex, currentVerticalIndex + 4).map((item) => (
-              <div
-                key={item.id}
-                className="flex flex-col items-center flex-shrink-0 cursor-pointer"
-                onClick={() => handleQuickDealClick(item)}
-              >
-                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full ${item.color} flex items-center justify-center border-2 ${
-                  isDarkMode ? 'border-gray-700' : 'border-white'
-                } shadow-sm`}>
-                  <img
-                    src={item.image}
-                    alt={item.product}
-                    className="w-8 h-8 sm:w-10 sm:h-10 object-cover rounded-full"
-                  />
-                </div>
-                <p className={`text-center text-xs mt-1 font-medium truncate w-12 sm:w-14 ${
-                  isDarkMode ? 'text-gray-300' : 'text-black'
-                }`}>
-                  {item.title}
-                </p>
-                <p className={`text-center text-xs truncate w-12 sm:w-14 ${
-                  isDarkMode ? 'text-gray-500' : 'text-gray-500'
-                }`}>
-                  {item.product}
-                </p>
+            {quickDeals.length === 0 ? (
+              <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} py-2`}>
+                No active quick deals. Click + to create one.
               </div>
-            ))}
+            ) : (
+              quickDeals.slice(currentVerticalIndex, currentVerticalIndex + 4).map((item) => (
+                <div
+                  key={item.id}
+                  className="flex flex-col items-center flex-shrink-0 cursor-pointer"
+                  onClick={() => handleQuickDealClick(item)}
+                >
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full ${item.color} flex items-center justify-center border-2 ${
+                    isDarkMode ? 'border-gray-700' : 'border-white'
+                  } shadow-sm`}>
+                    <img
+                      src={item.image}
+                      alt={item.product}
+                      className="w-8 h-8 sm:w-10 sm:h-10 object-cover rounded-full"
+                      onError={(e) => { e.target.src = '/placeholder.jpg'; }}
+                    />
+                  </div>
+                  <p className={`text-center text-xs mt-1 font-medium truncate w-12 sm:w-14 ${
+                    isDarkMode ? 'text-gray-300' : 'text-black'
+                  }`}>
+                    {item.title}
+                  </p>
+                  <p className={`text-center text-xs truncate w-12 sm:w-14 ${
+                    isDarkMode ? 'text-gray-500' : 'text-gray-500'
+                  }`}>
+                    {item.product}
+                  </p>
+                </div>
+              ))
+            )}
           </div>
 
           {/* Scroll up/down buttons */}
-          <div className="flex flex-col space-y-1 ml-4">
-            <button
-              onClick={() => scrollVertical('up')}
-              className={`shadow-md rounded-full p-1 transition-colors ${
-                isDarkMode 
-                  ? 'bg-gray-700 hover:bg-gray-600' 
-                  : 'bg-white hover:bg-gray-100'
-              }`}
-              disabled={currentVerticalIndex === 0}
-            >
-              <ChevronUp className={`w-3 h-3 ${
-                currentVerticalIndex === 0 
-                  ? isDarkMode ? 'text-gray-600' : 'text-gray-300'
-                  : isDarkMode ? 'text-gray-400' : 'text-gray-600'
-              }`} />
-            </button>
-            <button
-              onClick={() => scrollVertical('down')}
-              className={`shadow-md rounded-full p-1 transition-colors ${
-                isDarkMode 
-                  ? 'bg-gray-700 hover:bg-gray-600' 
-                  : 'bg-white hover:bg-gray-100'
-              }`}
-              disabled={currentVerticalIndex >= quickDeals.length - 4}
-            >
-              <ChevronDown className={`w-3 h-3 ${
-                currentVerticalIndex >= quickDeals.length - 4
-                  ? isDarkMode ? 'text-gray-600' : 'text-gray-300'
-                  : isDarkMode ? 'text-gray-400' : 'text-gray-600'
-              }`} />
-            </button>
-          </div>
+          {quickDeals.length > 4 && (
+            <div className="flex flex-col space-y-1 ml-4">
+              <button
+                onClick={() => scrollVertical('up')}
+                className={`shadow-md rounded-full p-1 transition-colors ${
+                  isDarkMode 
+                    ? 'bg-gray-700 hover:bg-gray-600' 
+                    : 'bg-white hover:bg-gray-100'
+                }`}
+                disabled={currentVerticalIndex === 0}
+              >
+                <ChevronUp className={`w-3 h-3 ${
+                  currentVerticalIndex === 0 
+                    ? isDarkMode ? 'text-gray-600' : 'text-gray-300'
+                    : isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                }`} />
+              </button>
+              <button
+                onClick={() => scrollVertical('down')}
+                className={`shadow-md rounded-full p-1 transition-colors ${
+                  isDarkMode 
+                    ? 'bg-gray-700 hover:bg-gray-600' 
+                    : 'bg-white hover:bg-gray-100'
+                }`}
+                disabled={currentVerticalIndex >= quickDeals.length - 4}
+              >
+                <ChevronDown className={`w-3 h-3 ${
+                  currentVerticalIndex >= quickDeals.length - 4
+                    ? isDarkMode ? 'text-gray-600' : 'text-gray-300'
+                    : isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                }`} />
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Progress bar */}
-        <div className={`w-full h-1 rounded-full relative mt-3 ${
-          isDarkMode ? 'bg-gray-700' : 'bg-gray-300'
-        }`}>
-          <div
-            className={`absolute top-0 left-0 h-1 rounded-full transition-all duration-300 ${
-              isDarkMode ? 'bg-gray-400' : 'bg-gray-600'
-            }`}
-            style={{
-              width: '25%',
-              transform: `translateX(${currentVerticalIndex / 4 * 100}%)`
-            }}
-          />
-        </div>
+        {/* Progress bar - only show if deals exist */}
+        {quickDeals.length > 4 && (
+          <div className={`w-full h-1 rounded-full relative mt-3 ${
+            isDarkMode ? 'bg-gray-700' : 'bg-gray-300'
+          }`}>
+            <div
+              className={`absolute top-0 left-0 h-1 rounded-full transition-all duration-300 ${
+                isDarkMode ? 'bg-gray-400' : 'bg-gray-600'
+              }`}
+              style={{
+                width: `${Math.min(100, (quickDeals.length / 4) * 25)}%`,
+                transform: `translateX(${currentVerticalIndex / Math.max(4, quickDeals.length) * 100}%)`
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {/* Posts grid */}
@@ -707,6 +739,7 @@ const SellerHomePage = () => {
                         src={post.images[currentIndex] || '/placeholder.jpg'}
                         alt={post.product}
                         className="absolute inset-0 w-full h-full object-cover select-none"
+                        onError={(e) => { e.target.src = '/placeholder.jpg'; }}
                       />
                     </Link>
                   </div>
@@ -1127,7 +1160,7 @@ const SellerHomePage = () => {
             <div className={`divide-y ${
               isDarkMode ? 'divide-gray-700' : 'divide-gray-100'
             }`}>
-              {dropdownItems.map((item, index) => (
+              {getDropdownItems(posts.find(p => p.id === dropdownOpen) || {}).map((item, index) => (
                 <button
                   key={index}
                   onClick={item.action}

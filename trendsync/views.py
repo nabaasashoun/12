@@ -2264,32 +2264,71 @@ def update_seller_location(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_chat_inbox(request):
+    """
+    Get all conversations for the current user.
+    """
     from django.db.models import Q
     from .models import ChatMessage
+    from django.contrib.auth.models import User  # Make sure this import is here
     
-    user_id = request.user.id
-    messages = ChatMessage.objects.filter(Q(sender=request.user) | Q(recipient=request.user)).order_by('-timestamp')
+    current_user = request.user
+    print(f"🔍 Getting inbox for user: {current_user.username} (ID: {current_user.id})")
     
-    conversations = {}
-    for msg in messages:
-        partner_id = msg.recipient.id if msg.sender.id == user_id else msg.sender.id
-        if partner_id not in conversations:
-            conversations[partner_id] = {
-                'partner_id': partner_id,
-                'partner_name': msg.recipient.username if msg.sender.id == user_id else msg.sender.username,
-                'last_message': msg.content,
-                'timestamp': msg.timestamp,
-                'unread_count': 0
-            }
+    # Get all users the current user has chatted with (either as sender or recipient)
+    sent_users = ChatMessage.objects.filter(sender=current_user).values_list('recipient_id', flat=True).distinct()
+    received_users = ChatMessage.objects.filter(recipient=current_user).values_list('sender_id', flat=True).distinct()
+    partner_ids = set(list(sent_users) + list(received_users))
+    
+    print(f"📋 Found {len(partner_ids)} conversation partners")
+    
+    conversations = []
+    
+    for partner_id in partner_ids:
+        # Get the partner user
+        try:
+            partner = User.objects.get(id=partner_id)
+        except User.DoesNotExist:
+            continue
         
-        if msg.recipient.id == user_id and not msg.is_read:
-            conversations[partner_id]['unread_count'] += 1
-            
-    inbox = list(conversations.values())
-    inbox.sort(key=lambda x: x['timestamp'], reverse=True)
-    return Response(inbox, status=status.HTTP_200_OK)
+        # Get the last message between these two users
+        last_message = ChatMessage.objects.filter(
+            (Q(sender=current_user, recipient=partner) | 
+             Q(sender=partner, recipient=current_user))
+        ).order_by('-timestamp').first()
+        
+        if not last_message:
+            continue
+        
+        # Get unread count for this conversation
+        unread_count = ChatMessage.objects.filter(
+            sender=partner,
+            recipient=current_user,
+            is_read=False
+        ).count()
+        
+        # Get partner name
+        partner_name = partner.username
+        if hasattr(partner, 'seller_profile'):
+            partner_name = partner.seller_profile.name
+        elif hasattr(partner, 'buyer_profile'):
+            partner_name = partner.buyer_profile.name
+        
+        print(f"💬 Conversation with {partner_name} (ID: {partner_id}): {unread_count} unread")
+        
+        conversations.append({
+            'partner_id': partner.id,
+            'partner_name': partner_name,
+            'last_message': last_message.content,
+            'timestamp': last_message.timestamp.isoformat(),
+            'unread_count': unread_count
+        })
+    
+    # Sort by timestamp (newest first)
+    conversations.sort(key=lambda x: x['timestamp'], reverse=True)
+    
+    print(f"📬 Returning {len(conversations)} conversations")
+    return Response(conversations, status=status.HTTP_200_OK)
 
-# In views.py - Update get_chat_history function
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -2385,3 +2424,60 @@ def get_locations(request):
             'count': len(default_locations),
             'error': str(e)
         })
+    
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def mark_chat_read(request, user_id):
+    """
+    Mark all messages from a specific user as read.
+    """
+    from .models import ChatMessage
+    
+    updated = ChatMessage.objects.filter(
+        sender_id=user_id,
+        recipient=request.user,
+        is_read=False
+    ).update(is_read=True)
+    
+    return Response({
+        'status': 'success',
+        'updated_count': updated
+    }, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def test_send_message(request):
+    """
+    Test endpoint to send a message.
+    """
+    from .models import ChatMessage
+    from django.contrib.auth.models import User
+    
+    recipient_id = request.data.get('recipient_id')
+    content = request.data.get('content')
+    
+    if not recipient_id or not content:
+        return Response({'error': 'recipient_id and content required'}, status=400)
+    
+    try:
+        recipient = User.objects.get(id=recipient_id)
+    except User.DoesNotExist:
+        return Response({'error': 'Recipient not found'}, status=404)
+    
+    message = ChatMessage.objects.create(
+        sender=request.user,
+        recipient=recipient,
+        content=content
+    )
+    
+    print(f"✅ Test message sent: {request.user.username} -> {recipient.username}: {content}")
+    
+    return Response({
+        'id': message.id,
+        'sender': message.sender.id,
+        'recipient': message.recipient.id,
+        'content': message.content,
+        'timestamp': message.timestamp.isoformat()
+    }, status=201)

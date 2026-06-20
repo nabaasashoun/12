@@ -88,6 +88,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
+CHANNELS_DEBUG = False
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases

@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.models import User
-from .models import SellerFollow, Notification, Seller, SimpleNotification
+from .models import SellerFollow, Notification, Seller, SimpleNotification, ChatMessage
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
@@ -58,4 +58,24 @@ def send_simple_notification_websocket(sender, instance, created, **kwargs):
                     "title": instance.sender_name,
                 }
             }
+        )
+
+@receiver(post_save, sender=ChatMessage)
+def create_chat_notification(sender, instance, created, **kwargs):
+    """
+    Create a notification when a new chat message is sent.
+    """
+    if created:
+        sender_name = instance.sender.username
+        if hasattr(instance.sender, 'seller_profile'):
+            sender_name = instance.sender.seller_profile.name
+        elif hasattr(instance.sender, 'buyer_profile'):
+            sender_name = instance.sender.buyer_profile.name
+        
+        # Create notification for recipient
+        SimpleNotification.objects.create(
+            recipient=instance.recipient,
+            sender_name=sender_name,
+            message=f"New message from {sender_name}: {instance.content[:50]}...",
+            type='chat_message'
         )

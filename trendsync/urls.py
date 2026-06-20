@@ -77,4 +77,6 @@ urlpatterns = [
     # Chat APIs
     path('chat/inbox/', views.get_chat_inbox, name='chat-inbox'),
     path('chat/<int:user_id>/', views.get_chat_history, name='chat-history'),
+    path('chat/mark-read/<int:user_id>/', views.mark_chat_read, name='mark-chat-read'),
+    path('chat/test-send/', views.test_send_message, name='test-send-message'),
 ]
