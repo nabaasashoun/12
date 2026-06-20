@@ -580,9 +580,14 @@ const ChatPageContent = () => {
   }, [messages, activeChatId, sendMessage]);
 
   // Handle send message
+// In ChatPage.jsx, update the handleSend function
+
   const handleSend = useCallback((e) => {
     e.preventDefault();
-    if (!inputText.trim() || !activeChatId || !isConnected) return;
+    if (!inputText.trim() || !activeChatId || !isConnected) {
+      console.log('Cannot send: missing text, chat ID, or not connected');
+      return;
+    }
     if (containsContactInfo(inputText)) {
       setBlockedMessage('Contact information cannot be shared in chat');
       setTimeout(() => setBlockedMessage(null), 5000);
@@ -617,16 +622,23 @@ const ChatPageContent = () => {
 
     try {
       const success = sendMessage(activeChatId, contentToSend);
-      if (success) {
-        setMessages(prev => prev.map(msg => 
-          msg.id === tempId ? { ...msg, status: 'sent' } : msg
-        ));
-      } else {
+      if (!success) {
         setMessages(prev => prev.map(msg => 
           msg.id === tempId ? { ...msg, status: 'failed' } : msg
         ));
         setFailedMessages(prev => [...prev, tempId]);
       }
+      // The success case will be handled by the message_sent event from WebSocket
+      // But we also set a timeout fallback
+      setTimeout(() => {
+        setMessages(prev => prev.map(msg => {
+          if (msg.id === tempId && msg.status === 'sending') {
+            console.log('⏰ Message timeout, marking as failed');
+            return { ...msg, status: 'failed' };
+          }
+          return msg;
+        }));
+      }, 10000);
     } catch (error) {
       console.error('Error sending message:', error);
       setMessages(prev => prev.map(msg => 
@@ -639,7 +651,6 @@ const ChatPageContent = () => {
       inputRef.current?.focus();
     }, 100);
   }, [inputText, activeChatId, currentUser, sendMessage, setMessages, isConnected]);
-
   // Refresh messages
   const handleRefresh = useCallback(async () => {
     if (!activeChatId || isRefreshing) return;

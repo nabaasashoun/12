@@ -1,4 +1,4 @@
-// ChatContext.jsx - Fully updated
+// ChatContext.jsx - Fully updated with message confirmation handling
 import {
   createContext, useContext, useState, useEffect,
   useRef, useCallback, useMemo,
@@ -16,13 +16,14 @@ export function ChatProvider({ children }) {
   const [isInitialized, setIsInitialized] = useState(false);
 
   const wsRef = useRef(null);
-  const reconnectDelayRef = useRef(2000);
+  const reconnectDelayRef = useRef(1000);
   const reconnectTimerRef = useRef(null);
   const reconnectAttemptsRef = useRef(0);
   const fetchInboxRef = useRef(null);
   const isConnectingRef = useRef(false);
-  const maxReconnectAttempts = 10;
+  const maxReconnectAttempts = 5;
   const messageDedupRef = useRef(new Set());
+  const connectionTimeoutRef = useRef(null);
 
   const fetchInbox = useCallback(async () => {
     if (!api.getToken()) {
@@ -44,12 +45,9 @@ export function ChatProvider({ children }) {
     }
   }, []);
 
-  // Keep the ref current without re-creating connectWs
   useEffect(() => { 
     fetchInboxRef.current = fetchInbox; 
   }, [fetchInbox]);
-
-// In ChatContext.jsx, update the connectWs function to better handle connection states
 
   const connectWs = useCallback(() => {
     const token = api.getToken();
@@ -59,20 +57,17 @@ export function ChatProvider({ children }) {
       return;
     }
 
-    // Check if already connected or connecting
     const ws = wsRef.current;
     if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
-      console.log('WebSocket already connected or connecting, skipping new connection');
+      console.log('WebSocket already connected or connecting');
       return;
     }
 
-    // Check if we're currently in the process of connecting
     if (isConnectingRef.current) {
-      console.log('WebSocket connection already in progress, skipping...');
+      console.log('WebSocket connection already in progress');
       return;
     }
 
-    // Clean up any existing socket
     if (ws) {
       ws._intentional = true;
       ws.close();
@@ -81,40 +76,165 @@ export function ChatProvider({ children }) {
 
     isConnectingRef.current = true;
 
-    // Build WebSocket URL
     const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
     const baseUrl = apiBaseUrl.replace('/api', '');
     const wsBaseUrl = baseUrl.replace('http', 'ws');
     const wsUrl = `${wsBaseUrl}/ws/?token=${token}`;
     
-    console.log('🔌 Connecting to WebSocket:', wsUrl.replace(token, 'token=***'));
+    console.log('🔌 Connecting to WebSocket...');
 
     try {
       const socket = new WebSocket(wsUrl);
       socket._intentional = false;
       wsRef.current = socket;
 
+      connectionTimeoutRef.current = setTimeout(() => {
+        if (socket.readyState !== WebSocket.OPEN) {
+          console.log('WebSocket connection timeout');
+          socket.close();
+          isConnectingRef.current = false;
+        }
+      }, 3000);
+
       socket.onopen = () => {
+        clearTimeout(connectionTimeoutRef.current);
         if (wsRef.current !== socket) return;
         console.log('✅ WebSocket connected successfully');
+        console.log('WebSocket readyState:', socket.readyState);
         setIsConnected(true);
         setConnectionError(null);
-        reconnectDelayRef.current = 2000;
+        reconnectDelayRef.current = 1000;
         reconnectAttemptsRef.current = 0;
         isConnectingRef.current = false;
         
-        // Send initial ping
         socket.send(JSON.stringify({ type: 'ping' }));
-        
-        // Refresh inbox on connection
         fetchInboxRef.current?.();
       };
 
+      socket.onmessage = (event) => {
+        if (wsRef.current !== socket) return;
+
+        let payload;
+        try {
+          payload = JSON.parse(event.data);
+        } catch {
+          return;
+        }
+
+        // Server-side keepalive
+        if (payload.type === 'ping') {
+          socket.send(JSON.stringify({ type: 'pong' }));
+          return;
+        }
+        if (payload.type === 'pong') {
+          console.log('💓 Pong received');
+          return;
+        }
+
+        // Handle message sent confirmation from server
+        if (payload.type === 'message_sent') {
+          console.log('✅ Message confirmed by server:', payload.data);
+          const msgData = payload.data;
+          
+          setMessages(prev => prev.map(msg => {
+            // Find the temp message by content and sender
+            if (typeof msg.id === 'string' && 
+                msg.id.startsWith('temp-') && 
+                msg.content === msgData.content &&
+                msg.sender === msgData.sender_id) {
+              return {
+                ...msg,
+                id: msgData.id,
+                status: 'sent',
+                timestamp: msgData.timestamp,
+              };
+            }
+            return msg;
+          }));
+          return;
+        }
+
+        // Handle chat messages from other users
+        if (payload.type === 'chat_message') {
+          const messageId = payload.id || `msg-${payload.timestamp}`;
+          if (messageDedupRef.current.has(messageId)) {
+            console.log('Duplicate message ignored:', messageId);
+            return;
+          }
+          messageDedupRef.current.add(messageId);
+          
+          if (messageDedupRef.current.size > 1000) {
+            messageDedupRef.current.clear();
+          }
+
+          const newMsg = {
+            id: messageId,
+            sender: payload.sender_id,
+            recipient: payload.recipient_id,
+            content: payload.content,
+            timestamp: payload.timestamp || new Date().toISOString(),
+            is_read: payload.is_read || false,
+          };
+
+          setMessages(prev => {
+            if (prev.some(m => m.id === messageId)) return prev;
+
+            // Replace optimistic temp message if present
+            const tempIdx = prev.findIndex(
+              m => typeof m.id === 'string'
+                && m.id.startsWith('temp-')
+                && m.sender === payload.sender_id
+                && m.content === payload.content,
+            );
+            if (tempIdx !== -1) {
+              const updated = [...prev];
+              updated[tempIdx] = newMsg;
+              return updated;
+            }
+            return [...prev, newMsg];
+          });
+
+          fetchInboxRef.current?.();
+          window.dispatchEvent(new CustomEvent('chatMessageReceived', { detail: payload }));
+          return;
+        }
+
+        // Handle notifications
+        if (payload.type === 'notification') {
+          window.dispatchEvent(new CustomEvent('newNotification', { detail: payload }));
+          return;
+        }
+
+        // Handle errors
+        if (payload.type === 'error') {
+          console.error('WebSocket error message:', payload.message);
+          setConnectionError(payload.message);
+          window.dispatchEvent(new CustomEvent('chatError', { detail: payload }));
+          
+          // Mark the message as failed if it was a contact info block
+          if (payload.code === 'contact_info_blocked') {
+            setMessages(prev => prev.map(msg => {
+              if (typeof msg.id === 'string' && msg.id.startsWith('temp-')) {
+                return { ...msg, status: 'failed' };
+              }
+              return msg;
+            }));
+          }
+          return;
+        }
+
+        // Handle connection established
+        if (payload.type === 'connection_established') {
+          console.log('Connection established:', payload);
+          return;
+        }
+      };
+
       socket.onclose = (event) => {
-        console.log(`WebSocket closed: Code ${event.code} - ${event.reason || 'No reason'}`);
+        clearTimeout(connectionTimeoutRef.current);
+        console.log(`WebSocket closed: ${event.code}`);
         isConnectingRef.current = false;
         
-        // Only reconnect if not intentional and not in the middle of auth change
         if (socket._intentional) {
           console.log('Intentional close, not reconnecting');
           return;
@@ -125,19 +245,17 @@ export function ChatProvider({ children }) {
           setIsConnected(false);
         }
 
-        // Don't reconnect if we've exceeded max attempts
         if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
           console.log('Max reconnection attempts reached');
           setConnectionError('Unable to connect to chat server');
           return;
         }
 
-        // Calculate delay with exponential backoff
         const delay = reconnectDelayRef.current;
-        reconnectDelayRef.current = Math.min(delay * 1.5, 30000);
+        reconnectDelayRef.current = Math.min(delay * 1.5, 10000);
         reconnectAttemptsRef.current += 1;
 
-        console.log(`Reconnecting in ${delay}ms... (Attempt ${reconnectAttemptsRef.current})`);
+        console.log(`Reconnecting in ${delay}ms...`);
         
         if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
         reconnectTimerRef.current = setTimeout(() => {
@@ -147,7 +265,12 @@ export function ChatProvider({ children }) {
         }, delay);
       };
 
-      // ... rest of the code remains the same
+      socket.onerror = (error) => {
+        clearTimeout(connectionTimeoutRef.current);
+        console.error('WebSocket error:', error);
+        isConnectingRef.current = false;
+      };
+
     } catch (error) {
       console.error('Error creating WebSocket:', error);
       setConnectionError('Failed to create WebSocket connection');
@@ -155,21 +278,26 @@ export function ChatProvider({ children }) {
     }
   }, []);
 
-  // Initial connection setup
   useEffect(() => {
     if (isInitialized) return;
     
     const token = api.getToken();
     if (token) {
-      connectWs();
-      fetchInbox();
-      setIsInitialized(true);
+      const timer = setTimeout(() => {
+        connectWs();
+        fetchInbox();
+        setIsInitialized(true);
+      }, 300);
+      
+      return () => clearTimeout(timer);
     }
+  }, [connectWs, fetchInbox, isInitialized]);
 
+  useEffect(() => {
     const handleAuthChange = () => {
       console.log('Auth state changed, reconnecting WebSocket...');
       reconnectAttemptsRef.current = 0;
-      reconnectDelayRef.current = 2000;
+      reconnectDelayRef.current = 1000;
       messageDedupRef.current.clear();
       connectWs();
       fetchInbox();
@@ -182,12 +310,10 @@ export function ChatProvider({ children }) {
         if (!ws || ws.readyState !== WebSocket.OPEN) {
           connectWs();
         }
-        // Refresh inbox when tab becomes visible
         fetchInbox();
       }
     };
 
-    // Listen for new message events to refresh inbox
     const handleNewMessage = () => {
       console.log('New message event received, refreshing inbox...');
       fetchInbox();
@@ -204,15 +330,15 @@ export function ChatProvider({ children }) {
       window.removeEventListener('chatMessageReceived', handleNewMessage);
       window.removeEventListener('newChatMessage', handleNewMessage);
       if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+      if (connectionTimeoutRef.current) clearTimeout(connectionTimeoutRef.current);
       if (wsRef.current) {
         wsRef.current._intentional = true;
         wsRef.current.close();
         wsRef.current = null;
       }
     };
-  }, [connectWs, fetchInbox, isInitialized]);
+  }, [connectWs, fetchInbox]);
 
-  // Send message function
   const sendMessage = useCallback((recipientId, content) => {
     if (!recipientId || !content) {
       console.warn('Cannot send message: missing recipient or content');
@@ -230,6 +356,42 @@ export function ChatProvider({ children }) {
       try {
         ws.send(JSON.stringify(message));
         console.log(`📤 Message sent to ${recipientId}:`, content);
+        
+        // Add optimistic message to UI
+        const tempId = `temp-${Date.now()}`;
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const optimisticMessage = {
+          id: tempId,
+          sender: user.id,
+          recipient: recipientId,
+          content: content.trim(),
+          timestamp: new Date().toISOString(),
+          status: 'sending',
+        };
+        
+        setMessages(prev => {
+          // Prevent duplicate optimistic messages
+          if (prev.some(m => 
+            m.content === optimisticMessage.content && 
+            m.sender === optimisticMessage.sender &&
+            m.id.startsWith('temp-')
+          )) {
+            return prev;
+          }
+          return [...prev, optimisticMessage];
+        });
+        
+        // Set a timeout to mark as failed if no confirmation received
+        setTimeout(() => {
+          setMessages(prev => prev.map(msg => {
+            if (msg.id === tempId && msg.status === 'sending') {
+              console.log('⏰ Message timeout, marking as failed');
+              return { ...msg, status: 'failed' };
+            }
+            return msg;
+          }));
+        }, 10000);
+        
         return true;
       } catch (error) {
         console.error('Error sending message:', error);
@@ -239,14 +401,11 @@ export function ChatProvider({ children }) {
     } else {
       console.warn('❌ WebSocket not connected. ReadyState:', ws?.readyState);
       setConnectionError('Not connected to chat server');
-      
-      // Attempt to reconnect
       connectWs();
       return false;
     }
-  }, [connectWs]);
+  }, [connectWs, setMessages]);
 
-  // Start chat with a user
   const startChat = useCallback(async (userId) => {
     if (!userId) {
       console.warn('Cannot start chat: missing userId');
@@ -254,23 +413,18 @@ export function ChatProvider({ children }) {
     }
     
     setActiveChatId(userId);
-    // Clear messages when switching chats
     setMessages([]);
-    // Clear dedup set
     messageDedupRef.current.clear();
     
     try {
-      // Fetch messages for this user
       const response = await api.getChatHistory(userId);
       if (!response.error && response.data) {
         setMessages(response.data);
         console.log(`📨 Loaded ${response.data.length} messages for chat with user ${userId}`);
       }
       
-      // Refresh inbox to update unread counts
       fetchInbox();
       
-      // Mark messages as read
       try {
         await api.markChatRead(userId);
       } catch (error) {
@@ -282,35 +436,29 @@ export function ChatProvider({ children }) {
     }
   }, [fetchInbox]);
 
-  // Mark messages as read
   const markAsRead = useCallback(async (userId) => {
     if (!userId) return;
     try {
       await api.markChatRead(userId);
-      // Update local messages to mark as read
       setMessages(prev => prev.map(msg => 
         msg.sender === userId ? { ...msg, is_read: true } : msg
       ));
-      // Refresh inbox to update unread counts
       fetchInbox();
     } catch (error) {
       console.error('Error marking messages as read:', error);
     }
   }, [fetchInbox]);
 
-  // Calculate unread count
   const unreadCount = useMemo(
     () => inbox.reduce((sum, item) => sum + (item.unread_count || 0), 0),
     [inbox],
   );
 
-  // Clear all messages
   const clearMessages = useCallback(() => {
     setMessages([]);
     messageDedupRef.current.clear();
   }, []);
 
-  // Force refresh inbox
   const refreshInbox = useCallback(() => {
     fetchInbox();
   }, [fetchInbox]);

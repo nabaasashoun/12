@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate, NavLink } from "react-router-dom";
 import { AddProductProvider } from "./utils/AddProductContext";
 import HomePage from "./components/BuyerSide/BuyerHomePage";
@@ -7,6 +7,7 @@ import LoginPage from "./components/BuyerSide/LoginPage";
 import SellerLoginPage from "./components/SellerSide/SellerLoginPage";
 import RegisterPage from "./components/BuyerSide/RegisterPage";
 import SellerRegisterPage from "./components/SellerSide/SellerRegisterPage";
+import ChatPage from "./components/Chat/ChatPage";
 import TrendingPage from "./components/BuyerSide/TrendingPage";
 import SearchBar from "./components/BuyerSide/SearchBar";
 import SettingsPage from "./components/BuyerSide/BuyerSettingsPage";
@@ -28,12 +29,24 @@ import SellerNotifications from "./components/SellerSide/SellerNotfifcations";
 import SellerSettings from "./components/SellerSide/SellerSettings";
 import SellerTrendingPage from "./components/SellerSide/SellerTrendingPage";
 import { PageLoadingProvider } from "./utils/PageLoadingContext";
-import { ChatProvider } from "./utils/ChatContext";
-import ChatPage from "./components/Chat/ChatPage";
 import { DarkModeProvider } from "./utils/BuyerDarkModeContext";
 import { LikeBookmarkProvider } from "./utils/LikeBookmarkContext";
 import { SellerDarkModeProvider } from "./utils/SellerDarkModeContext";
 import { DataProvider } from './context/DataProvider';
+
+// Lazy load ChatProvider to improve initial load time
+const ChatProvider = lazy(() => 
+  import('./utils/ChatContext').then(module => ({
+    default: module.ChatProvider
+  }))
+);
+
+// Loading fallback for ChatProvider
+const ChatLoadingFallback = () => (
+  <div className="flex items-center justify-center h-16">
+    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+  </div>
+);
 
 const BuyerRoute = ({ children, userRole, isAuthenticated }) => {
   if (!isAuthenticated) return <Navigate to="/login" />;
@@ -83,13 +96,11 @@ const AuthenticatedContent = ({ isAuthenticated, userRole, handleLogout, setIsAu
 
       <div className={`flex-1 overflow-y-auto ${userRole === 'buyer' ? 'pb-16 md:pb-0' : 'pb-16 md:pb-0'}`}>
         <Routes>
-          {/* Global Auth Routes (Redirects) */}
           <Route path="/login" element={<Navigate to={userRole === 'seller' ? "/seller-home" : "/"} />} />
           <Route path="/register" element={<Navigate to={userRole === 'seller' ? "/seller-home" : "/"} />} />
           <Route path="/seller/login" element={<Navigate to={userRole === 'seller' ? "/seller-home" : "/"} />} />
           <Route path="/seller/register" element={<Navigate to={userRole === 'seller' ? "/seller-home" : "/"} />} />
 
-          {/* Buyer Routes */}
           <Route path="/" element={<BuyerRoute userRole={userRole} isAuthenticated={isAuthenticated}><HomePage /></BuyerRoute>} />
           <Route path="/cart" element={<BuyerRoute userRole={userRole} isAuthenticated={isAuthenticated}><CartPage /></BuyerRoute>} />
           <Route path="/trending" element={<BuyerRoute userRole={userRole} isAuthenticated={isAuthenticated}><TrendingPage /></BuyerRoute>} />
@@ -102,7 +113,6 @@ const AuthenticatedContent = ({ isAuthenticated, userRole, handleLogout, setIsAu
           <Route path="/seller/:sellerId" element={<BuyerRoute userRole={userRole} isAuthenticated={isAuthenticated}><SellerPage /></BuyerRoute>} />
           <Route path="/product/:productId/comments" element={<BuyerRoute userRole={userRole} isAuthenticated={isAuthenticated}><ProductCommentsPage /></BuyerRoute>} />
 
-          {/* Seller Routes */}
           <Route path="/seller-home" element={<SellerRoute userRole={userRole} isAuthenticated={isAuthenticated}><SellerHomePage /></SellerRoute>} />
           <Route path="/seller/products" element={<SellerRoute userRole={userRole} isAuthenticated={isAuthenticated}><div className="p-8"><h1 className="text-2xl font-bold">My Products</h1><p>Products management page</p></div></SellerRoute>} />
           <Route path="/seller/orders" element={<SellerRoute userRole={userRole} isAuthenticated={isAuthenticated}><div className="p-8"><h1 className="text-2xl font-bold">Orders</h1><p>Orders management page</p></div></SellerRoute>} />
@@ -128,7 +138,6 @@ const AuthenticatedContent = ({ isAuthenticated, userRole, handleLogout, setIsAu
 };
 
 const App = () => {
-  // Initialize from localStorage immediately to avoid "flash of wrong content"
   const [isAuthenticated, setIsAuthenticated] = useState(() => !!(localStorage.getItem('accessToken') || localStorage.getItem('access')));
   const [userRole, setUserRole] = useState(() => localStorage.getItem('userRole'));
   const [loading, setLoading] = useState(true);
@@ -181,7 +190,6 @@ const App = () => {
         }
       } catch (error) {
         console.error('Token validation error:', error);
-        // Fallback to local storage if network fails but we have a user
         if (storedUser) {
           try {
             const user = JSON.parse(storedUser);
@@ -211,7 +219,7 @@ const App = () => {
   }, [clearAuthData]);
 
   if (loading) {
-    return <div className="flex h-screen items-center justify-center bg-gray-50 font-medium text-gray-500">Loading TendSync...</div>;
+    return <div className="flex h-screen items-center justify-center bg-gray-50 font-medium text-gray-500">Loading TrendSync...</div>;
   }
 
   return (
@@ -220,21 +228,23 @@ const App = () => {
         <DarkModeProvider>
           <SellerDarkModeProvider>
             <LikeBookmarkProvider>
-              <ChatProvider>
-                <PageLoadingProvider>
-                  <NotificationProvider>
-                    <AddProductProvider>
-                      <AuthenticatedContent
-                        isAuthenticated={isAuthenticated}
-                        userRole={userRole}
-                        handleLogout={handleLogout}
-                        setIsAuthenticated={setIsAuthenticated}
-                        setUserRole={setUserRole}
-                      />
-                    </AddProductProvider>
-                  </NotificationProvider>
-                </PageLoadingProvider>
-              </ChatProvider>
+              <Suspense fallback={<ChatLoadingFallback />}>
+                <ChatProvider>
+                  <PageLoadingProvider>
+                    <NotificationProvider>
+                      <AddProductProvider>
+                        <AuthenticatedContent
+                          isAuthenticated={isAuthenticated}
+                          userRole={userRole}
+                          handleLogout={handleLogout}
+                          setIsAuthenticated={setIsAuthenticated}
+                          setUserRole={setUserRole}
+                        />
+                      </AddProductProvider>
+                    </NotificationProvider>
+                  </PageLoadingProvider>
+                </ChatProvider>
+              </Suspense>
             </LikeBookmarkProvider>
           </SellerDarkModeProvider>
         </DarkModeProvider>

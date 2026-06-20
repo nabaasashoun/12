@@ -138,14 +138,15 @@ MEDIA_ROOT = BASE_DIR / "media"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-
-# Django Channels
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    }
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+        "CONFIG": {
+            "capacity": 1000,  # Increase capacity
+            "expiry": 10,  # Shorter expiry for faster cleanup
+        },
+    },
 }
-
 
 # Django REST Framework
 REST_FRAMEWORK = {
