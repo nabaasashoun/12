@@ -645,7 +645,19 @@ class DusuPayWebhookSerializer(serializers.Serializer):
 class ChatMessageSerializer(serializers.ModelSerializer):
     sender_name = serializers.CharField(source='sender.username', read_only=True)
     recipient_name = serializers.CharField(source='recipient.username', read_only=True)
+    sender_profile_photo = serializers.SerializerMethodField()
+    recipient_profile_photo = serializers.SerializerMethodField()
 
     class Meta:
         model = ChatMessage
-        fields = ['id', 'sender', 'sender_name', 'recipient', 'recipient_name', 'content', 'timestamp', 'is_read']
+        fields = ['id', 'sender', 'sender_name', 'sender_profile_photo', 'recipient', 'recipient_name', 'recipient_profile_photo', 'content', 'timestamp', 'is_read']
+
+    def get_sender_profile_photo(self, obj):
+        from .views import get_user_profile_photo
+        request = self.context.get('request')
+        return get_user_profile_photo(obj.sender, request)
+
+    def get_recipient_profile_photo(self, obj):
+        from .views import get_user_profile_photo
+        request = self.context.get('request')
+        return get_user_profile_photo(obj.recipient, request)

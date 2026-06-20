@@ -1,11 +1,11 @@
 import { NavLink } from "react-router-dom";
 import { Home, TrendingUp, PlusCircle, Bell, User, MessageSquare } from "lucide-react";
 import { useChat } from "../../utils/ChatContext";
-import { useDarkMode } from "../../utils/BuyerDarkModeContext";
+import { useSellerDarkMode } from "../../utils/SellerDarkModeContext";
 
 const SellerBottomNav = () => {
   const { unreadCount } = useChat();
-  const { isDarkMode } = useDarkMode();
+  const { isDarkMode } = useSellerDarkMode();
 
   const navItems = [
     { to: "/seller-home", icon: Home, label: "Home" },
@@ -41,7 +41,6 @@ const SellerBottomNav = () => {
                   }`}
                   strokeWidth={isActive ? 2.5 : 1.5}
                 />
-                {/* For the plus icon */}
                 {to === "/seller/add-product/step1" && (
                   <span className="absolute -top-1 -right-2 w-2 h-2 bg-green-500 rounded-full"></span>
                 )}

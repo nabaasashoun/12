@@ -2265,11 +2265,11 @@ def update_seller_location(request):
 @permission_classes([IsAuthenticated])
 def get_chat_inbox(request):
     """
-    Get all conversations for the current user.
+    Get all conversations for the current user with profile photos.
     """
     from django.db.models import Q
     from .models import ChatMessage
-    from django.contrib.auth.models import User  # Make sure this import is here
+    from django.contrib.auth.models import User
     
     current_user = request.user
     print(f"🔍 Getting inbox for user: {current_user.username} (ID: {current_user.id})")
@@ -2308,16 +2308,35 @@ def get_chat_inbox(request):
         
         # Get partner name
         partner_name = partner.username
+        profile_photo = None
+        
+        # Check if partner has a seller profile
         if hasattr(partner, 'seller_profile'):
             partner_name = partner.seller_profile.name
+            if partner.seller_profile.profile_photo:
+                # Build absolute URL for the profile photo
+                request = self.context.get('request') if hasattr(self, 'context') else None
+                if request:
+                    profile_photo = request.build_absolute_uri(partner.seller_profile.profile_photo.url)
+                else:
+                    profile_photo = partner.seller_profile.profile_photo.url
+        
+        # Check if partner has a buyer profile
         elif hasattr(partner, 'buyer_profile'):
             partner_name = partner.buyer_profile.name
+            if partner.buyer_profile.profile_photo:
+                request = self.context.get('request') if hasattr(self, 'context') else None
+                if request:
+                    profile_photo = request.build_absolute_uri(partner.buyer_profile.profile_photo.url)
+                else:
+                    profile_photo = partner.buyer_profile.profile_photo.url
         
         print(f"💬 Conversation with {partner_name} (ID: {partner_id}): {unread_count} unread")
         
         conversations.append({
             'partner_id': partner.id,
             'partner_name': partner_name,
+            'profile_photo': profile_photo,  # Add profile photo URL
             'last_message': last_message.content,
             'timestamp': last_message.timestamp.isoformat(),
             'unread_count': unread_count
@@ -2329,42 +2348,48 @@ def get_chat_inbox(request):
     print(f"📬 Returning {len(conversations)} conversations")
     return Response(conversations, status=status.HTTP_200_OK)
 
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_chat_history(request, user_id):
     """
     Get chat history between the authenticated user and another user.
-    Only returns messages between these two specific users.
     """
     from django.db.models import Q
     from .models import ChatMessage
     from .serializers import ChatMessageSerializer
     
-    # Get the current user
     current_user = request.user
     
-    # Query messages where:
-    # - Current user is sender AND other user is recipient
-    # OR
-    # - Other user is sender AND current user is recipient
+    try:
+        other_user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response([], status=status.HTTP_200_OK)
+    
     messages = ChatMessage.objects.filter(
         (Q(sender=current_user) & Q(recipient_id=user_id)) | 
         (Q(sender_id=user_id) & Q(recipient=current_user))
     ).order_by('timestamp')
     
-    # Mark unread messages from the other user as read
+    # Mark unread messages as read
     ChatMessage.objects.filter(
         sender_id=user_id, 
         recipient=current_user, 
         is_read=False
     ).update(is_read=True)
     
-    # Serialize and return the messages
+    # Serialize messages
     serializer = ChatMessageSerializer(messages, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    data = serializer.data
+    
+    # Add profile photo of the other user for the chat header
+    profile_photo = get_user_profile_photo(other_user, request)
+    
+    return Response({
+        'messages': data,
+        'partner_profile_photo': profile_photo,
+        'partner_name': get_user_display_name(other_user)
+    })
 
-# views.py - Add this at the end of the file
 
 @api_view(['GET'])
 @permission_classes([AllowAny])

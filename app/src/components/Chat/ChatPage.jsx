@@ -1,8 +1,10 @@
-// ChatPage.jsx - Mobile-optimized with separate conversation view
+// ChatPage.jsx - Fully updated with all features
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Send, MessageCircle, Wifi, WifiOff, RefreshCw, ChevronLeft } from 'lucide-react';
 import { useChat } from '../../utils/ChatContext';
+import { useDarkMode } from '../../utils/BuyerDarkModeContext';
+import { useSellerDarkMode } from '../../utils/SellerDarkModeContext';
 import api from '../../utils/api';
 
 // ── Pure helpers ─────────────────────────────────────────────────────────────
@@ -32,33 +34,44 @@ const CONTACT_PATTERNS = [
 const containsContactInfo = (text) =>
   CONTACT_PATTERNS.some((pattern) => pattern.test(text));
 
-// ── Small reusable components ────────────────────────────────────────────────
+// ── Avatar component with profile image ─────────────────────────────────────
 
-const Avatar = ({ name, size = 'md', active = false, imageUrl = null }) => {
+const Avatar = ({ name, size = 'md', active = false, imageUrl = null, isDarkMode = false }) => {
   const initial = (name || '?').charAt(0).toUpperCase();
   const sizeClass =
     size === 'sm' ? 'w-8 h-8 text-xs'
       : size === 'lg' ? 'w-12 h-12 text-base'
         : 'w-10 h-10 text-sm';
   
+  // Default profile image
+  const defaultImage = '/profile.jpg';
+  
+  // If image URL exists, show the image
   if (imageUrl) {
     return (
       <img 
         src={imageUrl} 
         alt={name}
         className={`${sizeClass} rounded-full object-cover shrink-0 border-2 ${active ? 'border-blue-500' : 'border-transparent'}`}
+        onError={(e) => {
+          // If image fails to load, show default profile image
+          e.target.src = defaultImage;
+        }}
       />
     );
   }
   
+  // Show default profile image if no image URL
   return (
-    <div className={`${sizeClass} rounded-full flex items-center justify-center
-      text-white font-semibold shrink-0
-      ${active ? 'bg-blue-500' : 'bg-gradient-to-br from-blue-400 to-indigo-500'}`}>
-      {initial}
-    </div>
+    <img 
+      src={defaultImage}
+      alt={name}
+      className={`${sizeClass} rounded-full object-cover shrink-0 border-2 ${active ? 'border-blue-500' : 'border-transparent'}`}
+    />
   );
 };
+
+// ── Connection Badge ────────────────────────────────────────────────────────
 
 export const ConnectionBadge = ({ isConnected, short = false }) =>
   isConnected ? (
@@ -75,70 +88,85 @@ export const ConnectionBadge = ({ isConnected, short = false }) =>
 
 // ── InboxPanel ───────────────────────────────────────────────────────────────
 
-const InboxPanel = React.memo(({ inbox, activeChatId, isConnected, onSelectConversation }) => (
-  <div className="flex flex-col h-full bg-white">
-    <div className="px-4 py-4 border-b bg-white flex items-center justify-between shrink-0 sticky top-0 z-10">
-      <div>
-        <h1 className="text-xl font-bold text-gray-900">Messages</h1>
-        <p className="text-xs text-gray-500">
-          {inbox.length} conversation{inbox.length !== 1 ? 's' : ''}
-        </p>
-      </div>
-      <ConnectionBadge isConnected={isConnected} />
-    </div>
-
-    <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
-      {inbox.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-full py-16 text-center px-6">
-          <MessageCircle className="w-16 h-16 text-gray-200 mb-4" />
-          <p className="text-gray-500 font-medium">No conversations yet</p>
-          <p className="text-sm text-gray-400 mt-1 max-w-xs">
-            When you start chatting with someone, they'll appear here.
+const InboxPanel = React.memo(({ inbox, activeChatId, isConnected, onSelectConversation, isDarkMode }) => {
+  // Helper to get partner image from conversation data
+  const getPartnerImage = (conv) => {
+    return conv.profile_photo || conv.partner_profile_photo || null;
+  };
+  
+  return (
+    <div className={`flex flex-col h-full ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
+      <div className={`px-4 py-4 border-b ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} flex items-center justify-between shrink-0 sticky top-0 z-10`}>
+        <div>
+          <h1 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Messages</h1>
+          <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+            {inbox.length} conversation{inbox.length !== 1 ? 's' : ''}
           </p>
         </div>
-      ) : (
-        inbox.map(conv => {
-          const isActive = activeChatId === conv.partner_id;
-          return (
-            <button
-              key={conv.partner_id}
-              onClick={() => {
-                console.log('🖱️ Clicking conversation:', conv.partner_id, conv.partner_name);
-                onSelectConversation(conv.partner_id);
-              }}
-              className={`w-full text-left px-4 py-4 flex items-center gap-3 transition-all active:scale-[0.98]
-                ${isActive
-                  ? 'bg-blue-50 border-l-4 border-blue-500'
-                  : 'hover:bg-gray-50 border-l-4 border-transparent'}`}
-            >
-              <Avatar name={conv.partner_name} size="lg" active={isActive} />
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-baseline">
-                  <span className={`font-semibold text-base truncate
-                    ${isActive ? 'text-blue-700' : 'text-gray-900'}`}>
-                    {conv.partner_name}
-                  </span>
-                  <span className="text-xs text-gray-400 shrink-0 ml-2">
-                    {formatDate(conv.timestamp)}
-                  </span>
+        <ConnectionBadge isConnected={isConnected} />
+      </div>
+
+      <div className={`flex-1 overflow-y-auto divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
+        {inbox.length === 0 ? (
+          <div className={`flex flex-col items-center justify-center h-full py-16 text-center px-6 ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
+            <MessageCircle className={`w-16 h-16 ${isDarkMode ? 'text-gray-600' : 'text-gray-200'} mb-4`} />
+            <p className={`font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-500'}`}>No conversations yet</p>
+            <p className={`text-sm mt-1 max-w-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+              When you start chatting with someone, they'll appear here.
+            </p>
+          </div>
+        ) : (
+          inbox.map(conv => {
+            const isActive = activeChatId === conv.partner_id;
+            const partnerImage = getPartnerImage(conv);
+            
+            return (
+              <button
+                key={conv.partner_id}
+                onClick={() => {
+                  console.log('🖱️ Clicking conversation:', conv.partner_id, conv.partner_name);
+                  onSelectConversation(conv.partner_id);
+                }}
+                className={`w-full text-left px-4 py-4 flex items-center gap-3 transition-all active:scale-[0.98]
+                  ${isActive
+                    ? isDarkMode ? 'bg-gray-800 border-l-4 border-blue-500' : 'bg-blue-50 border-l-4 border-blue-500'
+                    : isDarkMode ? 'hover:bg-gray-800 border-l-4 border-transparent' : 'hover:bg-gray-50 border-l-4 border-transparent'}`}
+              >
+                <Avatar 
+                  name={conv.partner_name} 
+                  size="lg" 
+                  active={isActive} 
+                  imageUrl={partnerImage}
+                  isDarkMode={isDarkMode}
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-baseline">
+                    <span className={`font-semibold text-base truncate
+                      ${isActive ? (isDarkMode ? 'text-blue-400' : 'text-blue-700') : (isDarkMode ? 'text-gray-200' : 'text-gray-900')}`}>
+                      {conv.partner_name || 'User'}
+                    </span>
+                    <span className={`text-xs shrink-0 ml-2 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                      {formatDate(conv.timestamp)}
+                    </span>
+                  </div>
+                  <p className={`text-sm truncate mt-0.5 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    {conv.last_message || 'No messages yet'}
+                  </p>
                 </div>
-                <p className="text-sm text-gray-500 truncate mt-0.5">
-                  {conv.last_message || 'No messages yet'}
-                </p>
-              </div>
-              {conv.unread_count > 0 && (
-                <span className="shrink-0 bg-blue-500 text-white text-xs font-bold
-                  w-6 h-6 rounded-full flex items-center justify-center">
-                  {conv.unread_count > 9 ? '9+' : conv.unread_count}
-                </span>
-              )}
-            </button>
-          );
-        })
-      )}
+                {conv.unread_count > 0 && (
+                  <span className="shrink-0 bg-blue-500 text-white text-xs font-bold
+                    w-6 h-6 rounded-full flex items-center justify-center">
+                    {conv.unread_count > 9 ? '9+' : conv.unread_count}
+                  </span>
+                )}
+              </button>
+            );
+          })
+        )}
+      </div>
     </div>
-  </div>
-));
+  );
+});
 
 InboxPanel.displayName = 'InboxPanel';
 
@@ -148,6 +176,7 @@ const ChatView = React.memo(({
   messages,
   currentUser,
   currentChatPartner,
+  currentChatPartnerImage,
   isConnected,
   inputText,
   setInputText,
@@ -162,12 +191,12 @@ const ChatView = React.memo(({
   onRefresh,
   retryMessage,
   failedMessages,
+  isDarkMode,
 }) => {
   const isBlocked = containsContactInfo(inputText);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const messagesContainerRef = useRef(null);
 
-  // Auto-focus input when chat loads
   useEffect(() => {
     if (inputRef.current) {
       const timer = setTimeout(() => {
@@ -177,7 +206,6 @@ const ChatView = React.memo(({
     }
   }, [currentChatPartner, inputRef]);
 
-  // Scroll to bottom when messages change
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -196,19 +224,26 @@ const ChatView = React.memo(({
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 relative">
-      {/* Header - Mobile optimized */}
-      <div className="px-3 py-3 border-b bg-white flex items-center gap-3 shrink-0 sticky top-0 z-10">
+    <div className={`flex flex-col h-full ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'} relative`}>
+      {/* Header */}
+      <div className={`px-3 py-3 border-b ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} flex items-center gap-3 shrink-0 sticky top-0 z-10`}>
         <button
           onClick={onBack}
-          className="p-2 -ml-2 rounded-full hover:bg-gray-100 text-gray-600 transition-colors active:bg-gray-200"
+          className={`p-2 -ml-2 rounded-full transition-colors active:bg-gray-200 ${isDarkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
           aria-label="Back to inbox"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
-        <Avatar name={currentChatPartner} size="lg" />
+        <Avatar 
+          name={currentChatPartner} 
+          size="lg" 
+          imageUrl={currentChatPartnerImage || null}
+          isDarkMode={isDarkMode}
+        />
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-gray-900 text-base truncate">{currentChatPartner}</p>
+          <p className={`font-semibold text-base truncate ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+            {currentChatPartner || 'User'}
+          </p>
           <div className="flex items-center gap-2">
             <ConnectionBadge isConnected={isConnected} short />
             {isTyping && (
@@ -219,16 +254,16 @@ const ChatView = React.memo(({
         <button
           onClick={onRefresh}
           disabled={isRefreshing}
-          className="p-2 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-50 active:bg-gray-200"
+          className={`p-2 rounded-full transition-colors disabled:opacity-50 active:bg-gray-200 ${isDarkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
         >
-          <RefreshCw className={`w-5 h-5 text-gray-500 ${isRefreshing ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
         </button>
       </div>
 
       {/* Disconnected Banner */}
       {!isConnected && (
-        <div className="px-3 py-2 bg-yellow-50 border-b border-yellow-200 text-center">
-          <p className="text-xs text-yellow-700 flex items-center justify-center gap-1">
+        <div className={`px-3 py-2 border-b text-center ${isDarkMode ? 'bg-yellow-900/30 border-yellow-800' : 'bg-yellow-50 border-yellow-200'}`}>
+          <p className={`text-xs flex items-center justify-center gap-1 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-700'}`}>
             <WifiOff className="w-3 h-3 inline" />
             Reconnecting to chat server...
           </p>
@@ -239,14 +274,14 @@ const ChatView = React.memo(({
       <div 
         ref={messagesContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-2"
+        className={`flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-2 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}
       >
         {messages.length === 0 ? (
           <div className="flex-1 flex items-center justify-center text-center py-12">
             <div>
-              <MessageCircle className="w-12 h-12 text-gray-200 mx-auto mb-3" />
-              <p className="text-gray-400 text-sm font-medium">No messages yet</p>
-              <p className="text-xs text-gray-300 mt-1">Say hello to {currentChatPartner}!</p>
+              <MessageCircle className={`w-12 h-12 mx-auto mb-3 ${isDarkMode ? 'text-gray-600' : 'text-gray-200'}`} />
+              <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-400'}`}>No messages yet</p>
+              <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-600' : 'text-gray-300'}`}>Say hello to {currentChatPartner}!</p>
             </div>
           </div>
         ) : (
@@ -257,7 +292,6 @@ const ChatView = React.memo(({
             
             const key = msg.id || `msg-${idx}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
             
-            // Show date separator for messages from different days
             const showDate = idx === 0 || 
               new Date(msg.timestamp).toDateString() !== new Date(messages[idx - 1]?.timestamp).toDateString();
             
@@ -265,7 +299,7 @@ const ChatView = React.memo(({
               <React.Fragment key={key}>
                 {showDate && (
                   <div className="flex justify-center my-2">
-                    <span className="text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full">
+                    <span className={`text-xs px-3 py-1 rounded-full ${isDarkMode ? 'bg-gray-800 text-gray-400' : 'bg-gray-100 text-gray-400'}`}>
                       {new Date(msg.timestamp).toLocaleDateString([], { 
                         weekday: 'short', 
                         month: 'short', 
@@ -275,14 +309,16 @@ const ChatView = React.memo(({
                   </div>
                 )}
                 <div className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                  {!isMe && <Avatar name={currentChatPartner} size="sm" />}
+                  {!isMe && <Avatar name={currentChatPartner} size="sm" imageUrl={currentChatPartnerImage || null} isDarkMode={isDarkMode} />}
                   <div className={`max-w-[80%] sm:max-w-[70%] rounded-2xl px-4 py-2.5 ml-2
                     ${isMe
                       ? `bg-blue-500 text-white rounded-br-sm ${isFailed ? 'opacity-70' : ''}`
-                      : 'bg-white text-gray-800 border border-gray-200 rounded-bl-sm shadow-sm'}`}>
+                      : isDarkMode 
+                        ? 'bg-gray-800 text-gray-200 border border-gray-700 rounded-bl-sm shadow-sm' 
+                        : 'bg-white text-gray-800 border border-gray-200 rounded-bl-sm shadow-sm'}`}>
                     <p className="text-sm leading-relaxed break-words">{msg.content}</p>
                     <div className="flex items-center justify-end gap-1 mt-1">
-                      <span className={`text-[10px] ${isMe ? 'text-blue-200' : 'text-gray-400'}`}>
+                      <span className={`text-[10px] ${isMe ? 'text-blue-200' : (isDarkMode ? 'text-gray-500' : 'text-gray-400')}`}>
                         {formatTime(msg.timestamp)}
                       </span>
                       {isMe && isSending && (
@@ -300,7 +336,7 @@ const ChatView = React.memo(({
                         <span className="text-[10px] text-blue-200">✓</span>
                       )}
                       {!isMe && msg.is_read && (
-                        <span className="text-[10px] text-gray-400">✓</span>
+                        <span className={`text-[10px] ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>✓</span>
                       )}
                     </div>
                   </div>
@@ -317,8 +353,7 @@ const ChatView = React.memo(({
       {showScrollButton && (
         <button
           onClick={scrollToBottom}
-          className="absolute bottom-24 right-4 bg-white rounded-full shadow-lg p-2.5 border border-gray-200
-            hover:bg-gray-50 transition-colors active:scale-95"
+          className={`absolute bottom-24 right-4 rounded-full shadow-lg p-2.5 border ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} hover:bg-gray-50 transition-colors active:scale-95`}
         >
           <MessageCircle className="w-4 h-4 text-blue-500 rotate-180" />
         </button>
@@ -326,23 +361,21 @@ const ChatView = React.memo(({
 
       {/* Warning Messages */}
       {isBlocked && (
-        <div className="mx-3 mb-1 px-3 py-2 bg-red-50 border border-red-200 rounded-xl
-          text-xs text-red-600 flex items-center gap-2">
+        <div className="mx-3 mb-1 px-3 py-2 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600 flex items-center gap-2">
           <span>🚫</span>
           Contact details (phones, emails, links) cannot be shared here.
         </div>
       )}
 
       {blockedMessage && (
-        <div className="mx-3 mb-1 px-3 py-2 bg-orange-50 border border-orange-200 rounded-xl
-          text-xs text-orange-600 flex items-center gap-2">
+        <div className="mx-3 mb-1 px-3 py-2 bg-orange-50 border border-orange-200 rounded-xl text-xs text-orange-600 flex items-center gap-2">
           <span>⚠️</span>
           {blockedMessage}
         </div>
       )}
 
-      {/* Input Area - Mobile optimized */}
-      <div className="px-3 py-3 bg-white border-t shrink-0 relative z-10">
+      {/* Input Area */}
+      <div className={`px-3 py-3 border-t shrink-0 relative z-10 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
         <form onSubmit={onSend} className="flex items-center gap-2">
           <input
             ref={inputRef}
@@ -351,21 +384,20 @@ const ChatView = React.memo(({
             onChange={onTyping}
             placeholder="Type a message…"
             autoFocus={true}
-            className="flex-1 bg-gray-100 rounded-full px-4 py-3 text-sm text-gray-900
-              placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 
-              focus:bg-white transition-colors"
+            className={`flex-1 rounded-full px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors
+              ${isDarkMode 
+                ? 'bg-gray-700 text-gray-200 placeholder-gray-400 focus:bg-gray-600' 
+                : 'bg-gray-100 text-gray-900 placeholder-gray-400 focus:bg-white'}`}
             style={{ 
               WebkitAppearance: 'none',
               WebkitTapHighlightColor: 'transparent',
-              fontSize: '16px' // Prevents zoom on iOS
+              fontSize: '16px'
             }}
           />
           <button
             type="submit"
             disabled={!inputText.trim() || !isConnected || isBlocked}
-            className="shrink-0 w-11 h-11 bg-blue-500 hover:bg-blue-600
-              disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-full
-              flex items-center justify-center transition-colors active:scale-95"
+            className="shrink-0 w-11 h-11 bg-blue-500 hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-full flex items-center justify-center transition-colors active:scale-95"
           >
             <Send className="w-5 h-5" />
           </button>
@@ -426,6 +458,16 @@ const ChatPageContent = () => {
     markAsRead,
   } = useChat();
 
+  // Get dark mode based on user role
+  const buyerDarkMode = useDarkMode();
+  const sellerDarkMode = useSellerDarkMode();
+  
+  // Determine which dark mode to use (buyer or seller)
+  const userRole = localStorage.getItem('userRole');
+  const isDarkMode = userRole === 'seller' 
+    ? sellerDarkMode?.isDarkMode || false 
+    : buyerDarkMode?.isDarkMode || false;
+
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   
@@ -456,7 +498,7 @@ const ChatPageContent = () => {
     }
   }, []);
 
-  // Auto-select chat from URL params - Mobile optimized
+  // Auto-select chat from URL params - but keep inbox view as default
   useEffect(() => {
     if (loadChatTimeoutRef.current) {
       clearTimeout(loadChatTimeoutRef.current);
@@ -580,8 +622,6 @@ const ChatPageContent = () => {
   }, [messages, activeChatId, sendMessage]);
 
   // Handle send message
-// In ChatPage.jsx, update the handleSend function
-
   const handleSend = useCallback((e) => {
     e.preventDefault();
     if (!inputText.trim() || !activeChatId || !isConnected) {
@@ -628,8 +668,6 @@ const ChatPageContent = () => {
         ));
         setFailedMessages(prev => [...prev, tempId]);
       }
-      // The success case will be handled by the message_sent event from WebSocket
-      // But we also set a timeout fallback
       setTimeout(() => {
         setMessages(prev => prev.map(msg => {
           if (msg.id === tempId && msg.status === 'sending') {
@@ -651,6 +689,7 @@ const ChatPageContent = () => {
       inputRef.current?.focus();
     }, 100);
   }, [inputText, activeChatId, currentUser, sendMessage, setMessages, isConnected]);
+
   // Refresh messages
   const handleRefresh = useCallback(async () => {
     if (!activeChatId || isRefreshing) return;
@@ -674,13 +713,9 @@ const ChatPageContent = () => {
   const handleSelectConversation = useCallback((partnerId) => {
     console.log('🔄 Selecting conversation with partner:', partnerId);
     
-    // Set active chat ID
     setActiveChatId(partnerId);
-    
-    // Clear previous messages
     setMessages([]);
     
-    // Fetch chat history
     api.getChatHistory(partnerId).then(result => {
       console.log('📥 Chat history result:', result);
       if (!result.error && result.data) {
@@ -693,7 +728,6 @@ const ChatPageContent = () => {
       console.error('❌ Error fetching chat history:', error);
     });
     
-    // Focus input after chat loads
     setTimeout(() => {
       if (inputRef.current) {
         inputRef.current.focus();
@@ -705,7 +739,6 @@ const ChatPageContent = () => {
   const handleBack = useCallback(() => {
     setActiveChatId(null);
     setMessages([]);
-    // Navigate back to the chat page without params
     navigate('/chat');
   }, [setActiveChatId, setMessages, navigate]);
 
@@ -717,7 +750,7 @@ const ChatPageContent = () => {
     }
   }, [blockedMessage]);
 
-  // Get the chat partner name
+  // Get the chat partner name and image
   const inboxPartner = inbox.find(c => c.partner_id === activeChatId);
   
   const currentChatPartner = useMemo(() => {
@@ -726,18 +759,24 @@ const ChatPageContent = () => {
     }
     return `User ${activeChatId || ''}`;
   }, [inboxPartner, activeChatId]);
+  
+  const currentChatPartnerImage = useMemo(() => {
+    return inboxPartner?.profile_photo || null;
+  }, [inboxPartner]);
 
   const sharedInboxProps = {
     inbox,
     activeChatId,
     isConnected,
     onSelectConversation: handleSelectConversation,
+    isDarkMode,
   };
 
   const sharedChatProps = {
     messages,
     currentUser,
     currentChatPartner,
+    currentChatPartnerImage,
     isConnected,
     inputText,
     setInputText,
@@ -752,10 +791,11 @@ const ChatPageContent = () => {
     onRefresh: handleRefresh,
     retryMessage,
     failedMessages,
+    isDarkMode,
   };
 
   return (
-    <div className="flex h-[calc(100vh-56px)] bg-white overflow-hidden">
+    <div className={`flex h-[calc(100vh-56px)] ${isDarkMode ? 'bg-gray-900' : 'bg-white'} overflow-hidden`}>
       {/* Mobile View - Full screen conversation */}
       <div className="flex flex-col flex-1 md:hidden">
         {!activeChatId ? (
@@ -767,17 +807,17 @@ const ChatPageContent = () => {
 
       {/* Desktop View - Split view */}
       <div className="hidden md:flex flex-1 overflow-hidden">
-        <div className="w-80 border-r flex flex-col shrink-0 overflow-hidden">
+        <div className={`w-80 border-r ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} flex flex-col shrink-0 overflow-hidden`}>
           <InboxPanel {...sharedInboxProps} />
         </div>
         <div className="flex-1 flex flex-col overflow-hidden">
           {activeChatId ? (
             <ChatView {...sharedChatProps} />
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
-              <MessageCircle className="w-20 h-20 text-gray-200 mb-4" />
-              <p className="text-gray-500 font-medium text-xl">Select a conversation</p>
-              <p className="text-gray-400 text-sm mt-1 max-w-sm">
+            <div className={`flex-1 flex flex-col items-center justify-center text-center px-8 ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
+              <MessageCircle className={`w-20 h-20 mb-4 ${isDarkMode ? 'text-gray-600' : 'text-gray-200'}`} />
+              <p className={`font-medium text-xl ${isDarkMode ? 'text-gray-300' : 'text-gray-500'}`}>Select a conversation</p>
+              <p className={`text-sm mt-1 max-w-sm ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
                 Choose a chat from the sidebar to start messaging
               </p>
             </div>

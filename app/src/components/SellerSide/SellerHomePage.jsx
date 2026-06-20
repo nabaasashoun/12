@@ -112,6 +112,10 @@ const SellerHomePage = () => {
   };
 
   // Fetch seller's quick deals - with debounce and request cancellation
+// SellerHomePage.jsx - Fix the infinite loop
+
+// Replace the fetchQuickDeals function with this:
+
   const fetchQuickDeals = useCallback(async (forceRefresh = false) => {
     // Prevent multiple simultaneous requests
     if (isFetchingDeals) {
@@ -167,7 +171,7 @@ const SellerHomePage = () => {
     } finally {
       setIsFetchingDeals(false);
     }
-  }, [isFetchingDeals]);
+  }, [isFetchingDeals]); // Only depend on isFetchingDeals
 
   // Update scroll index when deals change
   useEffect(() => {

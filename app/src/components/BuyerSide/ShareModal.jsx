@@ -1,4 +1,4 @@
-// ShareModal.jsx - Fixed WhatsApp icon import
+// ShareModal.jsx - Fully updated with product image in share links
 import React, { useState, useEffect } from 'react';
 import { 
   X, 
@@ -6,12 +6,11 @@ import {
   Copy, 
   Facebook, 
   Twitter, 
-  // WhatsApp icon might not exist in lucide-react
-  // Using MessageCircle as alternative or we can create a custom WhatsApp icon
   MessageCircle,
   Link2, 
   Check,
-  Send
+  Send,
+  Instagram
 } from 'lucide-react';
 import { getProductShareLink, copyToClipboard } from '../../utils/shareUtils';
 
@@ -33,25 +32,57 @@ const WhatsAppIcon = ({ className }) => (
 const ShareModal = ({ isOpen, onClose, product, isDarkMode }) => {
   const [copied, setCopied] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
+  const [productImage, setProductImage] = useState('');
 
   useEffect(() => {
     if (product?.id) {
-      setShareUrl(getProductShareLink(product.id));
+      // Get the product share link with image
+      const url = getProductShareLink(product.id);
+      setShareUrl(url);
+      
+      // Get the product image (first image or product_photo)
+      const image = product.images && product.images.length > 0 
+        ? product.images[0] 
+        : product.product_photo || '/placeholder-product.jpg';
+      setProductImage(image);
     }
   }, [product]);
 
   if (!isOpen || !product) return null;
 
+  // Generate shareable link with image for social media
+  const generateShareableLink = () => {
+    const baseUrl = window.location.origin;
+    const productUrl = `${baseUrl}/product/${product.id}`;
+    
+    // For platforms that support Open Graph, the image will be picked up
+    // For direct sharing, we pass the image as a parameter
+    const imageParam = productImage ? `?image=${encodeURIComponent(productImage)}` : '';
+    return `${productUrl}${imageParam}`;
+  };
+
+  // Get the full share URL with image
+  const getFullShareUrl = () => {
+    const baseUrl = window.location.origin;
+    const productUrl = `${baseUrl}/product/${product.id}`;
+    
+    // Create a shareable URL that includes the product image
+    // This will be used for WhatsApp, Telegram, etc.
+    const imageParam = productImage ? `?image=${encodeURIComponent(productImage)}` : '';
+    return `${productUrl}${imageParam}`;
+  };
+
   const handleCopyLink = async () => {
+    const linkToCopy = getFullShareUrl();
     await copyToClipboard(
-      shareUrl,
+      linkToCopy,
       () => {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       },
       () => {
         // Fallback
-        navigator.clipboard?.writeText(shareUrl).then(() => {
+        navigator.clipboard?.writeText(linkToCopy).then(() => {
           setCopied(true);
           setTimeout(() => setCopied(false), 2000);
         });
@@ -60,9 +91,10 @@ const ShareModal = ({ isOpen, onClose, product, isDarkMode }) => {
   };
 
   const shareToPlatform = (platform) => {
-    const url = encodeURIComponent(shareUrl);
+    const url = encodeURIComponent(getFullShareUrl());
     const title = encodeURIComponent(`${product.product} - ${product.price}`);
     const text = encodeURIComponent(`Check out this amazing product: ${product.product} - ${product.price}`);
+    const imageUrl = encodeURIComponent(productImage);
     
     let shareLink = '';
     switch (platform) {
@@ -73,14 +105,20 @@ const ShareModal = ({ isOpen, onClose, product, isDarkMode }) => {
         shareLink = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
         break;
       case 'whatsapp':
+        // WhatsApp will show the image preview when the link is shared
         shareLink = `https://api.whatsapp.com/send?text=${text}%20${url}`;
         break;
       case 'email':
-        shareLink = `mailto:?subject=${title}&body=${text}%0A%0A${url}`;
+        shareLink = `mailto:?subject=${title}&body=${text}%0A%0A${url}%0A%0AImage: ${imageUrl}`;
         break;
       case 'telegram':
+        // Telegram will show the image preview when the link is shared
         shareLink = `https://t.me/share/url?url=${url}&text=${text}`;
         break;
+      case 'instagram':
+        // Instagram doesn't support direct sharing, copy link instead
+        handleCopyLink();
+        return;
       default:
         return;
     }
@@ -89,9 +127,9 @@ const ShareModal = ({ isOpen, onClose, product, isDarkMode }) => {
   };
 
   // Get first image or fallback
-  const productImage = product.images && product.images.length > 0 
+  const displayImage = product.images && product.images.length > 0 
     ? product.images[0] 
-    : '/placeholder-product.jpg';
+    : product.product_photo || '/placeholder-product.jpg';
 
   return (
     <div 
@@ -126,12 +164,13 @@ const ShareModal = ({ isOpen, onClose, product, isDarkMode }) => {
           </div>
         </div>
 
-        {/* Product Preview with Image */}
+        {/* Product Preview with Image - Enhanced */}
         <div className={`p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-          <div className="flex items-center gap-3">
-            <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
+          <div className="flex items-center gap-4">
+            {/* Product Image with better display */}
+            <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0 shadow-sm">
               <img 
-                src={productImage} 
+                src={displayImage} 
                 alt={product.product}
                 className="w-full h-full object-cover"
                 onError={(e) => {
@@ -149,6 +188,11 @@ const ShareModal = ({ isOpen, onClose, product, isDarkMode }) => {
               <p className={`text-xs truncate ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                 by {product.sellerName || 'Seller'}
               </p>
+              {/* Preview of what will be shared */}
+              <div className={`mt-1 text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'} flex items-center gap-1`}>
+                <span>🔗</span>
+                <span className="truncate">{getFullShareUrl()}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -186,12 +230,12 @@ const ShareModal = ({ isOpen, onClose, product, isDarkMode }) => {
             </button>
           </div>
 
-          {/* Copy Link */}
+          {/* Copy Link Section */}
           <div className="flex items-center gap-2 mt-2">
             <div className="flex-1 relative">
               <input
                 type="text"
-                value={shareUrl}
+                value={getFullShareUrl()}
                 readOnly
                 className={`w-full px-3 py-2 rounded-lg text-sm ${
                   isDarkMode 
