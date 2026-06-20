@@ -4,9 +4,10 @@ from django.conf import settings
 
 logger = logging.getLogger('dusupay')
 
+
 class DusuPayClient:
     def __init__(self):
-        # Use getattr with defaults to avoid AttributeError
+        # Use getattr with defaults to avoid AttributeError --
         self.public_key = getattr(settings, 'DUSUPAY_PUBLIC_KEY', None)
         self.secret_key = getattr(settings, 'DUSUPAY_SECRET_KEY', None)
         self.base_url = getattr(settings, 'DUSUPAY_API_BASE_URL', 'https://sandboxapi.dusupay.com')
