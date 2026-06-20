@@ -21,7 +21,6 @@ from django.db.models import Avg
 import json
 import logging
 from .serializers import InitiatePaymentSerializer, DusuPayWebhookSerializer
-
 logger = logging.getLogger("dusupay")
 from django.shortcuts import get_object_or_404
 from .permissions import IsSeller, IsBuyer, IsOwner
@@ -47,11 +46,51 @@ from .dusupay_utils import DusuPayClient
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 from .models import DusuPayConfig
-
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 dusupay_client = DusuPayClient()
+
+def get_user_profile_photo(user, request=None):
+    """
+    Get the profile photo URL for a user.
+    Returns None if no profile photo exists.
+    """
+    if not user:
+        return None
+    
+    profile_photo = None
+    
+    # Check if user has a seller profile
+    if hasattr(user, 'seller_profile') and user.seller_profile:
+        if user.seller_profile.profile_photo:
+            if request:
+                profile_photo = request.build_absolute_uri(user.seller_profile.profile_photo.url)
+            else:
+                profile_photo = user.seller_profile.profile_photo.url
+    
+    # Check if user has a buyer profile
+    elif hasattr(user, 'buyer_profile') and user.buyer_profile:
+        if user.buyer_profile.profile_photo:
+            if request:
+                profile_photo = request.build_absolute_uri(user.buyer_profile.profile_photo.url)
+            else:
+                profile_photo = user.buyer_profile.profile_photo.url
+    
+    return profile_photo
+
+def get_user_display_name(user):
+    """
+    Get the display name for a user.
+    """
+    if not user:
+        return 'User'
+    
+    if hasattr(user, 'seller_profile') and user.seller_profile:
+        return user.seller_profile.name or user.username
+    elif hasattr(user, 'buyer_profile') and user.buyer_profile:
+        return user.buyer_profile.name or user.username
+    return user.username
 
 def create_profile_notification(user, field_name):
     """
@@ -1517,7 +1556,7 @@ def toggle_follow_seller(request, seller_id):
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         # Check if user has seller profile (they shouldn't)
-        print(f"Has seller_profile: {hasattr(request.user, 'seller_profile')}")
+        print(f"Has seller_profile: {hasattr(request.user, 'seller_profile00000000000000000')}")
         
         # Check if user has both (shouldn't)
         if hasattr(request.user, 'buyer_profile') and hasattr(request.user, 'seller_profile'):
@@ -2274,23 +2313,23 @@ def get_chat_inbox(request):
     current_user = request.user
     print(f"🔍 Getting inbox for user: {current_user.username} (ID: {current_user.id})")
     
-    # Get all users the current user has chatted with (either as sender or recipient)
+    # Get all users the current user has chatted with
     sent_users = ChatMessage.objects.filter(sender=current_user).values_list('recipient_id', flat=True).distinct()
     received_users = ChatMessage.objects.filter(recipient=current_user).values_list('sender_id', flat=True).distinct()
     partner_ids = set(list(sent_users) + list(received_users))
     
-    print(f"📋 Found {len(partner_ids)} conversation partners")
+    print(f"📋 Found {len(partner_ids)} conversation partners: {partner_ids}")
     
     conversations = []
     
     for partner_id in partner_ids:
-        # Get the partner user
         try:
             partner = User.objects.get(id=partner_id)
+            print(f"📝 Processing partner: {partner.username} (ID: {partner.id})")
         except User.DoesNotExist:
+            print(f"❌ User {partner_id} not found")
             continue
         
-        # Get the last message between these two users
         last_message = ChatMessage.objects.filter(
             (Q(sender=current_user, recipient=partner) | 
              Q(sender=partner, recipient=current_user))
@@ -2299,7 +2338,6 @@ def get_chat_inbox(request):
         if not last_message:
             continue
         
-        # Get unread count for this conversation
         unread_count = ChatMessage.objects.filter(
             sender=partner,
             recipient=current_user,
@@ -2307,36 +2345,30 @@ def get_chat_inbox(request):
         ).count()
         
         # Get partner name
-        partner_name = partner.username
+        partner_name = get_user_display_name(partner)
+        
+        # Get profile photo - explicitly fetch it
         profile_photo = None
-        
-        # Check if partner has a seller profile
-        if hasattr(partner, 'seller_profile'):
-            partner_name = partner.seller_profile.name
+        if hasattr(partner, 'seller_profile') and partner.seller_profile:
             if partner.seller_profile.profile_photo:
-                # Build absolute URL for the profile photo
-                request = self.context.get('request') if hasattr(self, 'context') else None
-                if request:
-                    profile_photo = request.build_absolute_uri(partner.seller_profile.profile_photo.url)
-                else:
-                    profile_photo = partner.seller_profile.profile_photo.url
-        
-        # Check if partner has a buyer profile
-        elif hasattr(partner, 'buyer_profile'):
-            partner_name = partner.buyer_profile.name
+                profile_photo = request.build_absolute_uri(partner.seller_profile.profile_photo.url)
+                print(f"📸 Found seller profile photo for {partner_name}: {profile_photo}")
+        elif hasattr(partner, 'buyer_profile') and partner.buyer_profile:
             if partner.buyer_profile.profile_photo:
-                request = self.context.get('request') if hasattr(self, 'context') else None
-                if request:
-                    profile_photo = request.build_absolute_uri(partner.buyer_profile.profile_photo.url)
-                else:
-                    profile_photo = partner.buyer_profile.profile_photo.url
+                profile_photo = request.build_absolute_uri(partner.buyer_profile.profile_photo.url)
+                print(f"📸 Found buyer profile photo for {partner_name}: {profile_photo}")
         
-        print(f"💬 Conversation with {partner_name} (ID: {partner_id}): {unread_count} unread")
+        # If no profile photo, use default
+        if not profile_photo:
+            profile_photo = request.build_absolute_uri('/profile.jpg')
+            print(f"📸 Using default profile photo for {partner_name}")
+        
+        print(f"📸 Final profile photo for {partner_name}: {profile_photo}")
         
         conversations.append({
             'partner_id': partner.id,
             'partner_name': partner_name,
-            'profile_photo': profile_photo,  # Add profile photo URL
+            'profile_photo': profile_photo,
             'last_message': last_message.content,
             'timestamp': last_message.timestamp.isoformat(),
             'unread_count': unread_count
@@ -2346,6 +2378,9 @@ def get_chat_inbox(request):
     conversations.sort(key=lambda x: x['timestamp'], reverse=True)
     
     print(f"📬 Returning {len(conversations)} conversations")
+    for conv in conversations:
+        print(f"  {conv['partner_name']}: profile_photo={conv['profile_photo']}")
+    
     return Response(conversations, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
@@ -2378,18 +2413,9 @@ def get_chat_history(request, user_id):
     ).update(is_read=True)
     
     # Serialize messages
-    serializer = ChatMessageSerializer(messages, many=True)
-    data = serializer.data
+    serializer = ChatMessageSerializer(messages, many=True, context={'request': request})
     
-    # Add profile photo of the other user for the chat header
-    profile_photo = get_user_profile_photo(other_user, request)
-    
-    return Response({
-        'messages': data,
-        'partner_profile_photo': profile_photo,
-        'partner_name': get_user_display_name(other_user)
-    })
-
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
