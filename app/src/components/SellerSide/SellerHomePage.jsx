@@ -1,13 +1,214 @@
-// SellerHomePage.jsx - Fix for infinite loop
-
+// SellerHomePage.jsx - Updated with FilterBar
 import { SellerCard, SellerCardContent } from './SellerCard';
-import { Heart, MessageSquare, Star, Bookmark, Edit, Settings, Search, MoreHorizontal, X, Plus, ChevronUp, ChevronDown, RefreshCw } from 'lucide-react';
+import { Heart, MessageSquare, Star, Bookmark, Edit, Settings, Search, MoreHorizontal, X, Plus, ChevronUp, ChevronDown, RefreshCw, Filter, MapPin } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import { useSellerDarkMode } from '../../utils/SellerDarkModeContext';
 import { useChat } from '../../utils/ChatContext';
 import { ConnectionBadge } from '../Chat/ChatPage';
+
+const FilterBar = ({ 
+  isDarkMode, 
+  categories = [], 
+  onFilterChange, 
+  initialCategory = '', 
+  initialLocation = '' 
+}) => {
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+  const [selectedLocation, setSelectedLocation] = useState(initialLocation);
+  const [locations, setLocations] = useState([]);
+  const [isLoadingLocations, setIsLoadingLocations] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ left: 0, right: 'auto' });
+  const filterButtonRef = useRef(null);
+  const dropdownRef = useRef(null);
+
+  // Fetch locations
+  useEffect(() => {
+    const fetchLocations = async () => {
+      setIsLoadingLocations(true);
+      try {
+        const result = await api.getLocations();
+        if (result.data && Array.isArray(result.data)) {
+          setLocations(result.data);
+        }
+      } catch (error) {
+        console.error('Error fetching locations:', error);
+      } finally {
+        setIsLoadingLocations(false);
+      }
+    };
+    fetchLocations();
+  }, []);
+
+  // Calculate dropdown position when opening
+  useEffect(() => {
+    if (showFilters && filterButtonRef.current) {
+      const rect = filterButtonRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const dropdownWidth = 288; // w-72 = 288px
+      
+      // Check if dropdown would go off the right edge
+      const rightEdge = rect.left + dropdownWidth;
+      let leftPosition = rect.left;
+      let rightPosition = 'auto';
+      
+      if (rightEdge > viewportWidth) {
+        // Align to the right edge of the button
+        rightPosition = viewportWidth - rect.right;
+        leftPosition = 'auto';
+      }
+      
+      setDropdownPosition({ left: leftPosition, right: rightPosition });
+    }
+  }, [showFilters]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        showFilters && 
+        dropdownRef.current && 
+        !dropdownRef.current.contains(event.target) &&
+        !filterButtonRef.current.contains(event.target)
+      ) {
+        setShowFilters(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showFilters]);
+
+  const handleApplyFilters = () => {
+    onFilterChange({
+      category: selectedCategory,
+      location: selectedLocation,
+    });
+    setShowFilters(false);
+  };
+
+  const handleClearFilters = () => {
+    setSelectedCategory('');
+    setSelectedLocation('');
+    onFilterChange({
+      category: '',
+      location: '',
+    });
+    setShowFilters(false);
+  };
+
+  const hasActiveFilters = selectedCategory || selectedLocation;
+
+  return (
+    <div className="relative">
+      {/* Filter Button */}
+      <button
+        ref={filterButtonRef}
+        onClick={() => setShowFilters(!showFilters)}
+        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm font-medium whitespace-nowrap
+          ${isDarkMode 
+            ? 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700' 
+            : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'}`}
+      >
+        <Filter className="w-4 h-4" />
+        Filters
+        {hasActiveFilters && (
+          <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+        )}
+      </button>
+
+      {/* Filter Dropdown - positioned to stay in viewport */}
+      {showFilters && (
+        <div 
+          ref={dropdownRef}
+          className={`fixed rounded-xl shadow-lg border p-4 z-50 w-72
+            ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
+          style={{
+            top: filterButtonRef.current ? 
+              `${filterButtonRef.current.getBoundingClientRect().bottom + 8}px` : 'auto',
+            left: dropdownPosition.left !== 'auto' ? `${dropdownPosition.left}px` : 'auto',
+            right: dropdownPosition.right !== 'auto' ? `${dropdownPosition.right}px` : 'auto',
+            maxHeight: 'calc(100vh - 100px)',
+            overflowY: 'auto',
+          }}
+        >
+          <div className="space-y-4">
+            {/* Category Filter */}
+            <div>
+              <label className={`block text-xs font-medium mb-1.5 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                Category
+              </label>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className={`w-full px-3 py-2 rounded-lg text-sm border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors
+                  ${isDarkMode 
+                    ? 'bg-gray-700 border-gray-600 text-gray-200' 
+                    : 'bg-white border-gray-300 text-gray-900'}`}
+              >
+                <option value="">All Categories</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Location Filter */}
+            <div>
+              <label className={`block text-xs font-medium mb-1.5 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                Location
+              </label>
+              <select
+                value={selectedLocation}
+                onChange={(e) => setSelectedLocation(e.target.value)}
+                className={`w-full px-3 py-2 rounded-lg text-sm border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors
+                  ${isDarkMode 
+                    ? 'bg-gray-700 border-gray-600 text-gray-200' 
+                    : 'bg-white border-gray-300 text-gray-900'}`}
+              >
+                <option value="">All Locations</option>
+                {isLoadingLocations ? (
+                  <option disabled>Loading locations...</option>
+                ) : (
+                  locations.map(loc => (
+                    <option key={loc} value={loc}>
+                      {loc}
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+              <button
+                onClick={handleClearFilters}
+                className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                  ${isDarkMode 
+                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+              >
+                Clear All
+              </button>
+              <button
+                onClick={handleApplyFilters}
+                className="flex-1 px-3 py-2 rounded-lg text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 transition-colors"
+              >
+                Apply Filters
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ── Main SellerHomePage ──────────────────────────────────────────────────────
 
 const SellerHomePage = () => {
   const { isDarkMode } = useSellerDarkMode();
@@ -29,6 +230,12 @@ const SellerHomePage = () => {
     image: null,
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [filterCategory, setFilterCategory] = useState('');
+  const [filterLocation, setFilterLocation] = useState('');
+  const [searchToast, setSearchToast] = useState('');
+  
   const navigate = useNavigate();
   const { isConnected, startChat } = useChat();
 
@@ -48,17 +255,23 @@ const SellerHomePage = () => {
   const [initialFetchDone, setInitialFetchDone] = useState(false);
   const fetchTimeoutRef = useRef(null);
 
-  // Fetch seller's products
+  // Fetch categories
   useEffect(() => {
-    fetchSellerProducts();
-    // Only fetch quick deals once on mount
-    if (!initialFetchDone) {
-      fetchQuickDeals(true);
-      setInitialFetchDone(true);
-    }
+    const fetchCategories = async () => {
+      try {
+        const result = await api.getCategories();
+        if (result.data && Array.isArray(result.data)) {
+          setCategories(result.data.map(cat => ({ id: cat.id, name: cat.name })));
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+    fetchCategories();
   }, []);
 
-  const fetchSellerProducts = async () => {
+  // Fetch seller's products with filters
+  const fetchSellerProducts = useCallback(async (filters = {}) => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
       navigate('/seller/login');
@@ -67,7 +280,16 @@ const SellerHomePage = () => {
 
     try {
       setIsLoading(true);
-      const response = await fetch('/api/seller/products/', {
+      
+      // Build query params
+      const params = new URLSearchParams();
+      if (filters.category) params.append('category', filters.category);
+      if (filters.location) params.append('location', filters.location);
+      if (filters.search) params.append('search', filters.search);
+      
+      const url = `/api/seller/products/${params.toString() ? `?${params.toString()}` : ''}`;
+      
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -95,9 +317,17 @@ const SellerHomePage = () => {
           stock_quantity: product.stock_quantity,
           unit_price: product.unit_price,
           description: product.description,
+          category: product.category,
+          location: product.seller?.location || '',
         }));
         setPosts(transformed);
         setSellerProducts(data);
+        
+        if (transformed.length === 0 && (filters.category || filters.location || filters.search)) {
+          setSearchToast('No products found matching your criteria.');
+        } else {
+          setSearchToast('');
+        }
       } else if (response.status === 401) {
         localStorage.removeItem('accessToken');
         navigate('/seller/login');
@@ -109,21 +339,54 @@ const SellerHomePage = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [navigate]);
 
-  // Fetch seller's quick deals - with debounce and request cancellation
-// SellerHomePage.jsx - Fix the infinite loop
+  // Initial fetch
+  useEffect(() => {
+    fetchSellerProducts();
+    if (!initialFetchDone) {
+      fetchQuickDeals(true);
+      setInitialFetchDone(true);
+    }
+  }, [fetchSellerProducts, initialFetchDone]);
 
-// Replace the fetchQuickDeals function with this:
+  // Handle filter change
+  const handleFilterChange = useCallback((filters) => {
+    setFilterCategory(filters.category || '');
+    setFilterLocation(filters.location || '');
+    fetchSellerProducts({
+      category: filters.category || '',
+      location: filters.location || '',
+      search: searchQuery,
+    });
+  }, [fetchSellerProducts, searchQuery]);
 
+  // Handle search
+  const handleSearch = useCallback((e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    fetchSellerProducts({
+      category: filterCategory,
+      location: filterLocation,
+      search: query,
+    });
+  }, [fetchSellerProducts, filterCategory, filterLocation]);
+
+  // Clear toast after 3 seconds
+  useEffect(() => {
+    if (searchToast) {
+      const timer = setTimeout(() => setSearchToast(''), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [searchToast]);
+
+  // Fetch seller's quick deals
   const fetchQuickDeals = useCallback(async (forceRefresh = false) => {
-    // Prevent multiple simultaneous requests
     if (isFetchingDeals) {
       console.log('Already fetching deals, skipping...');
       return;
     }
     
-    // Clear any pending timeout
     if (fetchTimeoutRef.current) {
       clearTimeout(fetchTimeoutRef.current);
     }
@@ -131,7 +394,6 @@ const SellerHomePage = () => {
     setIsFetchingDeals(true);
     
     try {
-      // Clear cache if force refresh
       if (forceRefresh) {
         api.clearCache('quick-deals');
         console.log('Cache cleared for quick deals');
@@ -140,7 +402,6 @@ const SellerHomePage = () => {
       const result = await api.getSellerQuickDeals();
       console.log('Quick deals result:', result);
       
-      // Check if result.data exists and is an array
       if (result.data && Array.isArray(result.data)) {
         const transformed = result.data
           .filter(deal => deal && deal.id)
@@ -171,7 +432,7 @@ const SellerHomePage = () => {
     } finally {
       setIsFetchingDeals(false);
     }
-  }, [isFetchingDeals]); // Only depend on isFetchingDeals
+  }, [isFetchingDeals]);
 
   // Update scroll index when deals change
   useEffect(() => {
@@ -248,7 +509,6 @@ const SellerHomePage = () => {
       if ((result.status >= 200 && result.status < 300) || result.data?.id) {
         setQuickDealModalOpen(false);
         setNewQuickDeal({ product_id: '', caption: '', picture: null, priority: 0 });
-        // Force refresh with cache clearing
         await fetchQuickDeals(true);
         localStorage.setItem('quickDealUpdated', Date.now().toString());
         window.dispatchEvent(new CustomEvent('quickDealCreated'));
@@ -439,60 +699,55 @@ const SellerHomePage = () => {
 
   return (
     <div className={`p-2 sm:p-4 md:p-6 max-w-4xl mx-auto relative min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      
+      {/* Search Toast */}
+      {searchToast && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 animate-slideDown">
+          <div className="px-4 py-2 rounded-lg shadow-lg bg-red-600 text-white text-sm font-medium">
+            {searchToast}
+          </div>
+        </div>
+      )}
+
       {/* Header section with connection status */}
       <div className="flex justify-between items-center mb-4">
         <h1 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>My Store</h1>
         <ConnectionBadge isConnected={isConnected} />
       </div>
 
-      <div className="flex justify-between items-center mb-2 sm:mb-3">
-        <div className={`flex w-full sm:w-64 border rounded-lg overflow-hidden ${
-          isDarkMode ? 'border-gray-700' : 'border-gray-300'
-        }`}>
-          <select className={`w-1/5 px-2 py-1 focus:outline-none text-xs border-r ${
-            isDarkMode 
-              ? 'bg-gray-800 text-gray-200 border-gray-700' 
-              : 'bg-white text-black border-gray-300'
-          }`}>
-            <option value="all">All</option>
-            <option value="tech">Tech</option>
-            <option value="fitness">Fitness</option>
-            <option value="home">Home</option>
-            <option value="fashion">Fashion</option>
-          </select>
-          <div className="relative w-4/5">
+      {/* Search and Filter Bar */}
+      <div className="flex flex-wrap items-center gap-2 mb-3">
+        <div className="flex-1 min-w-[200px]">
+          <div className={`relative border rounded-lg overflow-hidden ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}>
             <input
               type="text"
               placeholder="Search your products..."
-              className={`w-full px-2 py-1 placeholder-gray-500 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                isDarkMode 
-                  ? 'bg-gray-800 text-gray-200' 
-                  : 'bg-white text-black'
-              }`}
-              onFocus={() => setSearchFocused(true)}
-              onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
+              value={searchQuery}
+              onChange={handleSearch}
+              className={`w-full px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-gray-800 text-gray-200' : 'bg-white text-black'}`}
             />
-            <Search className={`absolute right-2 top-1/2 transform -translate-y-1/2 w-3 h-3 ${
-              isDarkMode ? 'text-gray-500' : 'text-gray-400'
-            }`} />
+            <Search className={`absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
           </div>
         </div>
-        <div className="relative group ml-4">
-          <Link to="/seller/settings" className={`p-0.5 ${isDarkMode ? 'text-gray-300 hover:text-blue-400' : 'text-black hover:text-blue-500'}`}>
-            <Settings className="w-4 h-4" />
+        
+        <div className="flex items-center gap-2">
+          <FilterBar 
+            isDarkMode={isDarkMode}
+            categories={categories}
+            onFilterChange={handleFilterChange}
+            initialCategory={filterCategory}
+            initialLocation={filterLocation}
+          />
+          
+          <Link to="/seller/settings" className={`p-2 rounded-lg transition-colors ${isDarkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-600 hover:bg-gray-100'}`}>
+            <Settings className="w-5 h-5" />
           </Link>
-          <span className={`absolute hidden group-hover:block -top-6 left-1/2 transform -translate-x-1/2 text-white text-xs rounded py-1 px-2 ${
-            isDarkMode ? 'bg-gray-700' : 'bg-gray-800'
-          }`}>Settings</span>
         </div>
       </div>
 
-      {/* Quick Deals Section - Updated with refresh button */}
-      <div className={`sticky top-0 z-40 pt-2 pb-2 mb-2 rounded-lg transition-colors ${
-        isDarkMode ? 'bg-gray-800' : 'bg-gray-50'
-      }`}>
+      {/* Quick Deals Section */}
+      <div className={`sticky top-0 z-40 pt-2 pb-2 mb-2 rounded-lg transition-colors ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <div className="flex items-center justify-between w-full">
-          {/* Heading + Add button + Refresh */}
           <div className="flex-shrink-0 mr-4 flex items-center space-x-2">
             <div className="flex flex-col leading-tight mr-2">
               <span className={`text-lg font-bold ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>Quick</span>
@@ -500,16 +755,10 @@ const SellerHomePage = () => {
             </div>
             <button
               onClick={openQuickDealModal}
-              className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-colors ${
-                isDarkMode 
-                  ? 'bg-green-900 hover:bg-green-800' 
-                  : 'bg-green-100 hover:bg-green-200'
-              }`}
+              className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-colors ${isDarkMode ? 'bg-green-900 hover:bg-green-800' : 'bg-green-100 hover:bg-green-200'}`}
               title="Add Quick Deal"
             >
-              <Plus className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                isDarkMode ? 'text-green-400' : 'text-green-600'
-              }`} />
+              <Plus className={`w-4 h-4 sm:w-5 sm:h-5 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
             </button>
             <button
               onClick={() => {
@@ -517,21 +766,14 @@ const SellerHomePage = () => {
                   fetchQuickDeals(true);
                 }
               }}
-              className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-colors ${
-                isDarkMode 
-                  ? 'bg-blue-900 hover:bg-blue-800' 
-                  : 'bg-blue-100 hover:bg-blue-200'
-              }`}
+              className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-colors ${isDarkMode ? 'bg-blue-900 hover:bg-blue-800' : 'bg-blue-100 hover:bg-blue-200'}`}
               title="Refresh Quick Deals"
               disabled={isFetchingDeals}
             >
-              <RefreshCw className={`w-4 h-4 ${
-                isDarkMode ? 'text-blue-400' : 'text-blue-600'
-              } ${isFetchingDeals ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'} ${isFetchingDeals ? 'animate-spin' : ''}`} />
             </button>
           </div>
 
-          {/* Deals container */}
           <div className="flex flex-1 justify-start space-x-3 sm:space-x-4">
             {quickDeals.length === 0 ? (
               <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} py-2`}>
@@ -544,9 +786,7 @@ const SellerHomePage = () => {
                   className="flex flex-col items-center flex-shrink-0 cursor-pointer"
                   onClick={() => handleQuickDealClick(item)}
                 >
-                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full ${item.color} flex items-center justify-center border-2 ${
-                    isDarkMode ? 'border-gray-700' : 'border-white'
-                  } shadow-sm`}>
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full ${item.color} flex items-center justify-center border-2 ${isDarkMode ? 'border-gray-700' : 'border-white'} shadow-sm`}>
                     <img
                       src={item.image}
                       alt={item.product}
@@ -554,14 +794,10 @@ const SellerHomePage = () => {
                       onError={(e) => { e.target.src = '/placeholder.jpg'; }}
                     />
                   </div>
-                  <p className={`text-center text-xs mt-1 font-medium truncate w-12 sm:w-14 ${
-                    isDarkMode ? 'text-gray-300' : 'text-black'
-                  }`}>
+                  <p className={`text-center text-xs mt-1 font-medium truncate w-12 sm:w-14 ${isDarkMode ? 'text-gray-300' : 'text-black'}`}>
                     {item.title}
                   </p>
-                  <p className={`text-center text-xs truncate w-12 sm:w-14 ${
-                    isDarkMode ? 'text-gray-500' : 'text-gray-500'
-                  }`}>
+                  <p className={`text-center text-xs truncate w-12 sm:w-14 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                     {item.product}
                   </p>
                 </div>
@@ -569,52 +805,30 @@ const SellerHomePage = () => {
             )}
           </div>
 
-          {/* Scroll up/down buttons */}
           {quickDeals.length > 4 && (
             <div className="flex flex-col space-y-1 ml-4">
               <button
                 onClick={() => scrollVertical('up')}
-                className={`shadow-md rounded-full p-1 transition-colors ${
-                  isDarkMode 
-                    ? 'bg-gray-700 hover:bg-gray-600' 
-                    : 'bg-white hover:bg-gray-100'
-                }`}
+                className={`shadow-md rounded-full p-1 transition-colors ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-100'}`}
                 disabled={currentVerticalIndex === 0}
               >
-                <ChevronUp className={`w-3 h-3 ${
-                  currentVerticalIndex === 0 
-                    ? isDarkMode ? 'text-gray-600' : 'text-gray-300'
-                    : isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                }`} />
+                <ChevronUp className={`w-3 h-3 ${currentVerticalIndex === 0 ? (isDarkMode ? 'text-gray-600' : 'text-gray-300') : (isDarkMode ? 'text-gray-400' : 'text-gray-600')}`} />
               </button>
               <button
                 onClick={() => scrollVertical('down')}
-                className={`shadow-md rounded-full p-1 transition-colors ${
-                  isDarkMode 
-                    ? 'bg-gray-700 hover:bg-gray-600' 
-                    : 'bg-white hover:bg-gray-100'
-                }`}
+                className={`shadow-md rounded-full p-1 transition-colors ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-100'}`}
                 disabled={currentVerticalIndex >= quickDeals.length - 4}
               >
-                <ChevronDown className={`w-3 h-3 ${
-                  currentVerticalIndex >= quickDeals.length - 4
-                    ? isDarkMode ? 'text-gray-600' : 'text-gray-300'
-                    : isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                }`} />
+                <ChevronDown className={`w-3 h-3 ${currentVerticalIndex >= quickDeals.length - 4 ? (isDarkMode ? 'text-gray-600' : 'text-gray-300') : (isDarkMode ? 'text-gray-400' : 'text-gray-600')}`} />
               </button>
             </div>
           )}
         </div>
 
-        {/* Progress bar - only show if deals exist */}
         {quickDeals.length > 4 && (
-          <div className={`w-full h-1 rounded-full relative mt-3 ${
-            isDarkMode ? 'bg-gray-700' : 'bg-gray-300'
-          }`}>
+          <div className={`w-full h-1 rounded-full relative mt-3 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-300'}`}>
             <div
-              className={`absolute top-0 left-0 h-1 rounded-full transition-all duration-300 ${
-                isDarkMode ? 'bg-gray-400' : 'bg-gray-600'
-              }`}
+              className={`absolute top-0 left-0 h-1 rounded-full transition-all duration-300 ${isDarkMode ? 'bg-gray-400' : 'bg-gray-600'}`}
               style={{
                 width: `${Math.min(100, (quickDeals.length / 4) * 25)}%`,
                 transform: `translateX(${currentVerticalIndex / Math.max(4, quickDeals.length) * 100}%)`
@@ -627,13 +841,19 @@ const SellerHomePage = () => {
       {/* Posts grid */}
       {posts.length === 0 ? (
         <div className="text-center py-12">
-          <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>You haven't added any products yet.</p>
-          <button
-            onClick={() => navigate('/seller/add-product/step1')}
-            className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-          >
-            Add Your First Product
-          </button>
+          <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+            {searchQuery || filterCategory || filterLocation 
+              ? 'No products found matching your criteria.' 
+              : "You haven't added any products yet."}
+          </p>
+          {!searchQuery && !filterCategory && !filterLocation && (
+            <button
+              onClick={() => navigate('/seller/add-product/step1')}
+              className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            >
+              Add Your First Product
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -645,9 +865,7 @@ const SellerHomePage = () => {
             return (
               <SellerCard key={post.id} variant="elevated" className="overflow-hidden flex flex-col relative">
                 <SellerCardContent className="p-0 flex flex-col">
-                  <div className={`p-0 sm:p-3 flex flex-col border-b ${
-                    isDarkMode ? 'border-gray-700' : 'border-gray-100'
-                  }`}>
+                  <div className={`p-0 sm:p-3 flex flex-col border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
                     <div className="flex justify-between items-center">
                       <Link
                         to={`/seller/${post.sellerId || post.id}`}
@@ -656,26 +874,18 @@ const SellerHomePage = () => {
                         <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs">
                           {post.authorAvatar}
                         </div>
-                        <span className={`font-medium text-xs sm:text-sm truncate ${
-                          isDarkMode ? 'text-gray-200' : 'text-black'
-                        }`}>
+                        <span className={`font-medium text-xs sm:text-sm truncate ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>
                           {post.sellerName}
                         </span>
                       </Link>
                       <button
                         onClick={() => toggleDropdown(post.id)}
-                        className={`p-1 rounded transition-relative ${
-                          isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
-                        }`}
+                        className={`p-1 rounded transition-relative ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
                       >
-                        <MoreHorizontal className={`w-3 h-3 sm:w-4 sm:h-4 ${
-                          isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                        }`} />
+                        <MoreHorizontal className={`w-3 h-3 sm:w-4 sm:h-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
                         
                         {dropdownOpen === post.id && (
-                          <div className={`absolute right-0 mt-2 w-48 rounded-md shadow-lg z-50 py-1 border ${
-                            isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-                          }`}>
+                          <div className={`absolute right-0 mt-2 w-48 rounded-md shadow-lg z-50 py-1 border ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
                             {getDropdownItems(post).map((item, idx) => (
                               <button
                                 key={idx}
@@ -701,9 +911,7 @@ const SellerHomePage = () => {
                     </div>
                   </div>
                   <div
-                    className={`relative aspect-square w-full flex-1 ${
-                      isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
-                    }`}
+                    className={`relative aspect-square w-full flex-1 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}
                     onTouchStart={(e) => {
                       const touchStartX = e.touches[0].clientX;
                       setCurrentImageIndex((prev) => ({ ...prev, touchStartX }));
@@ -729,11 +937,7 @@ const SellerHomePage = () => {
                           <button
                             key={index}
                             onClick={() => goToImage(post.id, index)}
-                            className={`w-1 h-1 rounded-full transition-all ${
-                              index === currentIndex 
-                                ? isDarkMode ? 'bg-gray-400' : 'bg-gray-300'
-                                : isDarkMode ? 'bg-gray-600' : 'bg-gray-100'
-                            }`}
+                            className={`w-1 h-1 rounded-full transition-all ${index === currentIndex ? (isDarkMode ? 'bg-gray-400' : 'bg-gray-300') : (isDarkMode ? 'bg-gray-600' : 'bg-gray-100')}`}
                           />
                         ))}
                       </div>
@@ -753,33 +957,19 @@ const SellerHomePage = () => {
                         <div className="flex space-x-1 sm:space-x-2">
                           <button
                             onClick={() => toggleLike(post.id)}
-                            className={`p-1 rounded-full transition-colors ${
-                              likedPosts[post.id] 
-                                ? 'text-red-500 bg-red-50 dark:bg-red-900/30' 
-                                : isDarkMode 
-                                  ? 'text-gray-400 hover:text-red-400' 
-                                  : 'text-gray-600 hover:text-red-500'
-                            }`}
+                            className={`p-1 rounded-full transition-colors ${likedPosts[post.id] ? 'text-red-500 bg-red-50 dark:bg-red-900/30' : isDarkMode ? 'text-gray-400 hover:text-red-400' : 'text-gray-600 hover:text-red-500'}`}
                           >
                             <Heart className="w-3 h-3 sm:w-4 sm:h-4" fill={likedPosts[post.id] ? 'currentColor' : 'none'} />
                           </button>
                           <Link
                             to={`/product/${post.id}/comments`}
-                            className={`p-1 rounded-full ${
-                              isDarkMode 
-                                ? 'text-gray-400 hover:text-blue-400 hover:bg-blue-900/30' 
-                                : 'text-gray-600 hover:text-blue-500 hover:bg-blue-50'
-                            }`}
+                            className={`p-1 rounded-full ${isDarkMode ? 'text-gray-400 hover:text-blue-400 hover:bg-blue-900/30' : 'text-gray-600 hover:text-blue-500 hover:bg-blue-50'}`}
                           >
                             <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
                           </Link>
                           <button
                             onClick={() => openEditModal(post)}
-                            className={`p-1 rounded-full ${
-                              isDarkMode 
-                                ? 'text-gray-400 hover:text-yellow-400' 
-                                : 'text-gray-600 hover:text-yellow-500'
-                            }`}
+                            className={`p-1 rounded-full ${isDarkMode ? 'text-gray-400 hover:text-yellow-400' : 'text-gray-600 hover:text-yellow-500'}`}
                             title="Edit Product"
                           >
                             <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -787,13 +977,7 @@ const SellerHomePage = () => {
                         </div>
                         <button
                           onClick={() => toggleFavorite(post.id)}
-                          className={`p-1 rounded-full transition-colors ${
-                            favoritedPosts[post.id] 
-                              ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/30' 
-                              : isDarkMode 
-                                ? 'text-gray-400 hover:text-blue-400' 
-                                : 'text-gray-600 hover:text-blue-500'
-                          }`}
+                          className={`p-1 rounded-full transition-colors ${favoritedPosts[post.id] ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/30' : isDarkMode ? 'text-gray-400 hover:text-blue-400' : 'text-gray-600 hover:text-blue-500'}`}
                         >
                           <Bookmark className="w-3 h-3 sm:w-4 sm:h-4" fill={favoritedPosts[post.id] ? 'currentColor' : 'none'} />
                         </button>
@@ -803,33 +987,21 @@ const SellerHomePage = () => {
                           {[1, 2, 3, 4, 5].map((star) => (
                             <Star
                               key={star}
-                              className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${
-                                star <= post.rating 
-                                  ? 'text-yellow-500' 
-                                  : isDarkMode ? 'text-gray-600' : 'text-gray-300'
-                              }`}
+                              className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${star <= post.rating ? 'text-yellow-500' : isDarkMode ? 'text-gray-600' : 'text-gray-300'}`}
                               fill={star <= post.rating ? 'currentColor' : 'none'}
                             />
                           ))}
                         </div>
-                        <span className={`text-xs ${
-                          isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                        }`}>({post.ratingCount})</span>
+                        <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>({post.ratingCount})</span>
                       </div>
                     </div>
-                    <Link to={`/product/${post.id}`} className={`hover:underline text-xs font-medium truncate mb-1 ${
-                      isDarkMode ? 'text-gray-300' : 'text-black'
-                    }`}>
+                    <Link to={`/product/${post.id}`} className={`hover:underline text-xs font-medium truncate mb-1 ${isDarkMode ? 'text-gray-300' : 'text-black'}`}>
                       {post.product}
                     </Link>
                     <div className="mt-0 relative">
                       <button
                         onClick={(e) => toggleDescriptionExpansion(post.id, e)}
-                        className={`description-toggle-button text-xs text-left w-full p-1 rounded transition-colors flex items-start ${
-                          isDarkMode 
-                            ? 'text-gray-400 hover:text-blue-400 bg-gray-700 hover:bg-gray-600' 
-                            : 'text-gray-600 hover:text-blue-500 bg-gray-50 hover:bg-gray-100'
-                        }`}
+                        className={`description-toggle-button text-xs text-left w-full p-1 rounded transition-colors flex items-start ${isDarkMode ? 'text-gray-400 hover:text-blue-400 bg-gray-700 hover:bg-gray-600' : 'text-gray-600 hover:text-blue-500 bg-gray-50 hover:bg-gray-100'}`}
                       >
                         <span className="text-left">{truncatedDescription}</span>
                       </button>
@@ -847,11 +1019,7 @@ const SellerHomePage = () => {
         <div className="fixed inset-0 z-[100] pointer-events-none">
           <div className="absolute inset-0 pointer-events-auto" onClick={() => setExpandedDescriptionId(null)} />
           <div
-            className={`description-expanded-box fixed border rounded-lg shadow-lg z-[101] animate-fadeIn max-h-[200px] overflow-y-auto pointer-events-auto ${
-              isDarkMode 
-                ? 'bg-gray-800 border-gray-700' 
-                : 'bg-white border-gray-300'
-            }`}
+            className={`description-expanded-box fixed border rounded-lg shadow-lg z-[101] animate-fadeIn max-h-[200px] overflow-y-auto pointer-events-auto ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'}`}
             style={{
               top: `${expandedDescriptionPosition.top}px`,
               left: `${expandedDescriptionPosition.left}px`,
@@ -861,34 +1029,20 @@ const SellerHomePage = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-3">
-              <div className={`flex justify-between items-center mb-2 pb-2 border-b ${
-                isDarkMode ? 'border-gray-700' : 'border-gray-200'
-              }`}>
-                <h3 className={`font-medium text-sm ${
-                  isDarkMode ? 'text-gray-200' : 'text-black'
-                }`}>Product Description</h3>
-                <button onClick={() => setExpandedDescriptionId(null)} className={`rounded-full p-1 transition-colors ${
-                  isDarkMode 
-                    ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-700' 
-                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-                }`}>
+              <div className={`flex justify-between items-center mb-2 pb-2 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                <h3 className={`font-medium text-sm ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>Product Description</h3>
+                <button onClick={() => setExpandedDescriptionId(null)} className={`rounded-full p-1 transition-colors ${isDarkMode ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-700' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}>
                   <X className="w-3 h-3" />
                 </button>
               </div>
               <div className="overflow-y-auto pr-1" style={{ maxHeight: '120px' }}>
-                <p className={`text-xs whitespace-pre-line leading-relaxed ${
-                  isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                }`}>
+                <p className={`text-xs whitespace-pre-line leading-relaxed ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                   {posts.find(p => p.id === expandedDescriptionId)?.content || 'No description available'}
                 </p>
               </div>
-              <div className={`mt-2 pt-2 border-t ${
-                isDarkMode ? 'border-gray-700' : 'border-gray-200'
-              }`}>
+              <div className={`mt-2 pt-2 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                 <div className="flex justify-between items-center">
-                  <span className={`text-xs ${
-                    isDarkMode ? 'text-gray-500' : 'text-gray-500'
-                  }`}>
+                  <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                     Seller: {posts.find(p => p.id === expandedDescriptionId)?.sellerName || 'Seller'}
                   </span>
                   <Link
@@ -908,121 +1062,75 @@ const SellerHomePage = () => {
       {/* Edit Modal */}
       {editModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className={`rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto ${
-            isDarkMode ? 'bg-gray-800' : 'bg-white'
-          }`}>
-            <div className={`p-4 border-b ${
-              isDarkMode ? 'border-gray-700' : 'border-gray-200'
-            }`}>
-              <h3 className={`font-semibold text-lg ${
-                isDarkMode ? 'text-gray-200' : 'text-black'
-              }`}>Edit Product</h3>
-              <p className={`text-sm mt-1 ${
-                isDarkMode ? 'text-gray-400' : 'text-gray-600'
-              }`}>Make changes to your product.</p>
+          <div className={`rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+            <div className={`p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+              <h3 className={`font-semibold text-lg ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>Edit Product</h3>
+              <p className={`text-sm mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Make changes to your product.</p>
             </div>
             <form onSubmit={handleUpdateProduct} className="p-4">
               <div className="space-y-4">
                 <div>
-                  <label className={`block text-sm font-medium mb-1 ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>Product Name</label>
+                  <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Product Name</label>
                   <input
                     type="text"
                     name="name"
                     value={editFormData.name}
                     onChange={handleEditFormChange}
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      isDarkMode 
-                        ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                        : 'bg-white border-gray-300 text-black'
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'bg-white border-gray-300 text-black'}`}
                     required
                   />
                 </div>
                 <div>
-                  <label className={`block text-sm font-medium mb-1 ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>Description</label>
+                  <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Description</label>
                   <textarea
                     name="description"
                     value={editFormData.description}
                     onChange={handleEditFormChange}
                     rows={4}
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      isDarkMode 
-                        ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                        : 'bg-white border-gray-300 text-black'
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'bg-white border-gray-300 text-black'}`}
                     required
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className={`block text-sm font-medium mb-1 ${
-                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                    }`}>Price (UGX)</label>
+                    <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Price (UGX)</label>
                     <input
                       type="number"
                       name="unit_price"
                       value={editFormData.unit_price}
                       onChange={handleEditFormChange}
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        isDarkMode 
-                          ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                          : 'bg-white border-gray-300 text-black'
-                      }`}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'bg-white border-gray-300 text-black'}`}
                       required
                       min="0"
                     />
                   </div>
                   <div>
-                    <label className={`block text-sm font-medium mb-1 ${
-                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                    }`}>Stock Quantity</label>
+                    <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Stock Quantity</label>
                     <input
                       type="number"
                       name="stock_quantity"
                       value={editFormData.stock_quantity}
                       onChange={handleEditFormChange}
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        isDarkMode 
-                          ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                          : 'bg-white border-gray-300 text-black'
-                      }`}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'bg-white border-gray-300 text-black'}`}
                       required
                       min="0"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className={`block text-sm font-medium mb-1 ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>Product Image</label>
+                  <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Product Image</label>
                   <input
                     type="file"
                     name="image"
                     onChange={handleEditFormChange}
                     accept="image/*"
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      isDarkMode 
-                        ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                        : 'bg-white border-gray-300 text-black'
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'bg-white border-gray-300 text-black'}`}
                   />
-                  <p className={`text-xs mt-1 ${
-                    isDarkMode ? 'text-gray-500' : 'text-gray-500'
-                  }`}>Leave empty to keep current image</p>
+                  <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>Leave empty to keep current image</p>
                 </div>
               </div>
-              <div className={`flex justify-end space-x-3 mt-6 pt-4 border-t ${
-                isDarkMode ? 'border-gray-700' : 'border-gray-200'
-              }`}>
-                <button type="button" onClick={closeEditModal} className={`px-4 py-2 text-sm font-medium rounded-md ${
-                  isDarkMode 
-                    ? 'text-gray-300 bg-gray-700 hover:bg-gray-600' 
-                    : 'text-gray-700 bg-gray-100 hover:bg-gray-200'
-                }`}>
+              <div className={`flex justify-end space-x-3 mt-6 pt-4 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                <button type="button" onClick={closeEditModal} className={`px-4 py-2 text-sm font-medium rounded-md ${isDarkMode ? 'text-gray-300 bg-gray-700 hover:bg-gray-600' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'}`}>
                   Cancel
                 </button>
                 <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
@@ -1037,36 +1145,22 @@ const SellerHomePage = () => {
       {/* Quick Deal Creation Modal */}
       {quickDealModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className={`rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto ${
-            isDarkMode ? 'bg-gray-800' : 'bg-white'
-          }`}>
-            <div className={`p-4 border-b flex justify-between items-center ${
-              isDarkMode ? 'border-gray-700' : 'border-gray-200'
-            }`}>
-              <h3 className={`font-semibold text-lg ${
-                isDarkMode ? 'text-gray-200' : 'text-black'
-              }`}>Create Quick Deal</h3>
-              <button onClick={() => setQuickDealModalOpen(false)} className={`${
-                isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
-              }`}>
+          <div className={`rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+            <div className={`p-4 border-b flex justify-between items-center ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+              <h3 className={`font-semibold text-lg ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>Create Quick Deal</h3>
+              <button onClick={() => setQuickDealModalOpen(false)} className={`${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'}`}>
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleCreateQuickDeal} className="p-4">
               <div className="space-y-4">
                 <div>
-                  <label className={`block text-sm font-medium mb-1 ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>Select Product *</label>
+                  <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Select Product *</label>
                   <select
                     name="product_id"
                     value={newQuickDeal.product_id}
                     onChange={handleQuickDealInputChange}
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      isDarkMode 
-                        ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                        : 'bg-white border-gray-300 text-black'
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'bg-white border-gray-300 text-black'}`}
                     required
                   >
                     <option value="">Choose a product</option>
@@ -1078,53 +1172,33 @@ const SellerHomePage = () => {
                   </select>
                 </div>
                 <div>
-                  <label className={`block text-sm font-medium mb-1 ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>Caption</label>
+                  <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Caption</label>
                   <input
                     type="text"
                     name="caption"
                     value={newQuickDeal.caption}
                     onChange={handleQuickDealInputChange}
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      isDarkMode 
-                        ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                        : 'bg-white border-gray-300 text-black'
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'bg-white border-gray-300 text-black'}`}
                     placeholder="e.g., Limited offer!"
                   />
                 </div>
                 <div>
-                  <label className={`block text-sm font-medium mb-1 ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>Picture (optional)</label>
+                  <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Picture (optional)</label>
                   <input
                     type="file"
                     name="picture"
                     accept="image/*"
                     onChange={handleQuickDealInputChange}
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      isDarkMode 
-                        ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                        : 'bg-white border-gray-300 text-black'
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-200' : 'bg-white border-gray-300 text-black'}`}
                   />
-                  <p className={`text-xs mt-1 ${
-                    isDarkMode ? 'text-gray-500' : 'text-gray-500'
-                  }`}>If not provided, product image will be used</p>
+                  <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>If not provided, product image will be used</p>
                 </div>
               </div>
-              <div className={`flex justify-end space-x-3 mt-6 pt-4 border-t ${
-                isDarkMode ? 'border-gray-700' : 'border-gray-200'
-              }`}>
+              <div className={`flex justify-end space-x-3 mt-6 pt-4 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                 <button
                   type="button"
                   onClick={() => setQuickDealModalOpen(false)}
-                  className={`px-4 py-2 text-sm font-medium rounded-md ${
-                    isDarkMode 
-                      ? 'text-gray-300 bg-gray-700 hover:bg-gray-600' 
-                      : 'text-gray-700 bg-gray-100 hover:bg-gray-200'
-                  }`}
+                  className={`px-4 py-2 text-sm font-medium rounded-md ${isDarkMode ? 'text-gray-300 bg-gray-700 hover:bg-gray-600' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'}`}
                 >
                   Cancel
                 </button>
@@ -1151,59 +1225,19 @@ const SellerHomePage = () => {
       {/* Dropdown Modal */}
       {dropdownOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeDropdown}>
-          <div className={`rounded-xl ${
-            isDarkMode ? 'bg-gray-800' : 'bg-white'
-          }`} onClick={(e) => e.stopPropagation()}>
-            <div className={`p-4 border text-center ${
-              isDarkMode ? 'border-gray-700' : 'border-gray-200'
-            }`}>
-              <h3 className={`font-semibold text-lg ${
-                isDarkMode ? 'text-gray-200' : 'text-black'
-              }`}>Post Options</h3>
+          <div className={`rounded-xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`} onClick={(e) => e.stopPropagation()}>
+            <div className={`p-4 border text-center ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+              <h3 className={`font-semibold text-lg ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>Post Options</h3>
             </div>
-            <div className={`divide-y ${
-              isDarkMode ? 'divide-gray-700' : 'divide-gray-100'
-            }`}>
+            <div className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
               {getDropdownItems(posts.find(p => p.id === dropdownOpen) || {}).map((item, index) => (
                 <button
                   key={index}
                   onClick={item.action}
-                  className={`w-full text-center px-4 py-3 text-sm first:rounded-t-lg last:rounded-b-lg transition-colors ${
-                    isDarkMode 
-                      ? 'text-gray-300 hover:bg-gray-700' 
-                      : 'text-black hover:bg-gray-50'
-                  }`}
+                  className={`w-full text-center px-4 py-3 text-sm first:rounded-t-lg last:rounded-b-lg transition-colors ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-black hover:bg-gray-50'}`}
                 >
                   {item.label}
                 </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Search Results Placeholder */}
-      {searchFocused && (
-        <div className="mt-4">
-          <p className={`text-center py-8 text-sm ${
-            isDarkMode ? 'text-gray-400' : 'text-gray-500'
-          }`}>Type to search for products, people, and topics</p>
-          <div className="mt-4">
-            <h3 className={`text-sm mb-3 ${
-              isDarkMode ? 'text-gray-300' : 'text-gray-700'
-            }`}>Recent searches</h3>
-            <div className="space-y-2">
-              {['wireless headphones', 'fitness tracker', 'laptop backpack'].map((term, index) => (
-                <div key={index} className={`flex items-center p-3 rounded-lg cursor-pointer ${
-                  isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
-                }`}>
-                  <Search className={`w-4 h-4 mr-3 ${
-                    isDarkMode ? 'text-gray-600' : 'text-gray-400'
-                  }`} />
-                  <span className={`text-sm ${
-                    isDarkMode ? 'text-gray-300' : 'text-black'
-                  }`}>{term}</span>
-                </div>
               ))}
             </div>
           </div>
@@ -1215,7 +1249,12 @@ const SellerHomePage = () => {
           from { opacity: 0; transform: translateY(-5px); }
           to { opacity: 1; transform: translateY(0); }
         }
+        @keyframes slideDown {
+          from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
         .animate-fadeIn { animation: fadeIn 0.2s ease-out; }
+        .animate-slideDown { animation: slideDown 0.3s ease-out; }
       `}</style>
     </div>
   );
