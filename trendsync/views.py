@@ -52,32 +52,37 @@ from django.core.exceptions import ValidationError
 dusupay_client = DusuPayClient()
 
 def get_user_profile_photo(user, request=None):
-    """
-    Get the profile photo URL for a user.
-    Returns None if no profile photo exists.
-    """
+    """Get profile photo URL reliably with multiple fallbacks"""
     if not user:
         return None
     
     profile_photo = None
     
-    # Check if user has a seller profile
+    # Try Seller profile
     if hasattr(user, 'seller_profile') and user.seller_profile:
         if user.seller_profile.profile_photo:
-            if request:
-                profile_photo = request.build_absolute_uri(user.seller_profile.profile_photo.url)
-            else:
-                profile_photo = user.seller_profile.profile_photo.url
+            try:
+                if request:
+                    profile_photo = request.build_absolute_uri(user.seller_profile.profile_photo.url)
+                else:
+                    profile_photo = user.seller_profile.profile_photo.url
+            except:
+                pass
     
-    # Check if user has a buyer profile
-    elif hasattr(user, 'buyer_profile') and user.buyer_profile:
+    # Try Buyer profile (if not found in seller)
+    if not profile_photo and hasattr(user, 'buyer_profile') and user.buyer_profile:
         if user.buyer_profile.profile_photo:
-            if request:
-                profile_photo = request.build_absolute_uri(user.buyer_profile.profile_photo.url)
-            else:
-                profile_photo = user.buyer_profile.profile_photo.url
+            try:
+                if request:
+                    profile_photo = request.build_absolute_uri(user.buyer_profile.profile_photo.url)
+                else:
+                    profile_photo = user.buyer_profile.profile_photo.url
+            except:
+                pass
     
+    # If no profile photo found, return None (frontend will use default)
     return profile_photo
+
 
 def get_user_display_name(user):
     """
@@ -2299,12 +2304,12 @@ def update_seller_location(request):
         })
     except Exception as e:
         return Response({"error": str(e)}, status=400)
-
+    
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_chat_inbox(request):
     """
-    Get all conversations for the current user with profile photos.
+    Get all conversations with reliable profile photos.
     """
     from django.db.models import Q
     from .models import ChatMessage
@@ -2313,21 +2318,16 @@ def get_chat_inbox(request):
     current_user = request.user
     print(f"🔍 Getting inbox for user: {current_user.username} (ID: {current_user.id})")
     
-    # Get all users the current user has chatted with
     sent_users = ChatMessage.objects.filter(sender=current_user).values_list('recipient_id', flat=True).distinct()
     received_users = ChatMessage.objects.filter(recipient=current_user).values_list('sender_id', flat=True).distinct()
     partner_ids = set(list(sent_users) + list(received_users))
-    
-    print(f"📋 Found {len(partner_ids)} conversation partners: {partner_ids}")
     
     conversations = []
     
     for partner_id in partner_ids:
         try:
             partner = User.objects.get(id=partner_id)
-            print(f"📝 Processing partner: {partner.username} (ID: {partner.id})")
         except User.DoesNotExist:
-            print(f"❌ User {partner_id} not found")
             continue
         
         last_message = ChatMessage.objects.filter(
@@ -2339,49 +2339,31 @@ def get_chat_inbox(request):
             continue
         
         unread_count = ChatMessage.objects.filter(
-            sender=partner,
-            recipient=current_user,
-            is_read=False
+            sender=partner, recipient=current_user, is_read=False
         ).count()
         
-        # Get partner name
         partner_name = get_user_display_name(partner)
+        profile_photo = get_user_profile_photo(partner, request)
         
-        # Get profile photo - explicitly fetch it
-        profile_photo = None
-        if hasattr(partner, 'seller_profile') and partner.seller_profile:
-            if partner.seller_profile.profile_photo:
-                profile_photo = request.build_absolute_uri(partner.seller_profile.profile_photo.url)
-                print(f"📸 Found seller profile photo for {partner_name}: {profile_photo}")
-        elif hasattr(partner, 'buyer_profile') and partner.buyer_profile:
-            if partner.buyer_profile.profile_photo:
-                profile_photo = request.build_absolute_uri(partner.buyer_profile.profile_photo.url)
-                print(f"📸 Found buyer profile photo for {partner_name}: {profile_photo}")
-        
-        # If no profile photo, use default
+        # Only use fallback if no profile photo exists
         if not profile_photo:
-            profile_photo = request.build_absolute_uri('/profile.jpg')
-            print(f"📸 Using default profile photo for {partner_name}")
-        
-        print(f"📸 Final profile photo for {partner_name}: {profile_photo}")
+            # Use default profile image - frontend will handle fallback
+            profile_photo = None
         
         conversations.append({
             'partner_id': partner.id,
             'partner_name': partner_name,
-            'profile_photo': profile_photo,
-            'last_message': last_message.content,
+            'profile_photo': profile_photo,  # Send None if no photo
+            'last_message': last_message.content[:60] + ('...' if len(last_message.content) > 60 else ''),
             'timestamp': last_message.timestamp.isoformat(),
             'unread_count': unread_count
         })
     
-    # Sort by timestamp (newest first)
     conversations.sort(key=lambda x: x['timestamp'], reverse=True)
     
-    print(f"📬 Returning {len(conversations)} conversations")
-    for conv in conversations:
-        print(f"  {conv['partner_name']}: profile_photo={conv['profile_photo']}")
-    
     return Response(conversations, status=status.HTTP_200_OK)
+
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
