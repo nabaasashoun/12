@@ -1,11 +1,20 @@
+// SellerRegisterPage.jsx - Fully updated with real-time validation and warnings
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Upload, CheckCircle, XCircle, ChevronDown, Check, Camera, X, RotateCw, MapPin } from "lucide-react";
+import { 
+  Eye, EyeOff, Upload, CheckCircle, XCircle, ChevronDown, 
+  Check, Camera, X, RotateCw, MapPin, AlertCircle, 
+  AlertTriangle, Info, User, Mail, Lock, Building, Phone, 
+  FileText, CreditCard, Banknote, Smartphone, Home 
+} from "lucide-react";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import styled from 'styled-components';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
-// East African country codes
+// ── East African Country Codes ────────────────────────────────────────────
+
 const EAST_AFRICAN_COUNTRIES = [
   { code: 'UG', name: 'Uganda', dialCode: '+256', flag: '🇺🇬' },
   { code: 'KE', name: 'Kenya', dialCode: '+254', flag: '🇰🇪' },
@@ -19,7 +28,427 @@ const EAST_AFRICAN_COUNTRIES = [
   { code: 'ER', name: 'Eritrea', dialCode: '+291', flag: '🇪🇷' },
 ];
 
-// Camera Component (unchanged)
+// ── Validation Functions ──────────────────────────────────────────────────
+
+const validateUsername = (username) => {
+  if (!username || username.trim().length === 0) {
+    return { valid: false, message: 'Username is required' };
+  }
+  if (username.trim().length < 3) {
+    return { valid: false, message: 'Username must be at least 3 characters' };
+  }
+  if (username.trim().length > 30) {
+    return { valid: false, message: 'Username must be less than 30 characters' };
+  }
+  if (!/^[a-zA-Z0-9_]+$/.test(username.trim())) {
+    return { valid: false, message: 'Username can only contain letters, numbers, and underscores' };
+  }
+  if (/^[0-9]/.test(username.trim())) {
+    return { valid: false, message: 'Username cannot start with a number' };
+  }
+  return { valid: true, message: 'Username available ✓' };
+};
+
+const validateEmail = (email) => {
+  if (!email || email.trim().length === 0) {
+    return { valid: false, message: 'Email address is required' };
+  }
+  const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+  if (!emailRegex.test(email.trim())) {
+    return { valid: false, message: 'Please enter a valid email address (e.g., name@example.com)' };
+  }
+  const domain = email.split('@')[1];
+  if (domain && domain.length > 0) {
+    const domainParts = domain.split('.');
+    if (domainParts.length < 2 || domainParts[domainParts.length - 1].length < 2) {
+      return { valid: false, message: 'Please enter a valid email address with a proper domain' };
+    }
+  }
+  return { valid: true, message: 'Email looks good ✓' };
+};
+
+const validatePassword = (password) => {
+  if (!password || password.length === 0) {
+    return { valid: false, message: 'Password is required' };
+  }
+  if (password.length < 6) {
+    return { valid: false, message: 'Password must be at least 6 characters' };
+  }
+  if (password.length > 50) {
+    return { valid: false, message: 'Password must be less than 50 characters' };
+  }
+  const errors = [];
+  if (!/[A-Z]/.test(password)) errors.push('uppercase letter');
+  if (!/[a-z]/.test(password)) errors.push('lowercase letter');
+  if (!/[0-9]/.test(password)) errors.push('number');
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) errors.push('special character');
+  
+  if (errors.length > 0) {
+    return { 
+      valid: false, 
+      message: `Password must contain at least one ${errors.join(', ')}`,
+      strength: 'weak'
+    };
+  }
+  
+  if (password.length >= 8 && errors.length === 0) {
+    return { valid: true, message: 'Strong password ✓', strength: 'strong' };
+  }
+  return { valid: true, message: 'Good password ✓', strength: 'good' };
+};
+
+const validateConfirmPassword = (password, confirmPassword) => {
+  if (!confirmPassword || confirmPassword.length === 0) {
+    return { valid: false, message: 'Please confirm your password' };
+  }
+  if (password !== confirmPassword) {
+    return { valid: false, message: 'Passwords do not match' };
+  }
+  return { valid: true, message: 'Passwords match ✓' };
+};
+
+const validateBusinessName = (name) => {
+  if (!name || name.trim().length === 0) {
+    return { valid: false, message: 'Business name is required' };
+  }
+  if (name.trim().length < 2) {
+    return { valid: false, message: 'Business name must be at least 2 characters' };
+  }
+  if (name.trim().length > 100) {
+    return { valid: false, message: 'Business name must be less than 100 characters' };
+  }
+  if (!/^[a-zA-Z0-9\s\-&.,']+$/.test(name.trim())) {
+    return { valid: false, message: 'Business name contains invalid characters' };
+  }
+  return { valid: true, message: 'Business name looks good ✓' };
+};
+
+const validatePhone = (phone) => {
+  if (!phone || phone.trim().length === 0) {
+    return { valid: false, message: 'Phone number is required' };
+  }
+  if (!/^\d{7,9}$/.test(phone.trim())) {
+    return { valid: false, message: 'Phone number must be 7-9 digits' };
+  }
+  return { valid: true, message: 'Phone number looks good ✓' };
+};
+
+const validateNIN = (nin) => {
+  if (!nin || nin.trim().length === 0) {
+    return { valid: true, message: 'Optional' };
+  }
+  if (nin.trim().length < 10) {
+    return { valid: false, message: 'NIN must be at least 10 characters' };
+  }
+  if (!/^[A-Z0-9]{10,}$/.test(nin.trim().toUpperCase())) {
+    return { valid: false, message: 'NIN should contain only letters and numbers' };
+  }
+  return { valid: true, message: 'NIN format looks good ✓' };
+};
+
+const validateBankAccount = (account) => {
+  if (!account || account.trim().length === 0) {
+    return { valid: false, message: 'Bank account number is required' };
+  }
+  if (!/^\d{8,}$/.test(account.trim())) {
+    return { valid: false, message: 'Bank account must be at least 8 digits' };
+  }
+  if (account.trim().length > 20) {
+    return { valid: false, message: 'Bank account must be less than 20 digits' };
+  }
+  return { valid: true, message: 'Account number looks good ✓' };
+};
+
+const validateCardLastFour = (card) => {
+  if (!card || card.trim().length === 0) {
+    return { valid: false, message: 'Last 4 digits of card are required' };
+  }
+  if (!/^\d{4}$/.test(card.trim())) {
+    return { valid: false, message: 'Please enter exactly 4 digits' };
+  }
+  return { valid: true, message: '✓' };
+};
+
+const validateMobileNumber = (number) => {
+  if (!number || number.trim().length === 0) {
+    return { valid: false, message: 'Mobile number is required' };
+  }
+  if (!/^\d{7,9}$/.test(number.trim())) {
+    return { valid: false, message: 'Mobile number must be 7-9 digits' };
+  }
+  return { valid: true, message: '✓' };
+};
+
+// ── Animated Input with Validation ──────────────────────────────────────
+
+const AnimatedInput = ({ 
+  type, 
+  name, 
+  value, 
+  onChange, 
+  label, 
+  required, 
+  autoComplete, 
+  validation,
+  onBlur,
+  icon: Icon,
+  placeholder,
+  ...props 
+}) => {
+  const [isValid, setIsValid] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isTouched, setIsTouched] = useState(false);
+  const [showStrength, setShowStrength] = useState(false);
+
+  const labelChars = label.split('').map((char, index) => (
+    <span key={index} style={{ transitionDelay: `${index * 50}ms` }}>
+      {char === ' ' ? '\u00A0' : char}
+    </span>
+  ));
+
+  const handleBlur = (e) => {
+    setIsTouched(true);
+    if (validation) {
+      const result = validation(value);
+      setIsValid(result.valid);
+      setErrorMessage(result.message);
+      if (result.strength) setShowStrength(true);
+    }
+    if (onBlur) onBlur(e);
+  };
+
+  const handleChange = (e) => {
+    setIsTouched(true);
+    if (validation) {
+      const result = validation(e.target.value);
+      setIsValid(result.valid);
+      setErrorMessage(result.message);
+      if (result.strength) setShowStrength(true);
+    }
+    onChange(e);
+  };
+
+  const getStrengthColor = () => {
+    if (!showStrength || !value) return '';
+    if (errorMessage.includes('Strong')) return 'text-green-500';
+    if (errorMessage.includes('Good')) return 'text-yellow-500';
+    return 'text-red-500';
+  };
+
+  return (
+    <StyledInputWrapper>
+      <div className="form-control">
+        {Icon && <Icon className="input-icon" size={18} />}
+        <input
+          type={type}
+          name={name}
+          value={value}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          required={required}
+          autoComplete={autoComplete}
+          placeholder={placeholder}
+          className={isTouched ? (isValid ? 'valid' : 'invalid') : ''}
+          {...props}
+        />
+        <label>{labelChars}</label>
+        {required && <span className="required-star">*</span>}
+      </div>
+      {isTouched && !isValid && errorMessage && (
+        <div className="validation-error">
+          <AlertCircle size={14} />
+          <span>{errorMessage}</span>
+        </div>
+      )}
+      {isTouched && isValid && value && value.length > 0 && (
+        <div className="validation-success">
+          <CheckCircle size={14} />
+          <span>{errorMessage || '✓'}</span>
+        </div>
+      )}
+      {type === 'password' && value && value.length > 0 && (
+        <div className="password-strength">
+          <div className={`strength-bar ${getStrengthColor()}`} style={{ width: `${Math.min(100, (value.length / 10) * 100)}%` }} />
+        </div>
+      )}
+    </StyledInputWrapper>
+  );
+};
+
+const StyledInputWrapper = styled.div`
+  .form-control {
+    position: relative;
+    margin: 20px 0 10px;
+    width: 100%;
+  }
+
+  .form-control input {
+    background-color: transparent;
+    border: 0;
+    border-bottom: 2px #ccc solid;
+    display: block;
+    width: 100%;
+    padding: 12px 0 6px 32px;
+    font-size: 16px;
+    color: #333;
+    transition: border-color 0.3s;
+  }
+
+  .input-icon {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    transition: color 0.3s;
+  }
+
+  .form-control input:focus + label + .input-icon,
+  .form-control input:focus ~ .input-icon {
+    color: #3b82f6;
+  }
+
+  .form-control input:-webkit-autofill,
+  .form-control input:-webkit-autofill:hover,
+  .form-control input:-webkit-autofill:focus,
+  .form-control input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+    box-shadow: 0 0 0 30px white inset !important;
+    -webkit-text-fill-color: #333 !important;
+    caret-color: #333;
+    outline: none;
+  }
+
+  .form-control input:focus {
+    outline: 0;
+    border-bottom-color: #3b82f6;
+  }
+
+  .form-control input.valid {
+    border-bottom-color: #22c55e;
+  }
+
+  .form-control input.invalid {
+    border-bottom-color: #ef4444;
+  }
+
+  .form-control input:focus + label span,
+  .form-control input:valid + label span,
+  .form-control input:-webkit-autofill + label span {
+    color: #3b82f6;
+    transform: translateY(-24px);
+  }
+
+  .form-control input.valid + label span {
+    color: #22c55e;
+  }
+
+  .form-control input.invalid + label span {
+    color: #ef4444;
+  }
+
+  .form-control label {
+    position: absolute;
+    top: 12px;
+    left: 32px;
+    pointer-events: none;
+  }
+
+  .form-control label span {
+    display: inline-block;
+    font-size: 16px;
+    min-width: 5px;
+    color: #666;
+    transition: 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  .required-star {
+    position: absolute;
+    top: 12px;
+    right: -8px;
+    color: #ef4444;
+    font-size: 18px;
+  }
+
+  .validation-error {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #ef4444;
+    font-size: 12px;
+    margin-top: 4px;
+    animation: slideDown 0.3s ease-out;
+  }
+
+  .validation-success {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #22c55e;
+    font-size: 12px;
+    margin-top: 4px;
+    animation: slideDown 0.3s ease-out;
+  }
+
+  .password-strength {
+    margin-top: 4px;
+    height: 2px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .strength-bar {
+    height: 100%;
+    transition: width 0.3s ease;
+    border-radius: 4px;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`;
+
+// ── Validation Summary ────────────────────────────────────────────────────
+
+const ValidationSummary = ({ errors, isVisible, onClose }) => {
+  if (!isVisible || errors.length === 0) return null;
+
+  return (
+    <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg animate-slideDown relative">
+      <button 
+        onClick={onClose} 
+        className="absolute top-2 right-2 text-red-400 hover:text-red-600"
+      >
+        <X size={16} />
+      </button>
+      <div className="flex items-start gap-2">
+        <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+        <div>
+          <p className="text-red-700 font-medium text-sm">Please fix the following issues to continue:</p>
+          <ul className="mt-1 space-y-1">
+            {errors.map((error, index) => (
+              <li key={index} className="text-red-600 text-sm flex items-start gap-1">
+                <span className="text-red-400">•</span>
+                {error}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Camera Capture Component ─────────────────────────────────────────────
+
 const CameraCapture = ({ onCapture, onClose, documentType }) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -126,84 +555,7 @@ const CameraCapture = ({ onCapture, onClose, documentType }) => {
   );
 };
 
-const AnimatedInput = ({ type, name, value, onChange, label, required, autoComplete, ...props }) => {
-  const labelChars = label.split('').map((char, index) => (
-    <span key={index} style={{ transitionDelay: `${index * 50}ms` }}>
-      {char === ' ' ? '\u00A0' : char}
-    </span>
-  ));
-
-  return (
-    <StyledInputWrapper>
-      <div className="form-control">
-        <input
-          type={type}
-          name={name}
-          value={value}
-          onChange={onChange}
-          required={required}
-          autoComplete={autoComplete}
-          {...props}
-        />
-        <label>{labelChars}</label>
-      </div>
-    </StyledInputWrapper>
-  );
-};
-
-const StyledInputWrapper = styled.div`
-  .form-control {
-    position: relative;
-    margin: 20px 0 30px;
-    width: 100%;
-  }
-  .form-control input {
-    background-color: transparent;
-    border: 0;
-    border-bottom: 2px #ccc solid;
-    display: block;
-    width: 100%;
-    padding: 12px 0 6px;
-    font-size: 16px;
-    color: #333;
-    transition: border-color 0.2s;
-  }
-  .form-control input:-webkit-autofill,
-  .form-control input:-webkit-autofill:hover,
-  .form-control input:-webkit-autofill:focus,
-  .form-control input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 30px white inset !important;
-    box-shadow: 0 0 0 30px white inset !important;
-    -webkit-text-fill-color: #333 !important;
-    caret-color: #333;
-    outline: none;
-  }
-  .form-control input:focus,
-  .form-control input:valid,
-  .form-control input:-webkit-autofill {
-    outline: 0;
-    border-bottom-color: #3b82f6;
-  }
-  .form-control label {
-    position: absolute;
-    top: 12px;
-    left: 0;
-    pointer-events: none;
-  }
-  .form-control label span {
-    display: inline-block;
-    font-size: 16px;
-    min-width: 5px;
-    color: #666;
-    transition: 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  }
-  .form-control input:focus + label span,
-  .form-control input:valid + label span,
-  .form-control input:-webkit-autofill + label span {
-    color: #3b82f6;
-    transform: translateY(-24px);
-  }
-`;
+// ── Main SellerRegisterPage ──────────────────────────────────────────────
 
 const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
   const [step, setStep] = useState(1);
@@ -219,12 +571,10 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
     profile_photo: null,
     passport_photo: null,
     id_photo: null,
-    // Location fields
     locationType: "",
     locationLat: null,
     locationLng: null,
     locationAddress: "",
-    // Payment fields
     paymentMethod: "",
     bankName: "",
     bankAccount: "",
@@ -243,20 +593,19 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
   });
   const [selectedCountry, setSelectedCountry] = useState(EAST_AFRICAN_COUNTRIES[0]);
   const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
-  
-  // Camera states
   const [showCamera, setShowCamera] = useState(false);
   const [cameraFor, setCameraFor] = useState(null);
-  
-  // Location states
   const [locationLoading, setLocationLoading] = useState(false);
   const [locationError, setLocationError] = useState("");
   const [manualAddress, setManualAddress] = useState("");
   const [addressConfirmed, setAddressConfirmed] = useState(false);
+  const [validationErrors, setValidationErrors] = useState([]);
+  const [showValidationSummary, setShowValidationSummary] = useState(false);
   
   const navigate = useNavigate();
 
-  // Reverse geocode using OpenStreetMap Nominatim (free, no key)
+  // ── Reverse Geocode ─────────────────────────────────────────────────────
+
   const reverseGeocode = async (lat, lng) => {
     try {
       const response = await fetch(
@@ -265,7 +614,6 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
       const data = await response.json();
       if (data && data.address) {
         const { road, suburb, village, town, city, county, state, district, country } = data.address;
-        // Try to get the most specific area first
         const area = suburb || village || town || city || road || '';
         const districtName = district || county || state || '';
         if (area && districtName) {
@@ -284,7 +632,8 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
     }
   };
 
-  // Global cleanup
+  // ── Cleanup ─────────────────────────────────────────────────────────────
+
   useEffect(() => {
     return () => {
       if (window.activeCameraStream) {
@@ -301,20 +650,34 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
     }
   };
 
+  // ── Handlers ────────────────────────────────────────────────────────────
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    setShowValidationSummary(false);
+    setError("");
   };
 
   const handlePhoneChange = (e) => {
     const value = e.target.value.replace(/\D/g, '').slice(0, 9);
     setFormData(prev => ({ ...prev, contact: value }));
+    setShowValidationSummary(false);
   };
 
   const handleFileChange = (e) => {
     const { name, files } = e.target;
     if (files.length > 0) {
-      setFormData(prev => ({ ...prev, [name]: files[0] }));
+      const file = files[0];
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('File size should be less than 5MB');
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please upload an image file');
+        return;
+      }
+      setFormData(prev => ({ ...prev, [name]: file }));
       setUploadStatus(prev => ({ ...prev, [name]: true }));
     }
   };
@@ -326,6 +689,7 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
     setShowCamera(false);
     setCameraFor(null);
     setTimeout(forceStopCamera, 200);
+    toast.success(`${cameraFor === 'passport' ? 'Passport' : 'ID'} photo captured successfully!`);
   };
 
   const openCamera = (type) => {
@@ -347,14 +711,18 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
     setIsCountryDropdownOpen(false);
   };
 
-  // Geolocation with reverse geocoding
+  // ── Geolocation ─────────────────────────────────────────────────────────
+
   const getCurrentLocation = async () => {
     if (!navigator.geolocation) {
       setLocationError("Geolocation is not supported by your browser.");
+      toast.error("Geolocation is not supported by your browser.");
       return;
     }
     setLocationLoading(true);
     setLocationError("");
+    toast.info("Fetching your location...");
+    
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
@@ -368,99 +736,130 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
         setManualAddress(address);
         setAddressConfirmed(false);
         setLocationLoading(false);
+        toast.success("Location captured successfully!");
       },
       (error) => {
         setLocationError("Unable to retrieve your location. Please check permissions.");
         setLocationLoading(false);
+        toast.error("Unable to retrieve your location. Please check permissions.");
         console.error("Geolocation error:", error);
       }
     );
   };
 
-  // Navigation
-  const nextStep = () => {
-    if (step === 1) {
-      if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
-        setError("Please fill all fields");
-        return;
-      }
-      if (formData.password !== formData.confirmPassword) {
-        setError("Passwords do not match");
-        return;
-      }
-      if (formData.password.length < 6) {
-        setError("Password must be at least 6 characters");
-        return;
-      }
-    }
-    if (step === 2) {
-      if (!formData.name || !formData.contact) {
-        setError("Business name and contact are required");
-        return;
-      }
-    }
-    if (step === 3) {
-      if (!allDocumentsUploaded()) {
-        setError("Please upload all required documents: Profile Photo, Passport Photo, and ID Photo");
-        return;
-      }
-    }
-    if (step === 4) {
-      if (!formData.locationType) {
-        setError("Please select your business location type");
-        return;
-      }
-      if (!formData.locationLat || !formData.locationLng) {
-        setError("Please fetch your location using the button above");
-        return;
-      }
-      if (!addressConfirmed) {
-        setError("Please confirm your location address.");
-        return;
-      }
-      if (!formData.paymentMethod) {
-        setError("Please select a payment method");
-        return;
-      }
-      if (formData.paymentMethod === 'bank') {
-        if (!formData.bankName || !formData.bankAccount) {
-          setError("Please provide bank name and account number");
-          return;
-        }
-      } else if (formData.paymentMethod === 'card') {
-        if (!formData.cardLastFour || formData.cardLastFour.length < 4) {
-          setError("Please provide the last 4 digits of your card");
-          return;
-        }
-      } else if (formData.paymentMethod === 'mobile_money') {
-        if (!formData.mobileProvider || !formData.mobileNumber) {
-          setError("Please provide mobile money provider and number");
-          return;
-        }
-      }
-    }
-    setError("");
-    setStep(step + 1);
-  };
-
-  const prevStep = () => {
-    setError("");
-    setStep(step - 1);
-  };
+  // ── Document Upload Status ─────────────────────────────────────────────
 
   const allDocumentsUploaded = () => {
     return uploadStatus.profile_photo && uploadStatus.passport_photo && uploadStatus.id_photo;
   };
 
+  // ── Validation ──────────────────────────────────────────────────────────
+
+  const validateSellerForm = () => {
+    const errors = [];
+
+    if (step === 1) {
+      const usernameResult = validateUsername(formData.username);
+      if (!usernameResult.valid) errors.push(`Username: ${usernameResult.message}`);
+      
+      const emailResult = validateEmail(formData.email);
+      if (!emailResult.valid) errors.push(`Email: ${emailResult.message}`);
+      
+      const passwordResult = validatePassword(formData.password);
+      if (!passwordResult.valid) errors.push(`Password: ${passwordResult.message}`);
+      
+      const confirmResult = validateConfirmPassword(formData.password, formData.confirmPassword);
+      if (!confirmResult.valid) errors.push(`Confirm Password: ${confirmResult.message}`);
+    }
+
+    if (step === 2) {
+      const businessResult = validateBusinessName(formData.name);
+      if (!businessResult.valid) errors.push(`Business Name: ${businessResult.message}`);
+      
+      const phoneResult = validatePhone(formData.contact);
+      if (!phoneResult.valid) errors.push(`Phone Number: ${phoneResult.message}`);
+      
+      const ninResult = validateNIN(formData.nin_number);
+      if (!ninResult.valid) errors.push(`NIN: ${ninResult.message}`);
+    }
+
+    if (step === 3) {
+      if (!allDocumentsUploaded()) {
+        errors.push('All documents must be uploaded: Profile Photo, Passport Photo, and ID Photo');
+      }
+    }
+
+    if (step === 4) {
+      if (!formData.locationType) {
+        errors.push('Please select a business location type (Static or Dynamic)');
+      }
+      if (!formData.locationLat || !formData.locationLng) {
+        errors.push('Please fetch your location using the "Get My Current Location" button');
+      }
+      if (!addressConfirmed) {
+        errors.push('Please confirm your location address');
+      }
+      if (!formData.paymentMethod) {
+        errors.push('Please select a payment method');
+      }
+      if (formData.paymentMethod === 'bank') {
+        if (!formData.bankName) errors.push('Bank name is required');
+        const bankResult = validateBankAccount(formData.bankAccount);
+        if (!bankResult.valid) errors.push(`Bank Account: ${bankResult.message}`);
+      }
+      if (formData.paymentMethod === 'card') {
+        const cardResult = validateCardLastFour(formData.cardLastFour);
+        if (!cardResult.valid) errors.push(`Card: ${cardResult.message}`);
+      }
+      if (formData.paymentMethod === 'mobile_money') {
+        if (!formData.mobileProvider) errors.push('Mobile money provider is required');
+        const mobileResult = validateMobileNumber(formData.mobileNumber);
+        if (!mobileResult.valid) errors.push(`Mobile Number: ${mobileResult.message}`);
+      }
+    }
+
+    setValidationErrors(errors);
+    setShowValidationSummary(true);
+
+    if (errors.length > 0) {
+      toast.error(`Please fix ${errors.length} issue${errors.length > 1 ? 's' : ''}`);
+      return false;
+    }
+    return true;
+  };
+
+  // ── Navigation ──────────────────────────────────────────────────────────
+
+  const nextStep = () => {
+    if (validateSellerForm()) {
+      setError("");
+      setStep(step + 1);
+      setShowValidationSummary(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const prevStep = () => {
+    setError("");
+    setStep(step - 1);
+    setShowValidationSummary(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // ── Submit ──────────────────────────────────────────────────────────────
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+
+    if (!validateSellerForm()) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
 
     forceStopCamera();
     setLoading(true);
 
     const data = new FormData();
-    // Basic fields
     data.append("username", formData.username);
     data.append("email", formData.email);
     data.append("password", formData.password);
@@ -470,13 +869,11 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
     if (formData.nin_number) data.append("nin_number", formData.nin_number);
     if (formData.about) data.append("about", formData.about);
     
-    // Location fields
     data.append("location_type", formData.locationType);
     data.append("location_lat", formData.locationLat);
     data.append("location_lng", formData.locationLng);
     data.append("location_address", formData.locationAddress);
     
-    // Payment fields
     data.append("payment_method", formData.paymentMethod);
     if (formData.paymentMethod === 'bank') {
       data.append("bank_name", formData.bankName);
@@ -488,7 +885,6 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
       data.append("mobile_number", formData.mobileNumber);
     }
     
-    // Documents
     data.append("profile_photo", formData.profile_photo);
     data.append("passport_photo", formData.passport_photo);
     data.append("id_photo", formData.id_photo);
@@ -503,20 +899,32 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
 
       if (response.ok) {
         forceStopCamera();
-        navigate("/seller/login", {
-          state: { success: "Seller account created successfully!" }
-        });
+        toast.success("Seller account created successfully! Redirecting to login...");
+        setTimeout(() => {
+          navigate("/seller/login", {
+            state: { success: "Seller account created successfully! Please login." }
+          });
+        }, 1500);
       } else {
         console.error("Registration error:", responseData);
-        setError(responseData.detail || responseData.error || responseData.message || "Registration failed. Please try again.");
+        const errorMsg = responseData.detail || 
+                        responseData.error || 
+                        responseData.message || 
+                        responseData.non_field_errors?.[0] ||
+                        "Registration failed. Please try again.";
+        setError(errorMsg);
+        toast.error(errorMsg);
       }
     } catch (error) {
       console.error("Network error:", error);
       setError("Network error. Please check if the backend server is running.");
+      toast.error("Network error. Please check your connection.");
     } finally {
       setLoading(false);
     }
   };
+
+  // ── Render ──────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
@@ -540,12 +948,12 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
         <h1 className="text-3xl font-bold text-gray-900 mb-1">Hello!</h1>
         <p className="text-gray-400 text-lg mb-6">Create a seller account</p>
 
-        {/* Step indicator (4 steps) */}
+        {/* Step indicator */}
         <div className="flex justify-between items-center mb-6">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="flex items-center">
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
                   step === i
                     ? 'bg-indigo-500 text-white'
                     : step > i
@@ -553,11 +961,11 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                     : 'bg-gray-200 text-gray-600'
                 }`}
               >
-                {step > i ? '✓' : i}
+                {step > i ? <Check size={16} /> : i}
               </div>
               {i < 4 && (
                 <div
-                  className={`w-12 h-1 mx-1 ${
+                  className={`w-12 h-1 mx-1 transition-colors ${
                     step > i ? 'bg-green-500' : 'bg-gray-200'
                   }`}
                 />
@@ -566,9 +974,27 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
           ))}
         </div>
 
+        {/* Step Labels */}
+        <div className="flex justify-between text-xs text-gray-500 mb-6 px-1">
+          <span className={step === 1 ? 'text-indigo-600 font-medium' : ''}>Account</span>
+          <span className={step === 2 ? 'text-indigo-600 font-medium' : ''}>Business</span>
+          <span className={step === 3 ? 'text-indigo-600 font-medium' : ''}>Documents</span>
+          <span className={step === 4 ? 'text-indigo-600 font-medium' : ''}>Location & Payment</span>
+        </div>
+
+        {/* Validation Summary */}
+        <ValidationSummary 
+          errors={validationErrors} 
+          isVisible={showValidationSummary}
+          onClose={() => setShowValidationSummary(false)}
+        />
+
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-700 text-sm">{error}</p>
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg animate-slideDown">
+            <div className="flex items-start gap-2">
+              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <p className="text-red-700 text-sm">{error}</p>
+            </div>
           </div>
         )}
 
@@ -584,7 +1010,11 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                 label="Username"
                 required
                 autoComplete="off"
+                icon={User}
+                validation={validateUsername}
+                
               />
+
               <AnimatedInput
                 type="email"
                 name="email"
@@ -593,7 +1023,11 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                 label="Email address"
                 required
                 autoComplete="off"
+                icon={Mail}
+                validation={validateEmail}
+               
               />
+
               <div className="relative">
                 <AnimatedInput
                   type={showPassword ? 'text' : 'password'}
@@ -603,6 +1037,9 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                   label="Password"
                   required
                   autoComplete="new-password"
+                  icon={Lock}
+                  validation={validatePassword}
+                  
                 />
                 <button
                   type="button"
@@ -613,6 +1050,7 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
+
               <div className="relative">
                 <AnimatedInput
                   type={showConfirmPassword ? 'text' : 'password'}
@@ -622,6 +1060,9 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                   label="Confirm Password"
                   required
                   autoComplete="new-password"
+                  icon={Lock}
+                  validation={(value) => validateConfirmPassword(formData.password, value)}
+                  
                 />
                 <button
                   type="button"
@@ -646,11 +1087,16 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                 label="Business Name"
                 required
                 autoComplete="off"
+                icon={Building}
+                validation={validateBusinessName}
+               
               />
 
-              {/* Phone Input with Country Code */}
+              {/* Phone Input */}
               <div className="mb-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number <span className="text-red-500">*</span>
+                </label>
                 <div className="flex">
                   <div className="relative mr-1">
                     <button
@@ -691,11 +1137,29 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                     value={formData.contact}
                     onChange={handlePhoneChange}
                     placeholder="701 234 567"
-                    className="flex-1 h-[35px] text-black px-3 py-2 border border-gray-300 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className={`flex-1 h-[35px] text-black px-3 py-2 border rounded-r-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+                      formData.contact && formData.contact.length > 0
+                        ? /^\d{7,9}$/.test(formData.contact)
+                          ? 'border-green-500'
+                          : 'border-red-500'
+                        : 'border-gray-300'
+                    }`}
                     autoComplete="off"
                     required
                   />
                 </div>
+                {formData.contact && formData.contact.length > 0 && !/^\d{7,9}$/.test(formData.contact) && (
+                  <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                    <AlertCircle size={12} />
+                    Phone number must be 7-9 digits
+                  </p>
+                )}
+                {formData.contact && /^\d{7,9}$/.test(formData.contact) && (
+                  <p className="text-green-500 text-xs mt-1 flex items-center gap-1">
+                    <CheckCircle size={12} />
+                    Valid phone number format
+                  </p>
+                )}
               </div>
 
               <AnimatedInput
@@ -705,6 +1169,9 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                 onChange={handleChange}
                 label="NIN Number (optional)"
                 autoComplete="off"
+                icon={FileText}
+                validation={validateNIN}
+                placeholder="e.g., CM1234567890"
               />
 
               <AnimatedInput
@@ -714,6 +1181,8 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                 onChange={handleChange}
                 label="About your business (optional)"
                 autoComplete="off"
+                icon={Info}
+                placeholder="Tell buyers about your business..."
               />
             </div>
           )}
@@ -722,18 +1191,23 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
           {step === 3 && (
             <div className="space-y-6">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-blue-800 text-sm font-medium flex items-center gap-2">
-                  <Camera size={16} />
-                  Document verification required - Use camera to take photos
-                </p>
+                <div className="flex items-start gap-2">
+                  <Camera size={20} className="text-blue-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-blue-800 text-sm font-medium">Document verification required</p>
+                    <p className="text-blue-600 text-xs mt-1">Use camera to take clear photos of your documents</p>
+                  </div>
+                </div>
               </div>
 
-              {/* Profile Photo - Regular file upload */}
+              {/* Profile Photo */}
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-2">
                   Profile Photo <span className="text-red-500">*</span>
                 </label>
-                <div className={`flex items-center gap-2 p-2 rounded-lg ${uploadStatus.profile_photo ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-200'}`}>
+                <div className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${
+                  uploadStatus.profile_photo ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-200'
+                }`}>
                   <input
                     name="profile_photo"
                     type="file"
@@ -742,44 +1216,79 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                     required
                     className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
                   />
-                  {uploadStatus.profile_photo ? <CheckCircle size={20} className="text-green-500" /> : <XCircle size={20} className="text-red-400" />}
+                  {uploadStatus.profile_photo ? (
+                    <CheckCircle size={20} className="text-green-500 flex-shrink-0" />
+                  ) : (
+                    <XCircle size={20} className="text-red-400 flex-shrink-0" />
+                  )}
                 </div>
+                {uploadStatus.profile_photo && (
+                  <p className="text-green-500 text-xs mt-1 flex items-center gap-1">
+                    <CheckCircle size={12} /> Profile photo uploaded
+                  </p>
+                )}
               </div>
 
-              {/* Passport Photo - Camera Only */}
+              {/* Passport Photo */}
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-2">
                   Passport Photo <span className="text-red-500">*</span>
                   <span className="text-xs text-gray-500 ml-2 flex items-center gap-1"><Camera size={12} /> Camera only</span>
                 </label>
                 {!uploadStatus.passport_photo ? (
-                  <button type="button" onClick={() => openCamera('passport')} className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors flex flex-col items-center gap-2">
+                  <button 
+                    type="button" 
+                    onClick={() => openCamera('passport')} 
+                    className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors flex flex-col items-center gap-2"
+                  >
                     <Camera size={32} className="text-gray-400" />
                     <span className="text-sm text-gray-600">Click to open camera and take passport photo</span>
                   </button>
                 ) : (
                   <div className="flex items-center gap-2 p-2 rounded-lg bg-green-50 border border-green-200">
-                    <div className="flex-1 flex items-center gap-2"><CheckCircle size={20} className="text-green-500" /><span className="text-sm text-green-700">Passport photo captured</span></div>
-                    <button type="button" onClick={() => openCamera('passport')} className="text-xs text-indigo-600 hover:text-indigo-800">Retake</button>
+                    <div className="flex-1 flex items-center gap-2">
+                      <CheckCircle size={20} className="text-green-500" />
+                      <span className="text-sm text-green-700">Passport photo captured</span>
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={() => openCamera('passport')} 
+                      className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                    >
+                      Retake
+                    </button>
                   </div>
                 )}
               </div>
 
-              {/* ID Photo - Camera Only */}
+              {/* ID Photo */}
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-2">
                   ID Photo <span className="text-red-500">*</span>
                   <span className="text-xs text-gray-500 ml-2 flex items-center gap-1"><Camera size={12} /> Camera only</span>
                 </label>
                 {!uploadStatus.id_photo ? (
-                  <button type="button" onClick={() => openCamera('id')} className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors flex flex-col items-center gap-2">
+                  <button 
+                    type="button" 
+                    onClick={() => openCamera('id')} 
+                    className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors flex flex-col items-center gap-2"
+                  >
                     <Camera size={32} className="text-gray-400" />
                     <span className="text-sm text-gray-600">Click to open camera and take ID photo</span>
                   </button>
                 ) : (
                   <div className="flex items-center gap-2 p-2 rounded-lg bg-green-50 border border-green-200">
-                    <div className="flex-1 flex items-center gap-2"><CheckCircle size={20} className="text-green-500" /><span className="text-sm text-green-700">ID photo captured</span></div>
-                    <button type="button" onClick={() => openCamera('id')} className="text-xs text-indigo-600 hover:text-indigo-800">Retake</button>
+                    <div className="flex-1 flex items-center gap-2">
+                      <CheckCircle size={20} className="text-green-500" />
+                      <span className="text-sm text-green-700">ID photo captured</span>
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={() => openCamera('id')} 
+                      className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                    >
+                      Retake
+                    </button>
                   </div>
                 )}
               </div>
@@ -788,13 +1297,36 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
               <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                 <h3 className="text-sm font-medium text-gray-700 mb-2">Upload Progress</h3>
                 <div className="space-y-2">
-                  <div className="flex justify-between items-center"><span className="text-xs text-gray-600">Profile Photo:</span>{uploadStatus.profile_photo ? <span className="text-xs text-green-600">Uploaded <CheckCircle size={12} /></span> : <span className="text-xs text-red-500">Pending</span>}</div>
-                  <div className="flex justify-between items-center"><span className="text-xs text-gray-600">Passport Photo:</span>{uploadStatus.passport_photo ? <span className="text-xs text-green-600">Captured <CheckCircle size={12} /></span> : <span className="text-xs text-red-500">Pending</span>}</div>
-                  <div className="flex justify-between items-center"><span className="text-xs text-gray-600">ID Photo:</span>{uploadStatus.id_photo ? <span className="text-xs text-green-600">Captured <CheckCircle size={12} /></span> : <span className="text-xs text-red-500">Pending</span>}</div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-600">Profile Photo:</span>
+                    {uploadStatus.profile_photo ? (
+                      <span className="text-xs text-green-600 flex items-center gap-1">Uploaded <CheckCircle size={12} /></span>
+                    ) : (
+                      <span className="text-xs text-red-500">Pending</span>
+                    )}
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-600">Passport Photo:</span>
+                    {uploadStatus.passport_photo ? (
+                      <span className="text-xs text-green-600 flex items-center gap-1">Captured <CheckCircle size={12} /></span>
+                    ) : (
+                      <span className="text-xs text-red-500">Pending</span>
+                    )}
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-600">ID Photo:</span>
+                    {uploadStatus.id_photo ? (
+                      <span className="text-xs text-green-600 flex items-center gap-1">Captured <CheckCircle size={12} /></span>
+                    ) : (
+                      <span className="text-xs text-red-500">Pending</span>
+                    )}
+                  </div>
                 </div>
                 {allDocumentsUploaded() && (
-                  <div className="mt-3 p-2 bg-green-100 rounded-lg">
-                    <p className="text-xs text-green-700 text-center font-medium">All documents uploaded!</p>
+                  <div className="mt-3 p-2 bg-green-100 rounded-lg animate-pulse">
+                    <p className="text-xs text-green-700 text-center font-medium flex items-center justify-center gap-2">
+                      <CheckCircle size={14} /> All documents uploaded!
+                    </p>
                   </div>
                 )}
               </div>
@@ -806,9 +1338,15 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
             <div className="space-y-5">
               {/* Location Type */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Business Location Type</label>
-                <div className="flex gap-4">
-                  <label className="flex items-center">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Business Location Type <span className="text-red-500">*</span>
+                </label>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <label className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
+                    formData.locationType === 'static' 
+                      ? 'border-indigo-500 bg-indigo-50' 
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}>
                     <input
                       type="radio"
                       name="locationType"
@@ -817,9 +1355,16 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                       onChange={handleChange}
                       className="mr-2"
                     />
-                    <span className="text-black">Static Seller (fixed shop/office)</span>
+                    <div>
+                      <span className="text-black font-medium">Static Seller</span>
+                      <p className="text-xs text-gray-500">Fixed shop or office location</p>
+                    </div>
                   </label>
-                  <label className="flex items-center">
+                  <label className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
+                    formData.locationType === 'dynamic' 
+                      ? 'border-indigo-500 bg-indigo-50' 
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}>
                     <input
                       type="radio"
                       name="locationType"
@@ -828,56 +1373,79 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                       onChange={handleChange}
                       className="mr-2"
                     />
-                    <span className="text-black">Dynamic Seller (moves around)</span>
+                    <div>
+                      <span className="text-black font-medium">Dynamic Seller</span>
+                      <p className="text-xs text-gray-500">Moves around, no fixed location</p>
+                    </div>
                   </label>
                 </div>
               </div>
 
               {/* Location Fetch */}
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Location <span className="text-red-500">*</span>
+                </label>
                 <button
                   type="button"
                   onClick={getCurrentLocation}
                   disabled={locationLoading}
-                  className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <MapPin size={18} />
                   {locationLoading ? "Getting location..." : "Get My Current Location"}
                 </button>
-                {locationError && <p className="text-red-500 text-sm mt-1">{locationError}</p>}
+                {locationError && (
+                  <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                    <AlertCircle size={14} /> {locationError}
+                  </p>
+                )}
                 {formData.locationLat && formData.locationLng && (
-                  <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-black font-medium">Location captured:</p>
-                    <p className="text-sm text-black">Coordinates: {formData.locationLat.toFixed(6)}, {formData.locationLng.toFixed(6)}</p>
+                  <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <p className="text-sm text-black font-medium flex items-center gap-2">
+                      <CheckCircle size={16} className="text-green-500" />
+                      Location captured:
+                    </p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Coordinates: {formData.locationLat.toFixed(6)}, {formData.locationLng.toFixed(6)}
+                    </p>
                     
-                    {/* Manual address input */}
                     <div className="mt-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Confirm or correct address:</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Confirm or correct address:
+                      </label>
                       <input
                         type="text"
                         value={manualAddress}
                         onChange={(e) => setManualAddress(e.target.value)}
                         placeholder="e.g., Achilet D, Tororo"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-black"
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-black ${
+                          addressConfirmed ? 'border-green-500 bg-green-50' : 'border-gray-300'
+                        }`}
                       />
                       <div className="flex items-center justify-between mt-2">
                         <button
                           type="button"
                           onClick={() => {
-                            setFormData(prev => ({ ...prev, locationAddress: manualAddress }));
-                            setAddressConfirmed(true);
+                            if (manualAddress.trim()) {
+                              setFormData(prev => ({ ...prev, locationAddress: manualAddress }));
+                              setAddressConfirmed(true);
+                              toast.success("Address confirmed!");
+                            } else {
+                              toast.warning("Please enter or confirm your address");
+                            }
                           }}
                           disabled={addressConfirmed}
-                          className={`px-3 py-1 text-sm rounded-md ${
+                          className={`px-3 py-1 text-sm rounded-md transition-colors ${
                             addressConfirmed
-                              ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                              ? 'bg-green-100 text-green-700 cursor-default'
                               : 'bg-indigo-600 text-white hover:bg-indigo-700'
                           }`}
                         >
                           {addressConfirmed ? 'Address Confirmed ✓' : 'Confirm Address'}
                         </button>
                         <span className="text-xs text-gray-500">
-                          {addressConfirmed ? 'You can still edit if needed' : 'Edit the address if it’s wrong, then confirm'}
+                          {addressConfirmed ? 'You can edit if needed' : 'Edit the address if it\'s wrong, then confirm'}
                         </span>
                       </div>
                     </div>
@@ -887,101 +1455,150 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
 
               {/* Payment Method */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Payment Method</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Preferred Payment Method <span className="text-red-500">*</span>
+                </label>
                 <div className="space-y-2">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="bank"
-                      checked={formData.paymentMethod === 'bank'}
-                      onChange={handleChange}
-                      className="mr-2"
-                    />
-                    <span className="text-black">Bank Transfer</span>
-                  </label>
-                  {formData.paymentMethod === 'bank' && (
-                    <div className="ml-6 space-y-3">
+                  {/* Bank Transfer */}
+                  <div className={`border rounded-lg p-3 transition-colors ${
+                    formData.paymentMethod === 'bank' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'
+                  }`}>
+                    <label className="flex items-center cursor-pointer">
                       <input
-                        type="text"
-                        name="bankName"
-                        value={formData.bankName}
+                        type="radio"
+                        name="paymentMethod"
+                        value="bank"
+                        checked={formData.paymentMethod === 'bank'}
                         onChange={handleChange}
-                        placeholder="Bank Name"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-black"
+                        className="mr-2"
                       />
-                      <input
-                        type="text"
-                        name="bankAccount"
-                        value={formData.bankAccount}
-                        onChange={handleChange}
-                        placeholder="Account Number"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-black"
-                      />
-                    </div>
-                  )}
+                      <div className="flex items-center gap-2">
+                        <Banknote size={18} className="text-gray-600" />
+                        <span className="text-black font-medium">Bank Transfer</span>
+                      </div>
+                    </label>
+                    {formData.paymentMethod === 'bank' && (
+                      <div className="ml-6 mt-3 space-y-3 animate-slideDown">
+                        <input
+                          type="text"
+                          name="bankName"
+                          value={formData.bankName}
+                          onChange={handleChange}
+                          placeholder="Bank Name"
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-black ${
+                            formData.bankName && formData.bankName.length > 0 ? 'border-green-500' : 'border-gray-300'
+                          }`}
+                        />
+                        <input
+                          type="text"
+                          name="bankAccount"
+                          value={formData.bankAccount}
+                          onChange={handleChange}
+                          placeholder="Account Number"
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-black ${
+                            formData.bankAccount && /^\d{8,}$/.test(formData.bankAccount) ? 'border-green-500' : 'border-gray-300'
+                          }`}
+                        />
+                        {formData.bankAccount && !/^\d{8,}$/.test(formData.bankAccount) && (
+                          <p className="text-red-500 text-xs flex items-center gap-1">
+                            <AlertCircle size={12} /> Account must be at least 8 digits
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
 
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="card"
-                      checked={formData.paymentMethod === 'card'}
-                      onChange={handleChange}
-                      className="mr-2"
-                    />
-                    <span className="text-black">Card Payment</span>
-                  </label>
-                  {formData.paymentMethod === 'card' && (
-                    <div className="ml-6">
+                  {/* Card Payment */}
+                  <div className={`border rounded-lg p-3 transition-colors ${
+                    formData.paymentMethod === 'card' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'
+                  }`}>
+                    <label className="flex items-center cursor-pointer">
                       <input
-                        type="text"
-                        name="cardLastFour"
-                        value={formData.cardLastFour}
+                        type="radio"
+                        name="paymentMethod"
+                        value="card"
+                        checked={formData.paymentMethod === 'card'}
                         onChange={handleChange}
-                        placeholder="Last 4 digits of card"
-                        maxLength="4"
-                        pattern="\d{4}"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-black"
+                        className="mr-2"
                       />
-                      <p className="text-xs text-gray-500 mt-1">We only store the last 4 digits for verification</p>
-                    </div>
-                  )}
+                      <div className="flex items-center gap-2">
+                        <CreditCard size={18} className="text-gray-600" />
+                        <span className="text-black font-medium">Card Payment</span>
+                      </div>
+                    </label>
+                    {formData.paymentMethod === 'card' && (
+                      <div className="ml-6 mt-3 animate-slideDown">
+                        <input
+                          type="text"
+                          name="cardLastFour"
+                          value={formData.cardLastFour}
+                          onChange={handleChange}
+                          placeholder="Last 4 digits of card"
+                          maxLength="4"
+                          pattern="\d{4}"
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-black ${
+                            formData.cardLastFour && /^\d{4}$/.test(formData.cardLastFour) ? 'border-green-500' : 'border-gray-300'
+                          }`}
+                        />
+                        <p className="text-xs text-gray-500 mt-1">We only store the last 4 digits for verification</p>
+                        {formData.cardLastFour && !/^\d{4}$/.test(formData.cardLastFour) && (
+                          <p className="text-red-500 text-xs flex items-center gap-1">
+                            <AlertCircle size={12} /> Please enter exactly 4 digits
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
 
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="mobile_money"
-                      checked={formData.paymentMethod === 'mobile_money'}
-                      onChange={handleChange}
-                      className="mr-2"
-                    />
-                    <span className="text-black">Mobile Money</span>
-                  </label>
-                  {formData.paymentMethod === 'mobile_money' && (
-                    <div className="ml-6 space-y-3">
-                      <select
-                        name="mobileProvider"
-                        value={formData.mobileProvider}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-black"
-                      >
-                        <option value="">Select Provider</option>
-                        <option value="MTN">MTN</option>
-                        <option value="Airtel">Airtel</option>
-                        <option value="Africell">Africell</option>
-                      </select>
+                  {/* Mobile Money */}
+                  <div className={`border rounded-lg p-3 transition-colors ${
+                    formData.paymentMethod === 'mobile_money' ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'
+                  }`}>
+                    <label className="flex items-center cursor-pointer">
                       <input
-                        type="tel"
-                        name="mobileNumber"
-                        value={formData.mobileNumber}
+                        type="radio"
+                        name="paymentMethod"
+                        value="mobile_money"
+                        checked={formData.paymentMethod === 'mobile_money'}
                         onChange={handleChange}
-                        placeholder="Mobile Number"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-black"
+                        className="mr-2"
                       />
-                    </div>
-                  )}
+                      <div className="flex items-center gap-2">
+                        <Smartphone size={18} className="text-gray-600" />
+                        <span className="text-black font-medium">Mobile Money</span>
+                      </div>
+                    </label>
+                    {formData.paymentMethod === 'mobile_money' && (
+                      <div className="ml-6 mt-3 space-y-3 animate-slideDown">
+                        <select
+                          name="mobileProvider"
+                          value={formData.mobileProvider}
+                          onChange={handleChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-black"
+                        >
+                          <option value="">Select Provider</option>
+                          <option value="MTN">MTN</option>
+                          <option value="Airtel">Airtel</option>
+                          <option value="Africell">Africell</option>
+                        </select>
+                        <input
+                          type="tel"
+                          name="mobileNumber"
+                          value={formData.mobileNumber}
+                          onChange={handleChange}
+                          placeholder="Mobile Number"
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-black ${
+                            formData.mobileNumber && /^\d{7,9}$/.test(formData.mobileNumber) ? 'border-green-500' : 'border-gray-300'
+                          }`}
+                        />
+                        {formData.mobileNumber && !/^\d{7,9}$/.test(formData.mobileNumber) && (
+                          <p className="text-red-500 text-xs flex items-center gap-1">
+                            <AlertCircle size={12} /> Mobile number must be 7-9 digits
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -1004,15 +1621,22 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                 onClick={nextStep}
                 className={`${step > 1 ? 'w-1/2' : 'w-full'} py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
               >
-                Next
+                Next Step →
               </button>
             ) : (
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
-                {loading ? "Creating account..." : "Create Account"}
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
+                    Creating account...
+                  </>
+                ) : (
+                  'Create Account'
+                )}
               </button>
             )}
           </div>
@@ -1025,16 +1649,38 @@ const SellerRegisterPage = ({ setIsAuthenticated, setUserRole }) => {
       </div>
 
       <style>{`
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-slideDown {
+          animation: slideDown 0.3s ease-out;
+        }
         input, textarea, select {
           color: #000000 !important;
         }
         input::placeholder, textarea::placeholder {
           color: #6b7280 !important;
         }
-        button.bg-indigo-500, button.bg-indigo-600 {
+        button.bg-indigo-500, button.bg-indigo-600, button.bg-green-600 {
           color: white !important;
         }
+        .animate-pulse {
+          animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+        }
       `}</style>
+
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar closeOnClick />
     </div>
   );
 };

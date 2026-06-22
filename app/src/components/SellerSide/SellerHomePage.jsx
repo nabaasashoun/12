@@ -1,12 +1,18 @@
-// SellerHomePage.jsx - Updated with FilterBar
+// SellerHomePage.jsx - Fully updated with FilterBar, real notifications, and all features
 import { SellerCard, SellerCardContent } from './SellerCard';
-import { Heart, MessageSquare, Star, Bookmark, Edit, Settings, Search, MoreHorizontal, X, Plus, ChevronUp, ChevronDown, RefreshCw, Filter, MapPin } from 'lucide-react';
+import { 
+  Heart, MessageSquare, Star, Bookmark, Edit, Settings, Search, 
+  MoreHorizontal, X, Plus, ChevronUp, ChevronDown, RefreshCw, 
+  Filter, MapPin, Bell, AlertCircle 
+} from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import { useSellerDarkMode } from '../../utils/SellerDarkModeContext';
 import { useChat } from '../../utils/ChatContext';
 import { ConnectionBadge } from '../Chat/ChatPage';
+
+// ── FilterBar Component ──────────────────────────────────────────────────────
 
 const FilterBar = ({ 
   isDarkMode, 
@@ -47,15 +53,13 @@ const FilterBar = ({
     if (showFilters && filterButtonRef.current) {
       const rect = filterButtonRef.current.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
-      const dropdownWidth = 288; // w-72 = 288px
+      const dropdownWidth = 288;
       
-      // Check if dropdown would go off the right edge
       const rightEdge = rect.left + dropdownWidth;
       let leftPosition = rect.left;
       let rightPosition = 'auto';
       
       if (rightEdge > viewportWidth) {
-        // Align to the right edge of the button
         rightPosition = viewportWidth - rect.right;
         leftPosition = 'auto';
       }
@@ -103,7 +107,6 @@ const FilterBar = ({
 
   return (
     <div className="relative">
-      {/* Filter Button */}
       <button
         ref={filterButtonRef}
         onClick={() => setShowFilters(!showFilters)}
@@ -119,7 +122,6 @@ const FilterBar = ({
         )}
       </button>
 
-      {/* Filter Dropdown - positioned to stay in viewport */}
       {showFilters && (
         <div 
           ref={dropdownRef}
@@ -135,7 +137,6 @@ const FilterBar = ({
           }}
         >
           <div className="space-y-4">
-            {/* Category Filter */}
             <div>
               <label className={`block text-xs font-medium mb-1.5 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                 Category
@@ -157,7 +158,6 @@ const FilterBar = ({
               </select>
             </div>
 
-            {/* Location Filter */}
             <div>
               <label className={`block text-xs font-medium mb-1.5 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                 Location
@@ -183,7 +183,6 @@ const FilterBar = ({
               </select>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
               <button
                 onClick={handleClearFilters}
@@ -235,6 +234,7 @@ const SellerHomePage = () => {
   const [filterCategory, setFilterCategory] = useState('');
   const [filterLocation, setFilterLocation] = useState('');
   const [searchToast, setSearchToast] = useState('');
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   
   const navigate = useNavigate();
   const { isConnected, startChat } = useChat();
@@ -270,6 +270,18 @@ const SellerHomePage = () => {
     fetchCategories();
   }, []);
 
+  // Fetch unread notifications count
+  const fetchUnreadNotifications = useCallback(async () => {
+    try {
+      const result = await api.getSimpleNotifications();
+      if (result.data && result.data.status === 'success') {
+        setUnreadNotifications(result.data.unread_count || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  }, []);
+
   // Fetch seller's products with filters
   const fetchSellerProducts = useCallback(async (filters = {}) => {
     const token = localStorage.getItem('accessToken');
@@ -281,7 +293,6 @@ const SellerHomePage = () => {
     try {
       setIsLoading(true);
       
-      // Build query params
       const params = new URLSearchParams();
       if (filters.category) params.append('category', filters.category);
       if (filters.location) params.append('location', filters.location);
@@ -344,11 +355,12 @@ const SellerHomePage = () => {
   // Initial fetch
   useEffect(() => {
     fetchSellerProducts();
+    fetchUnreadNotifications();
     if (!initialFetchDone) {
       fetchQuickDeals(true);
       setInitialFetchDone(true);
     }
-  }, [fetchSellerProducts, initialFetchDone]);
+  }, [fetchSellerProducts, fetchUnreadNotifications, initialFetchDone]);
 
   // Handle filter change
   const handleFilterChange = useCallback((filters) => {
@@ -379,6 +391,12 @@ const SellerHomePage = () => {
       return () => clearTimeout(timer);
     }
   }, [searchToast]);
+
+  // Poll for notifications every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(fetchUnreadNotifications, 30000);
+    return () => clearInterval(interval);
+  }, [fetchUnreadNotifications]);
 
   // Fetch seller's quick deals
   const fetchQuickDeals = useCallback(async (forceRefresh = false) => {
@@ -512,6 +530,7 @@ const SellerHomePage = () => {
         await fetchQuickDeals(true);
         localStorage.setItem('quickDealUpdated', Date.now().toString());
         window.dispatchEvent(new CustomEvent('quickDealCreated'));
+        alert('Quick deal created successfully!');
       } else {
         const errorMsg = result.error || 
                         (result.data?.message) || 
@@ -660,6 +679,8 @@ const SellerHomePage = () => {
         );
         alert('Product updated successfully!');
         closeEditModal();
+        // Refresh quick deals in case product details changed
+        fetchQuickDeals(true);
       } else {
         const err = await response.json();
         alert(`Update failed: ${err.error || 'Unknown error'}`);
@@ -709,10 +730,26 @@ const SellerHomePage = () => {
         </div>
       )}
 
-      {/* Header section with connection status */}
+      {/* Header section with connection status and notifications */}
       <div className="flex justify-between items-center mb-4">
         <h1 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>My Store</h1>
-        <ConnectionBadge isConnected={isConnected} />
+        <div className="flex items-center gap-3">
+          <ConnectionBadge isConnected={isConnected} />
+          <button
+            onClick={() => navigate('/seller/notifications')}
+            className={`relative p-2 rounded-full transition-colors ${
+              isDarkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-600'
+            }`}
+            aria-label="Notifications"
+          >
+            <Bell className="w-5 h-5" />
+            {unreadNotifications > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
+                {unreadNotifications > 9 ? '9+' : unreadNotifications}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Search and Filter Bar */}
@@ -783,7 +820,7 @@ const SellerHomePage = () => {
               quickDeals.slice(currentVerticalIndex, currentVerticalIndex + 4).map((item) => (
                 <div
                   key={item.id}
-                  className="flex flex-col items-center flex-shrink-0 cursor-pointer"
+                  className="flex flex-col items-center flex-shrink-0 cursor-pointer hover:scale-105 transition-transform duration-200"
                   onClick={() => handleQuickDealClick(item)}
                 >
                   <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full ${item.color} flex items-center justify-center border-2 ${isDarkMode ? 'border-gray-700' : 'border-white'} shadow-sm`}>
@@ -849,7 +886,7 @@ const SellerHomePage = () => {
           {!searchQuery && !filterCategory && !filterLocation && (
             <button
               onClick={() => navigate('/seller/add-product/step1')}
-              className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
             >
               Add Your First Product
             </button>
@@ -863,7 +900,7 @@ const SellerHomePage = () => {
             const truncatedDescription = post.content.length > 40 ? post.content.substring(0, 40) + '...' : post.content;
 
             return (
-              <SellerCard key={post.id} variant="elevated" className="overflow-hidden flex flex-col relative">
+              <SellerCard key={post.id} variant="elevated" className="overflow-hidden flex flex-col relative hover:shadow-xl transition-shadow duration-300">
                 <SellerCardContent className="p-0 flex flex-col">
                   <div className={`p-0 sm:p-3 flex flex-col border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
                     <div className="flex justify-between items-center">
@@ -1133,7 +1170,7 @@ const SellerHomePage = () => {
                 <button type="button" onClick={closeEditModal} className={`px-4 py-2 text-sm font-medium rounded-md ${isDarkMode ? 'text-gray-300 bg-gray-700 hover:bg-gray-600' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'}`}>
                   Cancel
                 </button>
-                <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors">
                   Update Product
                 </button>
               </div>
@@ -1205,7 +1242,7 @@ const SellerHomePage = () => {
                 <button
                   type="submit"
                   disabled={isCreating}
-                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center"
+                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center transition-colors"
                 >
                   {isCreating ? (
                     <>
@@ -1244,6 +1281,7 @@ const SellerHomePage = () => {
         </div>
       )}
 
+      {/* Styles */}
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(-5px); }
@@ -1253,8 +1291,13 @@ const SellerHomePage = () => {
           from { opacity: 0; transform: translateY(-20px) scale(0.95); }
           to { opacity: 1; transform: translateY(0) scale(1); }
         }
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.1); }
+        }
         .animate-fadeIn { animation: fadeIn 0.2s ease-out; }
         .animate-slideDown { animation: slideDown 0.3s ease-out; }
+        .animate-pulse { animation: pulse 2s infinite; }
       `}</style>
     </div>
   );

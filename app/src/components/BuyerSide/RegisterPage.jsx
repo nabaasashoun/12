@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Camera, Check, ChevronDown } from 'lucide-react';
+import { Eye, EyeOff, Camera, Check, ChevronDown, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import styled from 'styled-components';
@@ -19,12 +19,134 @@ const EAST_AFRICAN_COUNTRIES = [
   { code: 'ER', name: 'Eritrea', dialCode: '+291', flag: '🇪🇷' },
 ];
 
-const AnimatedInput = ({ type, name, value, onChange, label, required, autoComplete, ...props }) => {
+// ── Validation Functions ──────────────────────────────────────────────────────
+
+const validateName = (name) => {
+  if (!name || name.trim().length === 0) {
+    return { valid: false, message: 'Full name is required' };
+  }
+  if (name.trim().length < 2) {
+    return { valid: false, message: 'Name must be at least 2 characters' };
+  }
+  if (!/^[a-zA-Z\s\-']+$/.test(name.trim())) {
+    return { valid: false, message: 'Name can only contain letters, spaces, hyphens, and apostrophes' };
+  }
+  return { valid: true, message: '' };
+};
+
+const validateEmail = (email) => {
+  if (!email || email.trim().length === 0) {
+    return { valid: false, message: 'Email address is required' };
+  }
+  const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+  if (!emailRegex.test(email.trim())) {
+    return { valid: false, message: 'Please enter a valid email address (e.g., name@example.com)' };
+  }
+  return { valid: true, message: '' };
+};
+
+const validatePhone = (phone) => {
+  if (!phone || phone.trim().length === 0) {
+    return { valid: false, message: 'Phone number is required' };
+  }
+  if (!/^\d{7,9}$/.test(phone.trim())) {
+    return { valid: false, message: 'Phone number must be 7-9 digits' };
+  }
+  return { valid: true, message: '' };
+};
+
+const validatePassword = (password) => {
+  if (!password || password.length === 0) {
+    return { valid: false, message: 'Password is required' };
+  }
+  if (password.length < 6) {
+    return { valid: false, message: 'Password must be at least 6 characters' };
+  }
+  if (!/[A-Z]/.test(password)) {
+    return { valid: false, message: 'Password must contain at least one uppercase letter' };
+  }
+  if (!/[a-z]/.test(password)) {
+    return { valid: false, message: 'Password must contain at least one lowercase letter' };
+  }
+  if (!/[0-9]/.test(password)) {
+    return { valid: false, message: 'Password must contain at least one number' };
+  }
+  return { valid: true, message: '' };
+};
+
+const validateConfirmPassword = (password, confirmPassword) => {
+  if (!confirmPassword || confirmPassword.length === 0) {
+    return { valid: false, message: 'Please confirm your password' };
+  }
+  if (password !== confirmPassword) {
+    return { valid: false, message: 'Passwords do not match' };
+  }
+  return { valid: true, message: '' };
+};
+
+const validateDateOfBirth = (dob) => {
+  if (!dob) {
+    return { valid: true, message: '' }; // Optional field
+  }
+  const birthDate = new Date(dob);
+  const today = new Date();
+  const age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    // Age calculation
+  }
+  if (age < 13) {
+    return { valid: false, message: 'You must be at least 13 years old' };
+  }
+  if (age > 120) {
+    return { valid: false, message: 'Please enter a valid date of birth' };
+  }
+  return { valid: true, message: '' };
+};
+
+// ── Animated Input with Validation ──────────────────────────────────────────
+
+const AnimatedInput = ({ 
+  type, 
+  name, 
+  value, 
+  onChange, 
+  label, 
+  required, 
+  autoComplete, 
+  validation,
+  onBlur,
+  ...props 
+}) => {
+  const [isValid, setIsValid] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isTouched, setIsTouched] = useState(false);
+
   const labelChars = label.split('').map((char, index) => (
     <span key={index} style={{ transitionDelay: `${index * 50}ms` }}>
       {char === ' ' ? '\u00A0' : char}
     </span>
   ));
+
+  const handleBlur = (e) => {
+    setIsTouched(true);
+    if (validation) {
+      const result = validation(value);
+      setIsValid(result.valid);
+      setErrorMessage(result.message);
+    }
+    if (onBlur) onBlur(e);
+  };
+
+  const handleChange = (e) => {
+    setIsTouched(true);
+    if (validation) {
+      const result = validation(e.target.value);
+      setIsValid(result.valid);
+      setErrorMessage(result.message);
+    }
+    onChange(e);
+  };
 
   return (
     <StyledInputWrapper>
@@ -33,13 +155,28 @@ const AnimatedInput = ({ type, name, value, onChange, label, required, autoCompl
           type={type}
           name={name}
           value={value}
-          onChange={onChange}
+          onChange={handleChange}
+          onBlur={handleBlur}
           required={required}
           autoComplete={autoComplete}
+          className={isTouched ? (isValid ? 'valid' : 'invalid') : ''}
           {...props}
         />
         <label>{labelChars}</label>
+        {required && <span className="required-star">*</span>}
       </div>
+      {isTouched && !isValid && errorMessage && (
+        <div className="validation-error">
+          <AlertCircle size={14} />
+          <span>{errorMessage}</span>
+        </div>
+      )}
+      {isTouched && isValid && value && value.length > 0 && (
+        <div className="validation-success">
+          <CheckCircle size={14} />
+          <span>Valid</span>
+        </div>
+      )}
     </StyledInputWrapper>
   );
 };
@@ -47,7 +184,7 @@ const AnimatedInput = ({ type, name, value, onChange, label, required, autoCompl
 const StyledInputWrapper = styled.div`
   .form-control {
     position: relative;
-    margin: 20px 0 30px;
+    margin: 20px 0 10px;
     width: 100%;
   }
 
@@ -60,7 +197,7 @@ const StyledInputWrapper = styled.div`
     padding: 12px 0 6px;
     font-size: 16px;
     color: #333;
-    transition: border-color 0.2s;
+    transition: border-color 0.3s;
   }
 
   .form-control input:-webkit-autofill,
@@ -74,11 +211,32 @@ const StyledInputWrapper = styled.div`
     outline: none;
   }
 
-  .form-control input:focus,
-  .form-control input:valid,
-  .form-control input:-webkit-autofill {
+  .form-control input:focus {
     outline: 0;
     border-bottom-color: #3b82f6;
+  }
+
+  .form-control input.valid {
+    border-bottom-color: #22c55e;
+  }
+
+  .form-control input.invalid {
+    border-bottom-color: #ef4444;
+  }
+
+  .form-control input:focus + label span,
+  .form-control input:valid + label span,
+  .form-control input:-webkit-autofill + label span {
+    color: #3b82f6;
+    transform: translateY(-24px);
+  }
+
+  .form-control input.valid + label span {
+    color: #22c55e;
+  }
+
+  .form-control input.invalid + label span {
+    color: #ef4444;
   }
 
   .form-control label {
@@ -96,21 +254,85 @@ const StyledInputWrapper = styled.div`
     transition: 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 
-  .form-control input:focus + label span,
-  .form-control input:valid + label span,
-  .form-control input:-webkit-autofill + label span {
-    color: #3b82f6;
-    transform: translateY(-24px);
+  .required-star {
+    position: absolute;
+    top: 12px;
+    right: -8px;
+    color: #ef4444;
+    font-size: 18px;
+  }
+
+  .validation-error {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #ef4444;
+    font-size: 12px;
+    margin-top: 4px;
+    animation: slideDown 0.3s ease-out;
+  }
+
+  .validation-success {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #22c55e;
+    font-size: 12px;
+    margin-top: 4px;
+    animation: slideDown 0.3s ease-out;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 `;
+
+// ── Validation Summary Component ──────────────────────────────────────────
+
+const ValidationSummary = ({ errors, isVisible }) => {
+  if (!isVisible || errors.length === 0) return null;
+
+  return (
+    <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg animate-slideDown">
+      <div className="flex items-start gap-2">
+        <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+        <div>
+          <p className="text-red-700 font-medium text-sm">Please fix the following issues:</p>
+          <ul className="mt-1 space-y-1">
+            {errors.map((error, index) => (
+              <li key={index} className="text-red-600 text-sm flex items-start gap-1">
+                <span className="text-red-400">•</span>
+                {error}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Main RegisterPage ──────────────────────────────────────────────────────
 
 const RegisterPage = ({ setIsAuthenticated, setUserRole }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
-  const [selectedCountry, setSelectedCountry] = useState(EAST_AFRICAN_COUNTRIES[0]); // Default to Uganda
+  const [selectedCountry, setSelectedCountry] = useState(EAST_AFRICAN_COUNTRIES[0]);
   const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [validationErrors, setValidationErrors] = useState([]);
+  const [showValidationSummary, setShowValidationSummary] = useState(false);
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     buyerName: '',
     buyerLocation: '',
@@ -122,8 +344,14 @@ const RegisterPage = ({ setIsAuthenticated, setUserRole }) => {
     acceptTerms: false,
     subscribeNewsletter: true
   });
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+
+  // Validation functions for each field
+  const nameValidation = (value) => validateName(value);
+  const emailValidation = (value) => validateEmail(value);
+  const phoneValidation = (value) => validatePhone(value);
+  const passwordValidation = (value) => validatePassword(value);
+  const confirmPasswordValidation = (value) => validateConfirmPassword(formData.password, value);
+  const dobValidation = (value) => validateDateOfBirth(value);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -131,16 +359,29 @@ const RegisterPage = ({ setIsAuthenticated, setUserRole }) => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+    // Clear validation summary when user types
+    setShowValidationSummary(false);
   };
 
   const handlePhoneChange = (e) => {
-    const value = e.target.value.replace(/\D/g, '').slice(0, 9); // Max 9 digits after country code
+    const value = e.target.value.replace(/\D/g, '').slice(0, 9);
     setFormData(prev => ({ ...prev, buyerContact: value }));
+    setShowValidationSummary(false);
   };
 
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image size should be less than 5MB');
+        return;
+      }
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please upload an image file');
+        return;
+      }
       setProfilePhoto(file);
       const reader = new FileReader();
       reader.onloadend = () => setPhotoPreview(reader.result);
@@ -153,16 +394,50 @@ const RegisterPage = ({ setIsAuthenticated, setUserRole }) => {
     setIsCountryDropdownOpen(false);
   };
 
+  // Validate all fields
+  const validateForm = () => {
+    const errors = [];
+
+    const nameResult = validateName(formData.buyerName);
+    if (!nameResult.valid) errors.push(nameResult.message);
+
+    const emailResult = validateEmail(formData.buyerEmail);
+    if (!emailResult.valid) errors.push(emailResult.message);
+
+    const phoneResult = validatePhone(formData.buyerContact);
+    if (!phoneResult.valid) errors.push(phoneResult.message);
+
+    const passwordResult = validatePassword(formData.password);
+    if (!passwordResult.valid) errors.push(passwordResult.message);
+
+    const confirmResult = validateConfirmPassword(formData.password, formData.confirmPassword);
+    if (!confirmResult.valid) errors.push(confirmResult.message);
+
+    const dobResult = validateDateOfBirth(formData.buyerDoB);
+    if (!dobResult.valid) errors.push(dobResult.message);
+
+    if (!formData.acceptTerms) {
+      errors.push('You must accept the terms and conditions');
+    }
+
+    setValidationErrors(errors);
+    setShowValidationSummary(true);
+
+    if (errors.length > 0) {
+      // Show first error as toast
+      toast.error(errors[0]);
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match!");
-      return;
-    }
-
-    if (!formData.acceptTerms) {
-      toast.error("Please accept the terms and conditions");
+    if (!validateForm()) {
+      // Scroll to top to show validation summary
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
@@ -175,7 +450,6 @@ const RegisterPage = ({ setIsAuthenticated, setUserRole }) => {
     data.append('name', formData.buyerName);
     data.append('location', formData.buyerLocation);
     
-    // Format phone number with country code
     const formattedPhone = `${selectedCountry.code} ${selectedCountry.dialCode} ${formData.buyerContact}`;
     data.append('contact', formattedPhone);
     
@@ -191,6 +465,8 @@ const RegisterPage = ({ setIsAuthenticated, setUserRole }) => {
       });
 
       if (response.ok) {
+        toast.success('Account created successfully! Redirecting...');
+        
         const loginResponse = await fetch('/login/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -198,23 +474,26 @@ const RegisterPage = ({ setIsAuthenticated, setUserRole }) => {
         });
 
         if (loginResponse.ok) {
-          const { access } = await loginResponse.json();
-          localStorage.setItem('accessToken', access);
+          const loginData = await loginResponse.json();
+          localStorage.setItem('accessToken', loginData.access);
           localStorage.setItem('userRole', 'buyer');
           
           setIsAuthenticated(true);
           setUserRole('buyer');
           
           const firstName = formData.buyerName.split(' ')[0];
-          toast.success(`Account created successfully! Welcome, ${firstName}!`);
-          navigate('/');
+          toast.success(`Welcome, ${firstName}!`);
+          setTimeout(() => navigate('/'), 500);
         } else {
           toast.warning('Registration successful, but auto-login failed. Please login manually.');
-          navigate('/login');
+          setTimeout(() => navigate('/login'), 500);
         }
       } else {
         const errorData = await response.json();
-        const errorMessage = errorData.non_field_errors?.[0] || 'Registration failed. Please check your details.';
+        const errorMessage = errorData.non_field_errors?.[0] || 
+                           errorData.email?.[0] ||
+                           errorData.username?.[0] ||
+                           'Registration failed. Please check your details.';
         toast.error(errorMessage);
       }
     } catch (error) {
@@ -239,6 +518,9 @@ const RegisterPage = ({ setIsAuthenticated, setUserRole }) => {
           <h1 className="text-3xl font-bold text-gray-900 mb-1">Hello!</h1>
           <p className="text-gray-400 text-lg mb-8">Create your buyer account</p>
 
+          {/* Validation Summary */}
+          <ValidationSummary errors={validationErrors} isVisible={showValidationSummary} />
+
           <div className="flex flex-col lg:flex-row gap-8">
             <div className="w-full lg:w-1/2">
               <form onSubmit={handleSubmit} className="space-y-5">
@@ -254,8 +536,14 @@ const RegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                   </div>
                   <label className="cursor-pointer bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-600 transition-colors">
                     Upload Photo
-                    <input type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handlePhotoChange} 
+                      className="hidden" 
+                    />
                   </label>
+                  <p className="text-xs text-gray-500 mt-1">Max 5MB, JPG or PNG</p>
                 </div>
 
                 <AnimatedInput
@@ -266,6 +554,7 @@ const RegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                   label="Full Name"
                   required
                   autoComplete="off"
+                  validation={nameValidation}
                 />
 
                 <AnimatedInput
@@ -276,13 +565,13 @@ const RegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                   label="Email"
                   required
                   autoComplete="off"
+                  validation={emailValidation}
                 />
 
                 {/* Phone Input with Country Code */}
-                <div className="mb-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
                   <div className="flex">
-                    {/* Country Code Dropdown */}
                     <div className="relative mr-1">
                       <button
                         type="button"
@@ -294,7 +583,6 @@ const RegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                         <ChevronDown size={16} className="text-gray-500" />
                       </button>
 
-                      {/* Dropdown Menu */}
                       {isCountryDropdownOpen && (
                         <>
                           <div
@@ -324,17 +612,29 @@ const RegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                       )}
                     </div>
 
-                    {/* Phone Number Input */}
                     <input
                       type="tel"
                       name="buyerContact"
                       value={formData.buyerContact}
                       onChange={handlePhoneChange}
                       placeholder="701 234 567"
-                      className="flex-1 h-[35px] text-black px-3 py-2 border border-gray-300 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      className={`flex-1 h-[35px] text-black px-3 py-2 border rounded-r-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+                        formData.buyerContact && formData.buyerContact.length > 0
+                          ? /^\d{7,9}$/.test(formData.buyerContact)
+                            ? 'border-green-500'
+                            : 'border-red-500'
+                          : 'border-gray-300'
+                      }`}
                       autoComplete="off"
+                      required
                     />
                   </div>
+                  {formData.buyerContact && formData.buyerContact.length > 0 && !/^\d{7,9}$/.test(formData.buyerContact) && (
+                    <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                      <AlertCircle size={12} />
+                      Phone number must be 7-9 digits
+                    </p>
+                  )}
                 </div>
 
                 <AnimatedInput
@@ -344,6 +644,7 @@ const RegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                   onChange={handleInputChange}
                   label="Date of Birth"
                   autoComplete="off"
+                  validation={dobValidation}
                 />
 
                 <AnimatedInput
@@ -364,6 +665,7 @@ const RegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                     label="Password"
                     required
                     autoComplete="new-password"
+                    validation={passwordValidation}
                   />
                   <button
                     type="button"
@@ -384,6 +686,7 @@ const RegisterPage = ({ setIsAuthenticated, setUserRole }) => {
                     label="Confirm Password"
                     required
                     autoComplete="new-password"
+                    validation={confirmPasswordValidation}
                   />
                   <button
                     type="button"
@@ -470,6 +773,22 @@ const RegisterPage = ({ setIsAuthenticated, setUserRole }) => {
           </div>
         </div>
       </div>
+
+      <style>{`
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-slideDown {
+          animation: slideDown 0.3s ease-out;
+        }
+      `}</style>
 
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar closeOnClick />
     </div>
