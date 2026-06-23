@@ -32,7 +32,7 @@ const SettingsPage = () => {
   });
   
   const [userInfo, setUserInfo] = useState({
-    name: t('common.loading'),
+    name: 'Loading...',
     email: '',
     phone: '',
     bio: '',
@@ -100,12 +100,12 @@ const SettingsPage = () => {
 
         if (buyerRes.data && tokenRes.data?.user) {
           const userData = {
-            name: buyerRes.data.name || tokenRes.data.user.username || t('common.no_data'),
-            email: tokenRes.data.user.email || t('common.no_data'),
+            name: buyerRes.data.name || tokenRes.data.user.username || 'No data',
+            email: tokenRes.data.user.email || 'No data',
             username: tokenRes.data.user.username || '',
-            phone: buyerRes.data.contact || t('common.no_data'),
-            bio: buyerRes.data.location || t('settings.location_desc_placeholder'),
-            location: buyerRes.data.location || t('settings.location_desc_placeholder'),
+            phone: buyerRes.data.contact || 'No data',
+            bio: buyerRes.data.location || 'Update your location',
+            location: buyerRes.data.location || 'Update your location',
             memberSince: new Date().toLocaleDateString('en-US', {
               month: 'long',
               year: 'numeric'
@@ -116,9 +116,9 @@ const SettingsPage = () => {
           
           setProfileForm({
             name: userData.name,
-            phone: userData.phone === t('common.no_data') ? '' : userData.phone,
-            location: userData.location === t('settings.location_desc_placeholder') ? '' : userData.location,
-            bio: userData.bio === t('settings.location_desc_placeholder') ? '' : userData.bio
+            phone: userData.phone === 'No data' ? '' : userData.phone,
+            location: userData.location === 'Update your location' ? '' : userData.location,
+            bio: userData.bio === 'Update your location' ? '' : userData.bio
           });
           
           setEmailForm(prev => ({
@@ -165,19 +165,19 @@ const SettingsPage = () => {
     const errors = {};
     
     if (!emailForm.newEmail) {
-      errors.newEmail = t('settings.email_required');
+      errors.newEmail = 'Email address is required';
     } else if (!/\S+@\S+\.\S+/.test(emailForm.newEmail)) {
-      errors.newEmail = t('settings.email_invalid');
+      errors.newEmail = 'Please enter a valid email address';
     }
     
     if (!emailForm.confirmEmail) {
-      errors.confirmEmail = t('settings.confirm_email_required');
+      errors.confirmEmail = 'Please confirm your email address';
     } else if (emailForm.newEmail !== emailForm.confirmEmail) {
-      errors.confirmEmail = t('settings.emails_do_not_match');
+      errors.confirmEmail = 'Email addresses do not match';
     }
     
     if (!emailForm.password) {
-      errors.password = t('settings.password_required_verify');
+      errors.password = 'Please enter your current password to verify';
     }
     
     setEmailErrors(errors);
@@ -188,21 +188,21 @@ const SettingsPage = () => {
     const errors = {};
     
     if (!passwordForm.currentPassword) {
-      errors.currentPassword = t('settings.current_password_required');
+      errors.currentPassword = 'Current password is required';
     }
     
     if (!passwordForm.newPassword) {
-      errors.newPassword = t('settings.new_password_required');
+      errors.newPassword = 'New password is required';
     } else {
       if (passwordForm.newPassword.length < 8) {
-        errors.newPassword = t('settings.password_min_length');
+        errors.newPassword = 'Password must be at least 8 characters';
       }
     }
     
     if (!passwordForm.confirmPassword) {
-      errors.confirmPassword = t('settings.confirm_password_required');
+      errors.confirmPassword = 'Please confirm your new password';
     } else if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      errors.confirmPassword = t('settings.passwords_do_not_match');
+      errors.confirmPassword = 'Passwords do not match';
     }
     
     setPasswordErrors(errors);
@@ -212,7 +212,7 @@ const SettingsPage = () => {
   const validateProfileForm = () => {
     const errors = {};
     if (!profileForm.name) {
-      errors.name = t('settings.name_required');
+      errors.name = 'Full name is required';
     }
     return Object.keys(errors).length === 0;
   };
@@ -227,7 +227,7 @@ const SettingsPage = () => {
       const response = await api.changeEmail(emailForm.newEmail, emailForm.password);
       
       if (!response.error) {
-        setEmailSuccess(t('settings.email_updated_success'));
+        setEmailSuccess('Email updated successfully');
         setEmailForm(prev => ({ ...prev, password: '' }));
         setEmailErrors({});
         setUserInfo(prev => ({ ...prev, email: emailForm.newEmail }));
@@ -245,13 +245,13 @@ const SettingsPage = () => {
         
         setTimeout(() => setEmailSuccess(''), 3000);
       } else if (response.status === 401) {
-        setEmailErrors({ password: response.data?.error || t('settings.current_password_incorrect') });
+        setEmailErrors({ password: response.data?.error || 'Current password is incorrect' });
       } else {
-        setEmailErrors({ general: response.data?.error || t('settings.email_update_failed') });
+        setEmailErrors({ general: response.data?.error || 'Failed to update email' });
       }
     } catch (error) {
       console.error('Error changing email:', error);
-      setEmailErrors({ general: t('common.network_error') });
+      setEmailErrors({ general: 'Network error. Please try again.' });
     } finally {
       setIsSavingEmail(false);
     }
@@ -267,7 +267,7 @@ const SettingsPage = () => {
       const response = await api.changePassword(passwordForm.currentPassword, passwordForm.newPassword);
       
       if (!response.error) {
-        setPasswordSuccess(t('settings.password_updated_success'));
+        setPasswordSuccess('Password updated successfully');
         setPasswordForm({
           currentPassword: '',
           newPassword: '',
@@ -276,13 +276,13 @@ const SettingsPage = () => {
         setPasswordErrors({});
         setTimeout(() => setPasswordSuccess(''), 3000);
       } else if (response.status === 401) {
-        setPasswordErrors({ currentPassword: response.data?.error || t('settings.current_password_incorrect') });
+        setPasswordErrors({ currentPassword: response.data?.error || 'Current password is incorrect' });
       } else {
-        setPasswordErrors({ general: response.data?.error || t('settings.password_update_failed') });
+        setPasswordErrors({ general: response.data?.error || 'Failed to update password' });
       }
     } catch (error) {
       console.error('Error changing password:', error);
-      setPasswordErrors({ general: t('common.network_error') });
+      setPasswordErrors({ general: 'Network error. Please try again.' });
     } finally {
       setIsSavingPassword(false);
     }
@@ -304,16 +304,16 @@ const SettingsPage = () => {
         setUserInfo(prev => ({
           ...prev,
           name: profileForm.name,
-          phone: profileForm.phone || t('common.no_data'),
-          location: profileForm.location || t('settings.location_desc_placeholder'),
-          bio: profileForm.location || t('settings.location_desc_placeholder')
+          phone: profileForm.phone || 'No data',
+          location: profileForm.location || 'Update your location',
+          bio: profileForm.location || 'Update your location'
         }));
       } else {
-        alert(`${t('settings.profile_update_failed')}: ${response.data?.error || t('common.unknown_error')}`);
+        alert(`Failed to update profile: ${response.data?.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error saving profile:', error);
-      alert(t('settings.profile_update_failed_retry'));
+      alert('Failed to update profile. Please try again.');
     } finally {
       setIsSavingProfile(false);
     }
@@ -347,9 +347,9 @@ const SettingsPage = () => {
 
   const getPasswordStrengthText = () => {
     const strength = Object.values(passwordStrength).filter(Boolean).length;
-    if (strength <= 2) return t('settings.weak');
-    if (strength <= 4) return t('settings.medium');
-    return t('settings.strong');
+    if (strength <= 2) return 'Weak';
+    if (strength <= 4) return 'Medium';
+    return 'Strong';
   };
 
   const toggleNotification = (key) => {
@@ -368,7 +368,7 @@ const SettingsPage = () => {
       <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
         <div className="p-3 sm:p-4 md:p-6 max-w-4xl mx-auto">
           <div className="flex items-center justify-center h-64">
-            <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('common.loading')}</div>
+            <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Loading...</div>
           </div>
         </div>
       </div>
@@ -397,10 +397,10 @@ const SettingsPage = () => {
           <div className="flex-1">
             <p className={`text-[20px] sm:text-2xl font-bold ${
               isDarkMode ? 'text-gray-100' : 'text-black'
-            }`}>{t('settings.title')}</p>
+            }`}>Settings</p>
             <p className={`text-sm ${
               isDarkMode ? 'text-gray-400' : 'text-gray-500'
-            }`}>{t('settings.subtitle')}</p>
+            }`}>Manage your account preferences</p>
           </div>
           {/* Dark mode toggle button */}
           <button
@@ -410,7 +410,7 @@ const SettingsPage = () => {
                 ? 'bg-purple-600 hover:bg-purple-700 text-white' 
                 : 'bg-purple-100 hover:bg-purple-200 text-purple-600'
             }`}
-            aria-label={t('settings.dark_mode')}
+            aria-label="Toggle dark mode"
           >
             {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
@@ -429,7 +429,7 @@ const SettingsPage = () => {
             <div className="flex-1">
               <h2 className="text-xl font-bold text-white">{userInfo.name}</h2>
               <p className="text-white/80 text-sm">@{userInfo.username}</p>
-              <p className="text-white/60 text-xs mt-1">{t('account.member_since', { date: userInfo.memberSince })}</p>
+              <p className="text-white/60 text-xs mt-1">Member since {userInfo.memberSince}</p>
             </div>
           </div>
         </div>
@@ -455,7 +455,7 @@ const SettingsPage = () => {
                   <User className={`w-4 h-4 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
                 </div>
                 <span className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>
-                  {t('settings.account_settings')}
+                  Account Settings
                 </span>
               </div>
               {expandedGroups.account ? (
@@ -476,7 +476,7 @@ const SettingsPage = () => {
                     <div className="flex items-center space-x-3">
                       <User className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                       <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        {t('settings.profile_info')}
+                        Profile Information
                       </span>
                     </div>
                     {expandedSections.profile ? (
@@ -492,7 +492,7 @@ const SettingsPage = () => {
                         <div>
                           <label className={`block text-xs mb-1 ${
                             isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                          }`}>{t('settings.full_name')}</label>
+                          }`}>Full Name</label>
                           <input
                             type="text"
                             value={profileForm.name}
@@ -502,13 +502,13 @@ const SettingsPage = () => {
                                 ? 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-blue-500' 
                                 : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-blue-500'
                             } border`}
-                            placeholder={t('settings.full_name_placeholder')}
+                            placeholder="Enter your full name"
                           />
                         </div>
                         <div>
                           <label className={`block text-xs mb-1 ${
                             isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                          }`}>{t('settings.username')}</label>
+                          }`}>Username</label>
                           <input
                             type="text"
                             value={`@${userInfo.username}`}
@@ -524,7 +524,7 @@ const SettingsPage = () => {
                       <div>
                         <label className={`block text-xs mb-1 ${
                           isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                        }`}>{t('settings.location')}</label>
+                        }`}>Location</label>
                         <input
                           type="text"
                           value={profileForm.location}
@@ -534,13 +534,13 @@ const SettingsPage = () => {
                               ? 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-blue-500' 
                               : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-blue-500'
                           } border`}
-                          placeholder={t('settings.location_placeholder')}
+                          placeholder="Enter your location"
                         />
                       </div>
                       <div>
                         <label className={`block text-xs mb-1 ${
                           isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                        }`}>{t('settings.phone')}</label>
+                        }`}>Phone Number</label>
                         <input
                           type="tel"
                           value={profileForm.phone}
@@ -550,7 +550,7 @@ const SettingsPage = () => {
                               ? 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-blue-500' 
                               : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-blue-500'
                           } border`}
-                          placeholder={t('settings.phone_placeholder')}
+                          placeholder="Enter your phone number"
                         />
                       </div>
                       <button 
@@ -562,7 +562,7 @@ const SettingsPage = () => {
                             : 'bg-blue-600 hover:bg-blue-700 text-white'
                         } disabled:opacity-50`}
                       >
-                        {isSavingProfile ? t('common.saving') : t('settings.save_profile')}
+                        {isSavingProfile ? 'Saving...' : 'Save Profile'}
                       </button>
                     </div>
                   )}
@@ -577,7 +577,7 @@ const SettingsPage = () => {
                     <div className="flex items-center space-x-3">
                       <Mail className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                       <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        {t('settings.email_address')}
+                        Email Address
                       </span>
                     </div>
                     {expandedSections.email ? (
@@ -613,7 +613,7 @@ const SettingsPage = () => {
                       <div>
                         <label className={`block text-xs mb-1 ${
                           isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                        }`}>{t('settings.current_email')}</label>
+                        }`}>Current Email</label>
                         <input
                           type="email"
                           value={userInfo.email}
@@ -628,7 +628,7 @@ const SettingsPage = () => {
                       <div>
                         <label className={`block text-xs mb-1 ${
                           isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                        }`}>{t('settings.new_email')}</label>
+                        }`}>New Email</label>
                         <input
                           type="email"
                           value={emailForm.newEmail}
@@ -642,7 +642,7 @@ const SettingsPage = () => {
                                 ? 'bg-white border-red-300 text-black' 
                                 : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-blue-500'
                           }`}
-                          placeholder={t('settings.new_email_placeholder')}
+                          placeholder="Enter new email address"
                         />
                         {emailErrors.newEmail && (
                           <p className="mt-1 text-xs text-red-600 dark:text-red-400">{emailErrors.newEmail}</p>
@@ -651,7 +651,7 @@ const SettingsPage = () => {
                       <div>
                         <label className={`block text-xs mb-1 ${
                           isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                        }`}>{t('settings.confirm_email')}</label>
+                        }`}>Confirm Email</label>
                         <input
                           type="email"
                           value={emailForm.confirmEmail}
@@ -665,7 +665,7 @@ const SettingsPage = () => {
                                 ? 'bg-white border-red-300 text-black' 
                                 : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-blue-500'
                           }`}
-                          placeholder={t('settings.confirm_email_placeholder')}
+                          placeholder="Confirm new email address"
                         />
                         {emailErrors.confirmEmail && (
                           <p className="mt-1 text-xs text-red-600 dark:text-red-400">{emailErrors.confirmEmail}</p>
@@ -674,7 +674,7 @@ const SettingsPage = () => {
                       <div>
                         <label className={`block text-xs mb-1 ${
                           isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                        }`}>{t('settings.password_verify')}</label>
+                        }`}>Current Password (to verify)</label>
                         <div className="relative">
                           <input
                             type={showEmailPassword ? 'text' : 'password'}
@@ -689,7 +689,7 @@ const SettingsPage = () => {
                                   ? 'bg-white border-red-300 text-black' 
                                   : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-blue-500'
                             }`}
-                            placeholder={t('settings.password_placeholder')}
+                            placeholder="Enter your current password"
                           />
                           <button
                             type="button"
@@ -714,7 +714,7 @@ const SettingsPage = () => {
                             : 'bg-blue-600 hover:bg-blue-700 text-white'
                         } disabled:opacity-50`}
                       >
-                        {isSavingEmail ? t('common.updating') : t('settings.update_email')}
+                        {isSavingEmail ? 'Updating...' : 'Update Email'}
                       </button>
                     </div>
                   )}
@@ -742,7 +742,7 @@ const SettingsPage = () => {
                   <Shield className={`w-4 h-4 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
                 </div>
                 <span className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>
-                  {t('settings.security')}
+                  Security
                 </span>
               </div>
               {expandedGroups.security ? (
@@ -763,7 +763,7 @@ const SettingsPage = () => {
                     <div className="flex items-center space-x-3">
                       <Key className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                       <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        {t('settings.change_password')}
+                        Change Password
                       </span>
                     </div>
                     {expandedSections.password ? (
@@ -799,7 +799,7 @@ const SettingsPage = () => {
                       <div>
                         <label className={`block text-xs mb-1 ${
                           isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                        }`}>{t('settings.current_password')}</label>
+                        }`}>Current Password</label>
                         <div className="relative">
                           <input
                             type={showPasswords.current ? 'text' : 'password'}
@@ -814,7 +814,7 @@ const SettingsPage = () => {
                                   ? 'bg-white border-red-300 text-black' 
                                   : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-blue-500'
                             }`}
-                            placeholder={t('settings.current_password_placeholder')}
+                            placeholder="Enter your current password"
                           />
                           <button
                             type="button"
@@ -834,7 +834,7 @@ const SettingsPage = () => {
                       <div>
                         <label className={`block text-xs mb-1 ${
                           isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                        }`}>{t('settings.new_password')}</label>
+                        }`}>New Password</label>
                         <div className="relative">
                           <input
                             type={showPasswords.new ? 'text' : 'password'}
@@ -849,7 +849,7 @@ const SettingsPage = () => {
                                   ? 'bg-white border-red-300 text-black' 
                                   : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-blue-500'
                             }`}
-                            placeholder={t('settings.new_password_placeholder')}
+                            placeholder="Enter your new password"
                           />
                           <button
                             type="button"
@@ -869,7 +869,7 @@ const SettingsPage = () => {
                       <div>
                         <label className={`block text-xs mb-1 ${
                           isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                        }`}>{t('settings.confirm_password')}</label>
+                        }`}>Confirm Password</label>
                         <div className="relative">
                           <input
                             type={showPasswords.confirm ? 'text' : 'password'}
@@ -884,7 +884,7 @@ const SettingsPage = () => {
                                   ? 'bg-white border-red-300 text-black' 
                                   : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-blue-500'
                             }`}
-                            placeholder={t('settings.confirm_password_placeholder')}
+                            placeholder="Confirm your new password"
                           />
                           <button
                             type="button"
@@ -907,7 +907,7 @@ const SettingsPage = () => {
                         }`}>
                           <div className="flex items-center justify-between mb-2">
                             <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                              {t('settings.password_strength')}
+                              Password Strength
                             </span>
                             <span className={`text-xs font-medium ${
                               getPasswordStrengthColor().replace('bg-', 'text-')
@@ -930,7 +930,7 @@ const SettingsPage = () => {
                               ) : (
                                 <XCircle className="w-3 h-3 text-red-500 mr-1" />
                               )}
-                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>{t('settings.min_chars')}</span>
+                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Min 8 characters</span>
                             </div>
                             <div className="flex items-center">
                               {passwordStrength.hasUpperCase ? (
@@ -938,7 +938,7 @@ const SettingsPage = () => {
                               ) : (
                                 <XCircle className="w-3 h-3 text-red-500 mr-1" />
                               )}
-                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>{t('settings.uppercase')}</span>
+                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Uppercase</span>
                             </div>
                             <div className="flex items-center">
                               {passwordStrength.hasLowerCase ? (
@@ -946,7 +946,7 @@ const SettingsPage = () => {
                               ) : (
                                 <XCircle className="w-3 h-3 text-red-500 mr-1" />
                               )}
-                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>{t('settings.lowercase')}</span>
+                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Lowercase</span>
                             </div>
                             <div className="flex items-center">
                               {passwordStrength.hasNumber ? (
@@ -954,7 +954,7 @@ const SettingsPage = () => {
                               ) : (
                                 <XCircle className="w-3 h-3 text-red-500 mr-1" />
                               )}
-                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>{t('settings.number')}</span>
+                              <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Number</span>
                             </div>
                           </div>
                         </div>
@@ -969,7 +969,7 @@ const SettingsPage = () => {
                             : 'bg-green-600 hover:bg-green-700 text-white'
                         } disabled:opacity-50`}
                       >
-                        {isSavingPassword ? t('common.updating') : t('settings.update_password')}
+                        {isSavingPassword ? 'Updating...' : 'Update Password'}
                       </button>
                     </div>
                   )}
@@ -981,14 +981,14 @@ const SettingsPage = () => {
                     <div className="flex items-center space-x-3">
                       <Shield className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                       <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        {t('settings.two_factor')}
+                        Two-Factor Authentication
                       </span>
                     </div>
                     <span className={`text-xs px-2 py-1 rounded-full ${
                       isDarkMode 
                         ? 'bg-gray-700 text-gray-400' 
                         : 'bg-gray-100 text-gray-600'
-                    }`}>{t('settings.coming_soon')}</span>
+                    }`}>Coming soon</span>
                   </div>
                 </div>
               </div>
@@ -1014,7 +1014,7 @@ const SettingsPage = () => {
                   <Palette className={`w-4 h-4 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`} />
                 </div>
                 <span className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>
-                  {t('settings.preferences')}
+                  Preferences
                 </span>
               </div>
               {expandedGroups.preferences ? (
@@ -1039,7 +1039,7 @@ const SettingsPage = () => {
                         <Moon className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                       )}
                       <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        {t('settings.appearance')}
+                        Appearance
                       </span>
                     </div>
                     {expandedSections.appearance ? (
@@ -1053,9 +1053,9 @@ const SettingsPage = () => {
                     <div className="mt-3 pl-7">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('settings.dark_mode')}</p>
+                          <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Dark Mode</p>
                           <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                            {t('settings.dark_mode_desc')}
+                            Switch between light and dark themes
                           </p>
                         </div>
                         <button
@@ -1082,7 +1082,7 @@ const SettingsPage = () => {
                     <div className="flex items-center space-x-3">
                       <Bell className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                       <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        {t('settings.notifications')}
+                        Notifications
                       </span>
                     </div>
                     {expandedSections.notifications ? (
@@ -1096,9 +1096,9 @@ const SettingsPage = () => {
                     <div className="mt-3 space-y-3 pl-7">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('settings.email_notifications')}</p>
+                          <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Email Notifications</p>
                           <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                            {t('settings.email_notifications_desc')}
+                            Receive updates via email
                           </p>
                         </div>
                         <button
@@ -1117,9 +1117,9 @@ const SettingsPage = () => {
                       
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('settings.push_notifications')}</p>
+                          <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Push Notifications</p>
                           <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                            {t('settings.push_notifications_desc')}
+                            Receive push notifications on your device
                           </p>
                         </div>
                         <button
@@ -1148,7 +1148,7 @@ const SettingsPage = () => {
                     <div className="flex items-center space-x-3">
                       <Globe className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                       <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        {t('settings.language_region')}
+                        Language & Region
                       </span>
                     </div>
                     {expandedSections.language ? (
@@ -1173,7 +1173,7 @@ const SettingsPage = () => {
                         <option value="lg">Luganda</option>
                       </select>
                       <p className={`text-xs mt-2 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                        {t('settings.more_languages')}
+                        More languages coming soon
                       </p>
                     </div>
                   )}
@@ -1194,7 +1194,7 @@ const SettingsPage = () => {
             } focus:outline-none focus:ring-2 focus:ring-red-500`}
           >
             <LogOut className="w-4 h-4" />
-            <span className="font-medium">{t('common.logout')}</span>
+            <span className="font-medium">Logout</span>
           </button>
         </div>
       </div>

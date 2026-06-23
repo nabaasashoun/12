@@ -416,7 +416,7 @@ const SellerSettings = () => {
     <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="p-3 sm:p-4 md:p-6 max-w-4xl mx-auto">
         {/* Header */}
-        <div className={`flex items-center mb-6 sm:mb-8 p-4 rounded-xl shadow-sm transition-colors ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+        <div className={`flex items-center mb-3 sm:mb-4 p-4 rounded-xl shadow-sm transition-colors ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
           <button
             onClick={() => navigate(-1)}
             className={`p-2 mr-4 rounded-lg transition-all ${isDarkMode 
@@ -427,8 +427,7 @@ const SellerSettings = () => {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex-1">
-            <p className={`text-[20px] sm:text-2xl font-bold ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Seller Settings</p>
-            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Manage your seller account and business</p>
+            <p className={`text-[15px] sm:text-xl font-bold ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Settings</p>
           </div>
           {/* Seller-specific Dark Mode Toggle */}
           <button
