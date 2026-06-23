@@ -1,4 +1,4 @@
-// api.js - Fully updated with request deduplication and caching
+// api.js - Fully updated with report APIs and request deduplication
 const API_BASE_URL = 'http://localhost:8000/api';
 
 class Api {
@@ -961,147 +961,75 @@ class Api {
     });
   }
 
-// Add these to your api.js file
-
-  // Report APIs
-  createReport: async (reportData) => {
-    const token = localStorage.getItem('accessToken') || localStorage.getItem('access');
-    if (!token) {
-      console.warn('[API] No token available for createReport');
-      return { error: 'Not authenticated' };
-    }
+  // ============ REPORT APIs ============
+  
+  async createReport(reportData) {
+    console.log('========== API: CREATE REPORT ==========');
+    console.log('Report data:', reportData);
     
     try {
-      const response = await fetch(`${API_URL}/reports/create/`, {
+      const response = await this.request('/reports/create/', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(reportData),
       });
       
-      const data = await response.json();
-      if (!response.ok) {
-        return { error: data.error || 'Failed to create report', data };
-      }
-      return { data };
+      console.log('Create report response:', response);
+      console.log('========== API REPORT COMPLETE ==========');
+      
+      return response;
     } catch (error) {
-      console.error('[API] createReport error:', error);
-      return { error: error.message };
+      console.error('Error in createReport:', error);
+      return { error: true, message: error.message };
     }
-  },
+  }
 
-  getReports: async (status = null) => {
-    const token = localStorage.getItem('accessToken') || localStorage.getItem('access');
-    if (!token) {
-      console.warn('[API] No token available for getReports');
-      return { error: 'Not authenticated' };
-    }
-    
+  async getReports(status = null) {
     try {
-      let url = `${API_URL}/reports/`;
+      let url = '/reports/';
       if (status) {
         url += `?status=${status}`;
       }
       
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      const data = await response.json();
-      if (!response.ok) {
-        return { error: data.error || 'Failed to fetch reports', data };
-      }
-      return { data };
+      const response = await this.request(url);
+      return response;
     } catch (error) {
-      console.error('[API] getReports error:', error);
-      return { error: error.message };
+      console.error('Error in getReports:', error);
+      return { error: true, message: error.message };
     }
-  },
+  }
 
-  getMyReports: async () => {
-    const token = localStorage.getItem('accessToken') || localStorage.getItem('access');
-    if (!token) {
-      console.warn('[API] No token available for getMyReports');
-      return { error: 'Not authenticated' };
-    }
-    
+  async getMyReports() {
     try {
-      const response = await fetch(`${API_URL}/reports/my/`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      const data = await response.json();
-      if (!response.ok) {
-        return { error: data.error || 'Failed to fetch reports', data };
-      }
-      return { data };
+      const response = await this.request('/reports/my/');
+      return response;
     } catch (error) {
-      console.error('[API] getMyReports error:', error);
-      return { error: error.message };
+      console.error('Error in getMyReports:', error);
+      return { error: true, message: error.message };
     }
-  },
+  }
 
-  getReportDetail: async (reportId) => {
-    const token = localStorage.getItem('accessToken') || localStorage.getItem('access');
-    if (!token) {
-      console.warn('[API] No token available for getReportDetail');
-      return { error: 'Not authenticated' };
-    }
-    
+  async getReportDetail(reportId) {
     try {
-      const response = await fetch(`${API_URL}/reports/${reportId}/`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      const data = await response.json();
-      if (!response.ok) {
-        return { error: data.error || 'Failed to fetch report details', data };
-      }
-      return { data };
+      const response = await this.request(`/reports/${reportId}/`);
+      return response;
     } catch (error) {
-      console.error('[API] getReportDetail error:', error);
-      return { error: error.message };
+      console.error('Error in getReportDetail:', error);
+      return { error: true, message: error.message };
     }
-  },
+  }
 
-  updateReportStatus: async (reportId, statusData) => {
-    const token = localStorage.getItem('accessToken') || localStorage.getItem('access');
-    if (!token) {
-      console.warn('[API] No token available for updateReportStatus');
-      return { error: 'Not authenticated' };
-    }
-    
+  async updateReportStatus(reportId, statusData) {
     try {
-      const response = await fetch(`${API_URL}/reports/${reportId}/update-status/`, {
+      const response = await this.request(`/reports/${reportId}/update-status/`, {
         method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(statusData),
       });
-      
-      const data = await response.json();
-      if (!response.ok) {
-        return { error: data.error || 'Failed to update report status', data };
-      }
-      return { data };
+      return response;
     } catch (error) {
-      console.error('[API] updateReportStatus error:', error);
-      return { error: error.message };
+      console.error('Error in updateReportStatus:', error);
+      return { error: true, message: error.message };
     }
-  },
+  }
 
 }
 

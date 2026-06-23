@@ -1,11 +1,11 @@
-// BuyerHomePage.jsx - Updated with ProductMetaTags for social sharing
+// BuyerHomePage.jsx - Updated with ProductMetaTags for social sharing and Report functionality
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BuyerCard, BuyerCardContent } from './BuyerCard';
 import {
   Heart, MessageSquare, Star, Bookmark, Plus, Settings,
   MoreHorizontal, X, ChevronUp, ChevronDown, Share2,
-  Search, MapPin, Filter, Check
+  Search, MapPin, Filter, Check, Flag
 } from 'lucide-react';
 import api from '../../utils/api';
 import { useCart } from '../../utils/CartContext';
@@ -16,6 +16,7 @@ import { usePageLoading } from '../../utils/PageLoadingContext';
 import { useDarkMode } from '../../utils/BuyerDarkModeContext';
 import ShareModal from './ShareModal';
 import ProductMetaTags from './ProductMetaTags';
+import ReportModal from './ReportModal';
 import { getProductShareLink, copyToClipboard } from '../../utils/shareUtils';
 import Header from './Header';
 
@@ -98,6 +99,13 @@ const BuyerHomePage = () => {
 
   // State for the product being shared via meta tags
   const [sharingProduct, setSharingProduct] = useState(null);
+
+  // Report modal state
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportingSellerId, setReportingSellerId] = useState(null);
+  const [reportingSellerName, setReportingSellerName] = useState('');
+  const [reportingProductId, setReportingProductId] = useState(null);
+  const [reportingProductName, setReportingProductName] = useState('');
 
   // fetchProductsWithParams with location support
   const fetchProductsWithParams = useCallback(async (params = {}) => {
@@ -383,6 +391,15 @@ const BuyerHomePage = () => {
     closeDropdown();
   };
 
+  const handleReportSeller = (post) => {
+    closeDropdown();
+    setReportingSellerId(post.sellerId);
+    setReportingSellerName(post.sellerName);
+    setReportingProductId(post.id);
+    setReportingProductName(post.product);
+    setReportModalOpen(true);
+  };
+
   const toggleDescriptionExpansion = (postId, event) => {
     if (expandedDescriptionId === postId) {
       setExpandedDescriptionId(null);
@@ -422,9 +439,13 @@ const BuyerHomePage = () => {
 
   const dropdownItems = useCallback((post) => {
     return [
-      { label: 'Report', action: () => { closeDropdown(); } },
+      { 
+        label: 'Report Seller', 
+        action: () => handleReportSeller(post)
+      },
       { 
         label: 'Message Seller', 
+        icon: MessageSquare,
         action: async () => {
           closeDropdown();
           let targetUserId = post?.sellerUserId;
@@ -449,16 +470,18 @@ const BuyerHomePage = () => {
           }
         }
       },
-      { label: 'Go to Post', action: () => { closeDropdown(); navigate(`/product/${post.id}`); } },
+      { label: 'Go to Post', icon: null, action: () => { closeDropdown(); navigate(`/product/${post.id}`); } },
       { 
         label: 'Share to', 
+        icon: Share2,
         action: () => handleShareTo(post)
       },
       { 
         label: 'Copy Link', 
+        icon: null,
         action: () => handleCopyLink(post.id)
       },
-      { label: 'Cancel', action: closeDropdown },
+      { label: 'Cancel', icon: null, action: closeDropdown },
     ];
   }, [navigate, startChat, handleShareTo, handleCopyLink]);
 
@@ -831,18 +854,23 @@ const BuyerHomePage = () => {
                 <h3 className={`font-semibold text-lg ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Post Options</h3>
               </div>
               <div className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
-                {dropdownOpen && dropdownItems(posts.find(p => p.id === dropdownOpen)).map((item, index) => (
-                  <button
-                    key={index}
-                    onClick={item.action}
-                    className={`w-full text-center px-4 py-3 text-sm transition-colors first:rounded-t-lg last:rounded-b-lg ${isDarkMode 
-                      ? 'text-gray-300 hover:bg-gray-700' 
-                      : 'text-black hover:bg-gray-50'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
+                {dropdownOpen && dropdownItems(posts.find(p => p.id === dropdownOpen)).map((item, index) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={index}
+                      onClick={item.action}
+                      className={`w-full text-center px-4 py-3 text-sm transition-colors first:rounded-t-lg last:rounded-b-lg flex items-center justify-center gap-2 ${
+                        isDarkMode 
+                          ? 'text-gray-300 hover:bg-gray-700' 
+                          : 'text-black hover:bg-gray-50'
+                      } ${item.label === 'Report Seller' ? 'text-red-500 hover:text-red-600' : ''}`}
+                    >
+                  
+                      {item.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -861,6 +889,23 @@ const BuyerHomePage = () => {
             isDarkMode={isDarkMode}
           />
         )}
+
+        {/* Report Modal */}
+        <ReportModal
+          isOpen={reportModalOpen}
+          onClose={() => {
+            setReportModalOpen(false);
+            setReportingSellerId(null);
+            setReportingSellerName('');
+            setReportingProductId(null);
+            setReportingProductName('');
+          }}
+          sellerId={reportingSellerId}
+          sellerName={reportingSellerName}
+          productId={reportingProductId}
+          productName={reportingProductName}
+          isDarkMode={isDarkMode}
+        />
       </div>
     </div>
   );

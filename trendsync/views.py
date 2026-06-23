@@ -3,11 +3,11 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from django.utils import timezone
 from datetime import timedelta
-from .models import Product, Buyer, Order, Category, Address, Cart, CartItem, ProductLike, ProductComment, Wishlist, WishlistItem, Seller, QuickDeal
+from .models import Product, Report, Buyer, Order, Category, Address, Cart, CartItem, ProductLike, ProductComment, Wishlist, WishlistItem, Seller, QuickDeal
 from .serializers import (
     ProductSerializer, CategorySerializer, WishlistItemSerializer, CartSerializer,
-    CartItemSerializer, ProductCommentSerializer, SellerSerializer, BuyerRegisterSerializer,
-    SellerRegisterSerializer, QuickDealSerializer, SellerProfileSerializer, SellerProductSerializer,
+    CartItemSerializer, ReportSerializer, ProductCommentSerializer, SellerSerializer, BuyerRegisterSerializer,
+    SellerRegisterSerializer, QuickDealSerializer, ReportCreateSerializer, SellerProfileSerializer, SellerProductSerializer,
     SellerOrderSerializer, SellerQuickDealSerializer, SellerStatsSerializer )
 from rest_framework.permissions import AllowAny
 from django.contrib.auth import authenticate
@@ -1130,7 +1130,6 @@ def initiate_payment(request):
         }
     )
 
-
 @api_view(["GET", "POST"])
 @permission_classes([permissions.AllowAny])
 def pesapal_ipn(request):
@@ -1166,36 +1165,42 @@ def pesapal_ipn(request):
         )
         return Response({"status": 200, "message": "Status fetch failed"}, status=200)
 
-    event = serializer.validated_data['event']
-    payload = serializer.validated_data['payload']
+    # Get event and payload from request data
+    event = params.get('event', '')
+    payload = params.get('payload', {})
 
     # Update config to track webhook receipt
     config, _ = DusuPayConfig.objects.get_or_create(pk=1)
     config.webhook_received_at = timezone.now()
     config.save()
 
-    merchant_reference = payload.get('merchant_reference')
-    internal_reference = payload.get('internal_reference')
+    merchant_ref = payload.get('merchant_reference') if isinstance(payload, dict) else None
+    internal_ref = payload.get('internal_reference') if isinstance(payload, dict) else None
 
     # Find the order
     try:
-        if merchant_reference:
-            order = Order.objects.get(id=merchant_reference)
-        elif internal_reference:
-            order = Order.objects.get(dusupay_internal_reference=internal_reference)
+        if merchant_ref:
+            order = Order.objects.get(id=merchant_ref)
+        elif internal_ref:
+            order = Order.objects.get(dusupay_internal_reference=internal_ref)
         else:
             logger.warning("No reference found in webhook payload")
             return Response({"status": "ok"}, status=200)
     except Order.DoesNotExist:
-        logger.error(f"Order not found for merchant_reference: {merchant_reference}")
+        logger.error(f"Order not found for merchant_reference: {merchant_ref}")
         return Response({"status": "ok"}, status=200)
 
-    transaction_status = payload.get('transaction_status', '').upper()
+    transaction_status = payload.get('transaction_status', '').upper() if isinstance(payload, dict) else ''
+
+    # Define variables for payment update
+    amount = order.total_amount
+    payment_method = payload.get('provider_code', payload.get('bank_code', 'card')) if isinstance(payload, dict) else 'card'
+    confirmation_code = order.dusupay_internal_reference or order.dusupay_merchant_reference or order_tracking_id
 
     if event == 'transaction.completed' or transaction_status == 'COMPLETED':
         # Payment successful
         order.status = 'paid'
-        order.payment_method = payload.get('provider_code', payload.get('bank_code', 'card'))
+        order.payment_method = payment_method
         order.save()
 
         Payment.objects.update_or_create(
@@ -1212,13 +1217,12 @@ def pesapal_ipn(request):
         logger.info(
             f"Order {order.id} marked as paid with method {order.payment_method}"
         )
-    elif payment_status and payment_status.lower() in ["failed", "invalid"]:
+    elif transaction_status and transaction_status.lower() in ["failed", "invalid"]:
         order.status = "cancelled"
         order.save()
-        logger.info(f"Order {order.id} cancelled due to {payment_status}")
+        logger.info(f"Order {order.id} cancelled due to {transaction_status}")
 
-        return Response({"status": 200}, status=200)
-
+    return Response({"status": 200}, status=200)
 
 @api_view(["GET"])
 @permission_classes([permissions.AllowAny])

@@ -9,7 +9,7 @@ from .models import (
     ProductQuestion, QuestionOption, ProductImage, SellerFollow, ChatMessage
 )
 
-from .models import Notification
+from .models import Notification, Report
 User = get_user_model()
 
 

@@ -1,8 +1,9 @@
 from django.contrib import admin
 from django import forms
 from django.contrib.auth.models import User
+from django.utils import timezone
 from .models import (
-    Category, Seller, Buyer, Product, ProductLike, ProductComment,
+    Category, Seller, Buyer, Report, Product, ProductLike, ProductComment,
     Wishlist, WishlistItem, Cart, CartItem, Address, Order, OrderItem,
     Payment, Delivery, QuickDeal, ProductQuestion, QuestionOption, ProductImage
 )
@@ -434,8 +435,6 @@ class QuickDealAdmin(admin.ModelAdmin):
 admin.site.register(Wishlist, WishlistAdmin)
 
 
-# Add this to your admin.py
-
 @admin.register(Report)
 class ReportAdmin(admin.ModelAdmin):
     list_display = ('id', 'reporter', 'seller', 'report_type', 'status', 'created_at')
@@ -464,11 +463,11 @@ class ReportAdmin(admin.ModelAdmin):
     mark_investigating.short_description = 'Mark as Under Investigation'
     
     def mark_resolved(self, request, queryset):
-        updated = queryset.update(status='resolved', resolved_at=timezone.now())
+        updated = queryset.update(status='resolved', resolved_at=timezone.now())  # Now timezone is defined
         self.message_user(request, f'{updated} reports marked as resolved.')
     mark_resolved.short_description = 'Mark as Resolved'
     
     def dismiss_reports(self, request, queryset):
-        updated = queryset.update(status='dismissed', resolved_at=timezone.now())
+        updated = queryset.update(status='dismissed', resolved_at=timezone.now())  # Now timezone is defined
         self.message_user(request, f'{updated} reports dismissed.')
     dismiss_reports.short_description = 'Dismiss Reports'
