@@ -1,4 +1,4 @@
-// SellerNotfifcations.jsx - Fully updated with real backend notifications
+// SellerNotfifcations.jsx - Fully updated with real backend notifications and enhanced click handling
 import { SellerCard, SellerCardContent } from './SellerCard';
 import { 
   Bell, CheckCircle, 
@@ -17,7 +17,8 @@ import {
   Clock,
   Eye,
   ThumbsUp,
-  ArrowLeft
+  ArrowLeft,
+  ExternalLink
 } from 'lucide-react';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import api from '../../utils/api';
@@ -30,6 +31,7 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [isPolling, setIsPolling] = useState(false);
+  const [clickedNotificationId, setClickedNotificationId] = useState(null);
   const pollingIntervalRef = useRef(null);
   const isMountedRef = useRef(true);
   const navigate = useNavigate();
@@ -55,6 +57,9 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
       'review': { icon: Star, color: isDarkMode ? 'text-yellow-400' : 'text-yellow-500' },
       'review_confirmation': { icon: Star, color: isDarkMode ? 'text-green-400' : 'text-green-500' },
       'chat_message': { icon: MessageSquare, color: isDarkMode ? 'text-indigo-400' : 'text-indigo-500' },
+      'info': { icon: Bell, color: isDarkMode ? 'text-blue-400' : 'text-blue-500' },
+      'warning': { icon: AlertCircle, color: isDarkMode ? 'text-yellow-400' : 'text-yellow-500' },
+      'success': { icon: CheckCircle, color: isDarkMode ? 'text-green-400' : 'text-green-500' },
     };
     return iconMap[type] || { icon: Bell, color: isDarkMode ? 'text-gray-400' : 'text-gray-500' };
   };
@@ -81,6 +86,9 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
       'review': 'New Review',
       'review_confirmation': 'Thank You for Your Review',
       'chat_message': 'New Message',
+      'info': 'Information',
+      'warning': 'Warning',
+      'success': 'Success',
     };
     return titles[type] || 'Notification';
   };
@@ -103,7 +111,6 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
 
   // Fetch notifications from backend
   const fetchNotifications = useCallback(async (force = false) => {
-    // Prevent multiple simultaneous requests
     if (isPolling && !force) {
       console.log('Already fetching, skipping...');
       return;
@@ -124,11 +131,9 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
       if (!isMountedRef.current) return;
 
       if (result.data && result.data.status === 'success') {
-        // Format real notifications from backend
         const formattedNotifications = result.data.data.map(notif => {
           let title = notif.title || getNotificationTitle(notif.notification_type);
           
-          // Customize title for follow notifications
           if (notif.notification_type === 'follow' && notif.data?.sender_name) {
             title = `New Follower: ${notif.data.sender_name}`;
           }
@@ -141,19 +146,19 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
             time: formatTime(notif.created_at),
             read: notif.read || false,
             data: notif.data || {},
-            created_at: notif.created_at
+            created_at: notif.created_at,
+            action_type: notif.data?.action_type || notif.notification_type,
+            action_url: notif.data?.action_url || null,
           };
         });
         
         setNotifications(formattedNotifications);
         setUnreadCount(result.data.unread_count || 0);
         
-        // Update parent about unread count
         if (typeof setHasUnreadNotifications === 'function') {
           setHasUnreadNotifications((result.data.unread_count || 0) > 0);
         }
       } else {
-        // If API returns empty, set empty array
         setNotifications([]);
         setUnreadCount(0);
         if (typeof setHasUnreadNotifications === 'function') {
@@ -175,10 +180,8 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
   // Mark a single notification as read
   const markAsRead = useCallback(async (id) => {
     try {
-      // Only call API if it's a real notification (not client-side only)
       await api.markSimpleNotificationRead(id);
       
-      // Update local state
       setNotifications(prev =>
         prev.map(notif => 
           notif.id === id ? { ...notif, read: true } : notif
@@ -186,7 +189,6 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
       );
       setUnreadCount(prev => Math.max(0, prev - 1));
       
-      // Update parent
       if (typeof setHasUnreadNotifications === 'function') {
         const newUnreadCount = unreadCount - 1;
         setHasUnreadNotifications(newUnreadCount > 0);
@@ -201,7 +203,6 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
     try {
       await api.markAllSimpleNotificationsRead();
       
-      // Update local state
       setNotifications(prev => 
         prev.map(notif => ({ ...notif, read: true }))
       );
@@ -221,10 +222,8 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
     try {
       await api.deleteSimpleNotification(id);
       
-      // Find if it was unread before deletion
       const wasUnread = notifications.find(n => n.id === id)?.read === false;
       
-      // Update local state
       setNotifications(prev => prev.filter(notif => notif.id !== id));
       if (wasUnread) {
         setUnreadCount(prev => Math.max(0, prev - 1));
@@ -242,7 +241,6 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
     try {
       await api.clearAllSimpleNotifications();
       
-      // Update local state
       setNotifications([]);
       setUnreadCount(0);
       
@@ -254,34 +252,119 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
     }
   }, [setHasUnreadNotifications]);
 
-  // Handle notification click for navigation
-  const handleNotificationClick = useCallback((notification) => {
+  // Handle notification click - enhanced with proper navigation and actions
+  const handleNotificationClick = useCallback(async (notification) => {
+    // Set clicked state for visual feedback
+    setClickedNotificationId(notification.id);
+    setTimeout(() => setClickedNotificationId(null), 500);
+
     // Mark as read when clicked
     if (!notification.read) {
-      markAsRead(notification.id);
+      await markAsRead(notification.id);
     }
-    
-    // Navigate based on notification type and data
-    if (notification.type === 'order_received' && notification.data?.order_id) {
-      navigate(`/seller/orders/${notification.data.order_id}`);
-    } else if (notification.type === 'order_confirmed' && notification.data?.order_id) {
-      navigate(`/seller/orders/${notification.data.order_id}`);
-    } else if (notification.type === 'payment_received' && notification.data?.order_id) {
-      navigate(`/seller/orders/${notification.data.order_id}`);
-    } else if (notification.type === 'product_sold' && notification.data?.product_id) {
-      navigate(`/seller/products/${notification.data.product_id}`);
-    } else if (notification.type === 'new_review' && notification.data?.product_id) {
-      navigate(`/product/${notification.data.product_id}`);
-    } else if (notification.type === 'low_stock' && notification.data?.product_id) {
-      navigate(`/seller/products/${notification.data.product_id}`);
-    } else if (notification.type === 'profile_update') {
-      navigate('/seller/settings');
-    } else if (notification.type === 'analytics') {
-      navigate('/seller/analytics');
-    } else if (notification.type === 'follow' && notification.data?.follower_id) {
-      navigate(`/profile/${notification.data.follower_id}`);
-    } else if (notification.type === 'chat_message' && notification.data?.sender_id) {
-      navigate(`/seller/chat?userId=${notification.data.sender_id}`);
+
+    // Determine action based on notification type and data
+    const actionType = notification.action_type || notification.type;
+    const data = notification.data || {};
+    const actionUrl = notification.action_url;
+
+    // If there's a direct action URL, use it
+    if (actionUrl) {
+      navigate(actionUrl);
+      return;
+    }
+
+    // Otherwise, navigate based on type
+    switch (actionType) {
+      case 'order_received':
+      case 'order_confirmed':
+      case 'order':
+        if (data.order_id) {
+          navigate(`/seller/orders/${data.order_id}`);
+        } else if (data.order_number) {
+          navigate(`/seller/orders/${data.order_number}`);
+        } else {
+          navigate('/seller/orders');
+        }
+        break;
+
+      case 'payment_received':
+      case 'payment_successful':
+        if (data.order_id) {
+          navigate(`/seller/orders/${data.order_id}`);
+        } else {
+          navigate('/seller/orders');
+        }
+        break;
+
+      case 'product_sold':
+      case 'low_stock':
+        if (data.product_id) {
+          navigate(`/seller/products/${data.product_id}`);
+        } else if (data.product) {
+          navigate(`/seller/products/${data.product}`);
+        } else {
+          navigate('/seller/products');
+        }
+        break;
+
+      case 'new_review':
+      case 'review':
+      case 'review_confirmation':
+        if (data.product_id) {
+          navigate(`/product/${data.product_id}`);
+        } else if (data.review_id) {
+          navigate(`/seller/reviews/${data.review_id}`);
+        } else {
+          navigate('/seller/reviews');
+        }
+        break;
+
+      case 'profile_update':
+        navigate('/seller/settings');
+        break;
+
+      case 'analytics':
+        navigate('/seller/analytics');
+        break;
+
+      case 'follow':
+      case 'new_follower':
+        if (data.follower_id) {
+          navigate(`/profile/${data.follower_id}`);
+        } else if (data.sender_id) {
+          navigate(`/profile/${data.sender_id}`);
+        } else {
+          navigate('/seller/followers');
+        }
+        break;
+
+      case 'chat_message':
+        if (data.sender_id) {
+          navigate(`/seller/chat?userId=${data.sender_id}`);
+        } else if (data.chat_id) {
+          navigate(`/seller/chat/${data.chat_id}`);
+        } else {
+          navigate('/seller/chat');
+        }
+        break;
+
+      case 'withdrawal_success':
+        navigate('/seller/withdrawals');
+        break;
+
+      case 'info':
+      case 'system':
+      case 'warning':
+      case 'success':
+        // Just mark as read, no navigation needed
+        // Show a toast or snackbar if needed
+        break;
+
+      default:
+        // If no specific action, just mark as read
+        console.log('Notification clicked without specific action:', notification);
+        break;
     }
   }, [markAsRead, navigate]);
 
@@ -289,15 +372,12 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
   useEffect(() => {
     isMountedRef.current = true;
     
-    // Initial fetch
     fetchNotifications(true);
 
-    // Set up polling (every 30 seconds)
     pollingIntervalRef.current = setInterval(() => {
       fetchNotifications();
     }, 30000);
 
-    // Event listeners for real-time updates
     const handleAuthChange = () => {
       fetchNotifications(true);
     };
@@ -317,7 +397,6 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
     window.addEventListener('followCompleted', handleNewNotification);
     window.addEventListener('storage', handleStorageChange);
 
-    // Cleanup
     return () => {
       isMountedRef.current = false;
       if (pollingIntervalRef.current) {
@@ -389,7 +468,7 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
           )}
         </div>
         <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
-          {unreadCount > 0 ? `${unreadCount} unread notifications` : 'All caught up!'}
+          {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}` : 'All caught up!'}
         </p>
       </div>
 
@@ -408,40 +487,62 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
           <div className="space-y-3">
             {notifications.map((notification) => {
               const { icon: IconComponent, color } = getIconForType(notification.type);
+              const isClicked = clickedNotificationId === notification.id;
+              
               return (
                 <SellerCard
                   key={notification.id}
-                  className={`hover:shadow-md transition-shadow cursor-pointer ${
+                  className={`hover:shadow-md transition-all duration-300 cursor-pointer transform ${
+                    isClicked ? 'scale-[0.98]' : 'scale-100'
+                  } ${
                     !notification.read 
                       ? isDarkMode 
-                        ? 'border-l-4 border-blue-500' 
-                        : 'border-l-4 border-blue-500'
-                      : ''
+                        ? 'border-l-4 border-blue-500 bg-blue-900/10' 
+                        : 'border-l-4 border-blue-500 bg-blue-50/50'
+                      : isDarkMode
+                        ? 'hover:bg-gray-800/50'
+                        : 'hover:bg-gray-50'
                   }`}
                   onClick={() => handleNotificationClick(notification)}
                 >
                   <SellerCardContent className="p-4">
                     <div className="flex items-start">
-                      <div className={`p-2 rounded-full bg-opacity-20 mr-4 ${color}`}>
+                      <div className={`p-2 rounded-full bg-opacity-20 mr-4 flex-shrink-0 ${color}`}>
                         <IconComponent className="w-5 h-5" />
                       </div>
                       
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3 className={`font-semibold ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <h3 className={`font-semibold ${isDarkMode ? 'text-gray-100' : 'text-black'} flex items-center gap-2`}>
                               {notification.title}
+                              {!notification.read && (
+                                <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${
+                                  isDarkMode 
+                                    ? 'bg-blue-500/20 text-blue-400' 
+                                    : 'bg-blue-100 text-blue-700'
+                                }`}>
+                                  New
+                                </span>
+                              )}
                             </h3>
-                            <p className={`mt-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            <p className={`mt-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} break-words`}>
                               {notification.message}
                             </p>
-                            <p className={`text-sm mt-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                              {notification.time}
-                            </p>
+                            <div className="flex items-center gap-2 mt-2 flex-wrap">
+                              <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                {notification.time}
+                              </p>
+                              {!notification.read && (
+                                <span className={`text-xs ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                                  • Click to mark as read
+                                </span>
+                              )}
+                            </div>
                             
                             {/* Additional info for specific notification types */}
                             {notification.type === 'order_received' && notification.data?.amount && (
-                              <div className="mt-2 flex items-center gap-2">
+                              <div className="mt-2 flex items-center gap-2 flex-wrap">
                                 <span className={`text-xs px-2 py-1 rounded-full ${
                                   isDarkMode 
                                     ? 'bg-orange-900/30 text-orange-400' 
@@ -493,11 +594,12 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
                           </div>
                           <button
                             onClick={(e) => deleteNotification(notification.id, e)}
-                            className={`p-1 ml-2 ${
+                            className={`p-1 ml-2 flex-shrink-0 transition-colors ${
                               isDarkMode 
-                                ? 'text-gray-400 hover:text-gray-300' 
-                                : 'text-gray-400 hover:text-gray-600'
+                                ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-700 rounded' 
+                                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded'
                             }`}
+                            aria-label="Delete notification"
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -505,8 +607,8 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
                       </div>
 
                       {!notification.read && (
-                        <div className="ml-2">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <div className="ml-2 flex-shrink-0 self-start mt-2">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                         </div>
                       )}
                     </div>
@@ -518,7 +620,7 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
 
           {/* Quick Actions */}
           {notifications.length > 0 && (
-            <div className={`mt-8 p-4 rounded-xl border ${
+            <div className={`mt-8 p-4 rounded-xl border transition-colors ${
               isDarkMode 
                 ? 'bg-blue-900/20 border-blue-800' 
                 : 'bg-blue-50 border-blue-100'
@@ -529,29 +631,43 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
               <div className="flex gap-2 flex-wrap">
                 <button
                   onClick={markAllRead}
-                  className="px-3 py-1 bg-blue-600 text-white rounded-full text-sm hover:bg-blue-700 transition-colors"
+                  className="px-3 py-1 bg-blue-600 text-white rounded-full text-sm hover:bg-blue-700 transition-colors flex items-center gap-1"
                 >
+                  <CheckCircle className="w-3 h-3" />
                   Mark All Read
                 </button>
                 <button
                   onClick={() => navigate('/seller/orders')}
-                  className={`px-3 py-1 border rounded-full text-sm transition-colors ${
+                  className={`px-3 py-1 border rounded-full text-sm transition-colors flex items-center gap-1 ${
                     isDarkMode 
                       ? 'border-blue-600 text-blue-400 hover:bg-blue-600 hover:text-white' 
                       : 'border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white'
                   }`}
                 >
+                  <ShoppingCart className="w-3 h-3" />
                   View Orders
                 </button>
                 <button
                   onClick={() => navigate('/seller/products')}
-                  className={`px-3 py-1 border rounded-full text-sm transition-colors ${
+                  className={`px-3 py-1 border rounded-full text-sm transition-colors flex items-center gap-1 ${
                     isDarkMode 
                       ? 'border-green-600 text-green-400 hover:bg-green-600 hover:text-white' 
                       : 'border-green-600 text-green-600 hover:bg-green-600 hover:text-white'
                   }`}
                 >
+                  <Package className="w-3 h-3" />
                   Manage Products
+                </button>
+                <button
+                  onClick={() => navigate('/seller/analytics')}
+                  className={`px-3 py-1 border rounded-full text-sm transition-colors flex items-center gap-1 ${
+                    isDarkMode 
+                      ? 'border-purple-600 text-purple-400 hover:bg-purple-600 hover:text-white' 
+                      : 'border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white'
+                  }`}
+                >
+                  <TrendingUp className="w-3 h-3" />
+                  Analytics
                 </button>
               </div>
             </div>
