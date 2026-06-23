@@ -661,3 +661,56 @@ class ChatMessageSerializer(serializers.ModelSerializer):
         from .views import get_user_profile_photo
         request = self.context.get('request')
         return get_user_profile_photo(obj.recipient, request)
+
+
+# Add this to your serializers.py
+
+class ReportSerializer(serializers.ModelSerializer):
+    reporter_name = serializers.CharField(source='reporter.username', read_only=True)
+    seller_name = serializers.CharField(source='seller.name', read_only=True)
+    product_name = serializers.CharField(source='product.name', read_only=True, allow_null=True)
+    handled_by_name = serializers.CharField(source='handled_by.username', read_only=True, allow_null=True)
+    report_type_display = serializers.SerializerMethodField()
+    status_display = serializers.SerializerMethodField()
+    time_ago = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Report
+        fields = [
+            'id', 'reporter', 'reporter_name', 'seller', 'seller_name',
+            'product', 'product_name', 'report_type', 'report_type_display',
+            'description', 'evidence', 'status', 'status_display',
+            'admin_notes', 'created_at', 'updated_at', 'resolved_at',
+            'handled_by', 'handled_by_name', 'time_ago'
+        ]
+        read_only_fields = ['reporter', 'created_at', 'updated_at', 'resolved_at', 'handled_by']
+    
+    def get_report_type_display(self, obj):
+        return dict(obj.REPORT_TYPES).get(obj.report_type, obj.report_type)
+    
+    def get_status_display(self, obj):
+        return dict(obj.REPORT_STATUS).get(obj.status, obj.status)
+    
+    def get_time_ago(self, obj):
+        from django.utils import timezone
+        now = timezone.now()
+        diff = now - obj.created_at
+        if diff.days == 0:
+            if diff.seconds < 60:
+                return 'Just now'
+            elif diff.seconds < 3600:
+                return f'{diff.seconds // 60}m ago'
+            else:
+                return f'{diff.seconds // 3600}h ago'
+        elif diff.days < 7:
+            return f'{diff.days}d ago'
+        else:
+            return obj.created_at.strftime('%b %d, %Y')
+
+
+class ReportCreateSerializer(serializers.Serializer):
+    seller_id = serializers.IntegerField(required=True)
+    product_id = serializers.IntegerField(required=False, allow_null=True)
+    report_type = serializers.ChoiceField(choices=Report.REPORT_TYPES)
+    description = serializers.CharField(required=True)
+    evidence = serializers.CharField(required=False, allow_blank=True)

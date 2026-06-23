@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate, NavLink } from "react-router-dom";
 import { AddProductProvider } from "./utils/AddProductContext";
 import HomePage from "./components/BuyerSide/BuyerHomePage";
+import { HelmetProvider } from 'react-helmet-async';
 import SellerHomePage from "./components/SellerSide/SellerHomePage";
 import LoginPage from "./components/BuyerSide/LoginPage";
 import SellerLoginPage from "./components/SellerSide/SellerLoginPage";
@@ -223,33 +224,35 @@ const App = () => {
   }
 
   return (
-    <DataProvider>
-      <BrowserRouter>    
-        <DarkModeProvider>
-          <SellerDarkModeProvider>
-            <LikeBookmarkProvider>
-              <Suspense fallback={<ChatLoadingFallback />}>
-                <ChatProvider>
-                  <PageLoadingProvider>
-                    <NotificationProvider>
-                      <AddProductProvider>
-                        <AuthenticatedContent
-                          isAuthenticated={isAuthenticated}
-                          userRole={userRole}
-                          handleLogout={handleLogout}
-                          setIsAuthenticated={setIsAuthenticated}
-                          setUserRole={setUserRole}
-                        />
-                      </AddProductProvider>
-                    </NotificationProvider>
-                  </PageLoadingProvider>
-                </ChatProvider>
-              </Suspense>
-            </LikeBookmarkProvider>
-          </SellerDarkModeProvider>
-        </DarkModeProvider>
-      </BrowserRouter>
-    </DataProvider>
+    <HelmetProvider>
+      <DataProvider>
+        <BrowserRouter>    
+          <DarkModeProvider>
+            <SellerDarkModeProvider>
+              <LikeBookmarkProvider>
+                <Suspense fallback={<ChatLoadingFallback />}>
+                  <ChatProvider>
+                    <PageLoadingProvider>
+                      <NotificationProvider>
+                        <AddProductProvider>
+                          <AuthenticatedContent
+                            isAuthenticated={isAuthenticated}
+                            userRole={userRole}
+                            handleLogout={handleLogout}
+                            setIsAuthenticated={setIsAuthenticated}
+                            setUserRole={setUserRole}
+                          />
+                        </AddProductProvider>
+                      </NotificationProvider>
+                    </PageLoadingProvider>
+                  </ChatProvider>
+                </Suspense>
+              </LikeBookmarkProvider>
+            </SellerDarkModeProvider>
+          </DarkModeProvider>
+        </BrowserRouter>
+      </DataProvider>
+    </HelmetProvider>
   );
 };
 

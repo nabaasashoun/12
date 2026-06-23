@@ -79,4 +79,11 @@ urlpatterns = [
     path('chat/<int:user_id>/', views.get_chat_history, name='chat-history'),
     path('chat/mark-read/<int:user_id>/', views.mark_chat_read, name='mark-chat-read'),
     path('chat/test-send/', views.test_send_message, name='test-send-message'),
+
+    # Report URLs
+    path('reports/create/', views.create_report, name='create-report'),
+    path('reports/', views.get_reports, name='get-reports'),
+    path('reports/my/', views.get_my_reports, name='my-reports'),
+    path('reports/<int:report_id>/', views.get_report_detail, name='report-detail'),
+    path('reports/<int:report_id>/update-status/', views.update_report_status, name='update-report-status'),
 ]

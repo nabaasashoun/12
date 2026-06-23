@@ -2514,3 +2514,296 @@ def test_send_message(request):
         'content': message.content,
         'timestamp': message.timestamp.isoformat()
     }, status=201)
+
+
+# Add these to your views.py
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsBuyer])
+def create_report(request):
+    """
+    Create a report against a seller
+    """
+    print("=" * 50)
+    print("CREATE REPORT - Request received")
+    print(f"Request data: {request.data}")
+    print(f"User: {request.user.username}")
+    print("=" * 50)
+    
+    try:
+        serializer = ReportCreateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({
+                'error': 'Invalid data',
+                'details': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        data = serializer.validated_data
+        
+        # Get the seller
+        try:
+            seller = Seller.objects.get(id=data['seller_id'])
+        except Seller.DoesNotExist:
+            return Response({
+                'error': 'Seller not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Prevent reporting yourself
+        if seller.user == request.user:
+            return Response({
+                'error': 'You cannot report yourself'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check if user already reported this seller (pending or investigating)
+        existing_report = Report.objects.filter(
+            reporter=request.user,
+            seller=seller,
+            status__in=['pending', 'investigating']
+        ).exists()
+        
+        if existing_report:
+            return Response({
+                'error': 'You already have an active report against this seller'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Get product if provided
+        product = None
+        if data.get('product_id'):
+            try:
+                product = Product.objects.get(id=data['product_id'])
+            except Product.DoesNotExist:
+                pass
+        
+        # Create the report
+        report = Report.objects.create(
+            reporter=request.user,
+            seller=seller,
+            product=product,
+            report_type=data['report_type'],
+            description=data['description'],
+            evidence=data.get('evidence', ''),
+            status='pending'
+        )
+        
+        print(f"✓ Report #{report.id} created successfully")
+        
+        # Create notification for admin (you can implement this later)
+        # create_admin_notification(report)
+        
+        return Response({
+            'success': True,
+            'message': 'Report submitted successfully',
+            'report_id': report.id,
+            'report': ReportSerializer(report, context={'request': request}).data
+        }, status=status.HTTP_201_CREATED)
+        
+    except Exception as e:
+        print(f"Error creating report: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return Response({
+            'error': 'Failed to create report',
+            'detail': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_reports(request):
+    """
+    Get reports - Admins get all, users get their own reports
+    """
+    try:
+        # Check if user is admin (staff)
+        is_admin = request.user.is_staff
+        
+        if is_admin:
+            # Admin gets all reports
+            reports = Report.objects.all()
+            status_filter = request.query_params.get('status')
+            if status_filter:
+                reports = reports.filter(status=status_filter)
+            
+            # Apply ordering
+            sort_by = request.query_params.get('sort', '-created_at')
+            if sort_by in ['created_at', '-created_at', 'status', '-status']:
+                reports = reports.order_by(sort_by)
+            else:
+                reports = reports.order_by('-created_at')
+                
+        else:
+            # Regular user gets only their reports
+            reports = Report.objects.filter(reporter=request.user)
+        
+        serializer = ReportSerializer(reports, many=True, context={'request': request})
+        
+        # Count by status for admins
+        stats = {}
+        if is_admin:
+            stats = {
+                'total': reports.count(),
+                'pending': reports.filter(status='pending').count(),
+                'investigating': reports.filter(status='investigating').count(),
+                'resolved': reports.filter(status='resolved').count(),
+                'dismissed': reports.filter(status='dismissed').count(),
+            }
+        
+        return Response({
+            'success': True,
+            'count': reports.count(),
+            'reports': serializer.data,
+            'stats': stats
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        print(f"Error fetching reports: {e}")
+        return Response({
+            'error': 'Failed to fetch reports',
+            'detail': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_report_detail(request, report_id):
+    """
+    Get details of a specific report
+    """
+    try:
+        report = Report.objects.get(id=report_id)
+        
+        # Check permission: admin can view all, users can only view their own
+        if not request.user.is_staff and report.reporter != request.user:
+            return Response({
+                'error': 'You do not have permission to view this report'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        serializer = ReportSerializer(report, context={'request': request})
+        return Response({
+            'success': True,
+            'report': serializer.data
+        }, status=status.HTTP_200_OK)
+        
+    except Report.DoesNotExist:
+        return Response({
+            'error': 'Report not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'error': 'Failed to fetch report',
+            'detail': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['PUT', 'PATCH'])
+@permission_classes([IsAuthenticated])
+def update_report_status(request, report_id):
+    """
+    Update report status - Admin only
+    """
+    if not request.user.is_staff:
+        return Response({
+            'error': 'Only administrators can update report status'
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        report = Report.objects.get(id=report_id)
+        
+        status_value = request.data.get('status')
+        admin_notes = request.data.get('admin_notes', '')
+        
+        if not status_value:
+            return Response({
+                'error': 'Status is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        valid_statuses = ['pending', 'investigating', 'resolved', 'dismissed']
+        if status_value not in valid_statuses:
+            return Response({
+                'error': f'Invalid status. Must be one of: {", ".join(valid_statuses)}'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        old_status = report.status
+        report.status = status_value
+        
+        if admin_notes:
+            report.admin_notes = admin_notes
+        
+        if status_value in ['resolved', 'dismissed'] and old_status not in ['resolved', 'dismissed']:
+            report.resolved_at = timezone.now()
+            report.handled_by = request.user
+        
+        if status_value in ['investigating'] and old_status != 'investigating':
+            report.handled_by = request.user
+        
+        report.save()
+        
+        # Create notification for the reporter
+        try:
+            from .models import SimpleNotification
+            
+            status_messages = {
+                'investigating': f'Your report against {report.seller.name} is now under investigation.',
+                'resolved': f'Your report against {report.seller.name} has been resolved.',
+                'dismissed': f'Your report against {report.seller.name} has been reviewed and dismissed.',
+            }
+            
+            if status_value in status_messages:
+                SimpleNotification.objects.create(
+                    recipient=report.reporter,
+                    sender_name='System',
+                    message=status_messages[status_value],
+                    type='system'
+                )
+                print(f"✓ Notification sent to reporter about status update")
+        except Exception as e:
+            print(f"Could not send notification: {e}")
+        
+        serializer = ReportSerializer(report, context={'request': request})
+        return Response({
+            'success': True,
+            'message': 'Report status updated successfully',
+            'report': serializer.data
+        }, status=status.HTTP_200_OK)
+        
+    except Report.DoesNotExist:
+        return Response({
+            'error': 'Report not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'error': 'Failed to update report',
+            'detail': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_my_reports(request):
+    """
+    Get reports created by the authenticated user
+    """
+    try:
+        reports = Report.objects.filter(reporter=request.user).order_by('-created_at')
+        serializer = ReportSerializer(reports, many=True, context={'request': request})
+        
+        stats = {
+            'total': reports.count(),
+            'pending': reports.filter(status='pending').count(),
+            'investigating': reports.filter(status='investigating').count(),
+            'resolved': reports.filter(status='resolved').count(),
+            'dismissed': reports.filter(status='dismissed').count(),
+        }
+        
+        return Response({
+            'success': True,
+            'count': reports.count(),
+            'reports': serializer.data,
+            'stats': stats
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({
+            'error': 'Failed to fetch reports',
+            'detail': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

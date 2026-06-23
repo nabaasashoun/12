@@ -40,36 +40,82 @@ const ShareModal = ({ isOpen, onClose, product, isDarkMode }) => {
       const url = getProductShareLink(product.id);
       setShareUrl(url);
       
-      // Get the product image (first image or product_photo)
+      // Get the full URL of the product image
       const image = product.images && product.images.length > 0 
         ? product.images[0] 
         : product.product_photo || '/placeholder-product.jpg';
-      setProductImage(image);
+      
+      // Ensure the image URL is absolute for social platforms
+      const baseUrl = window.location.origin;
+      const absoluteImageUrl = image.startsWith('http') ? image : `${baseUrl}${image}`;
+      setProductImage(absoluteImageUrl);
     }
   }, [product]);
 
   if (!isOpen || !product) return null;
 
-  // Generate shareable link with image for social media
-  const generateShareableLink = () => {
+  // Get the full product URL with all necessary parameters for social sharing
+  const getFullProductUrl = () => {
     const baseUrl = window.location.origin;
-    const productUrl = `${baseUrl}/product/${product.id}`;
+    const productPath = `/product/${product.id}`;
     
-    // For platforms that support Open Graph, the image will be picked up
-    // For direct sharing, we pass the image as a parameter
-    const imageParam = productImage ? `?image=${encodeURIComponent(productImage)}` : '';
-    return `${productUrl}${imageParam}`;
+    // Build URL with query parameters for social platforms
+    const params = new URLSearchParams();
+    if (productImage) {
+      params.append('image', productImage);
+    }
+    if (product.product) {
+      params.append('title', product.product);
+    }
+    if (product.price) {
+      params.append('price', product.price);
+    }
+    
+    const queryString = params.toString();
+    return `${baseUrl}${productPath}${queryString ? '?' + queryString : ''}`;
   };
 
-  // Get the full share URL with image
-  const getFullShareUrl = () => {
+  // Generate the full share URL with image for social media
+  const getShareableUrl = (platform = '') => {
     const baseUrl = window.location.origin;
-    const productUrl = `${baseUrl}/product/${product.id}`;
+    const productPath = `/product/${product.id}`;
     
-    // Create a shareable URL that includes the product image
-    // This will be used for WhatsApp, Telegram, etc.
-    const imageParam = productImage ? `?image=${encodeURIComponent(productImage)}` : '';
-    return `${productUrl}${imageParam}`;
+    // For Facebook, Twitter, LinkedIn - use Open Graph meta tags
+    // The actual image will be picked up from the page's meta tags
+    // We pass the image as a URL parameter that the page can use
+    const params = new URLSearchParams();
+    
+    // Add image as a parameter for the page to use in meta tags
+    if (productImage) {
+      params.append('share_image', productImage);
+    }
+    if (product.product) {
+      params.append('share_title', product.product);
+    }
+    if (product.price) {
+      params.append('share_price', product.price);
+    }
+    if (product.sellerName) {
+      params.append('share_seller', product.sellerName);
+    }
+    
+    const queryString = params.toString();
+    return `${baseUrl}${productPath}${queryString ? '?' + queryString : ''}`;
+  };
+
+  // Get a clean image URL for sharing
+  const getShareImageUrl = () => {
+    // Return the absolute URL of the product image
+    if (productImage) {
+      return productImage;
+    }
+    // Fallback to a default image
+    return `${window.location.origin}/placeholder-product.jpg`;
+  };
+
+  // Get the full share URL with image for direct sharing
+  const getFullShareUrl = () => {
+    return getShareableUrl();
   };
 
   const handleCopyLink = async () => {
@@ -92,13 +138,15 @@ const ShareModal = ({ isOpen, onClose, product, isDarkMode }) => {
 
   const shareToPlatform = (platform) => {
     const url = encodeURIComponent(getFullShareUrl());
-    const title = encodeURIComponent(`${product.product} - ${product.price}`);
-    const text = encodeURIComponent(`Check out this amazing product: ${product.product} - ${product.price}`);
-    const imageUrl = encodeURIComponent(productImage);
+    const title = encodeURIComponent(product.product || 'Product');
+    const price = product.price || '';
+    const text = encodeURIComponent(`Check out this amazing product: ${product.product}${price ? ' - ' + price : ''}`);
+    const imageUrl = encodeURIComponent(getShareImageUrl());
     
     let shareLink = '';
     switch (platform) {
       case 'facebook':
+        // Facebook uses Open Graph meta tags, just share the URL
         shareLink = `https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}`;
         break;
       case 'twitter':
@@ -106,10 +154,11 @@ const ShareModal = ({ isOpen, onClose, product, isDarkMode }) => {
         break;
       case 'whatsapp':
         // WhatsApp will show the image preview when the link is shared
-        shareLink = `https://api.whatsapp.com/send?text=${text}%20${url}`;
+        // We include the image URL in the text for platforms that don't auto-preview
+        shareLink = `https://api.whatsapp.com/send?text=${text}%0A${url}%0A%0A🖼️ Image: ${imageUrl}`;
         break;
       case 'email':
-        shareLink = `mailto:?subject=${title}&body=${text}%0A%0A${url}%0A%0AImage: ${imageUrl}`;
+        shareLink = `mailto:?subject=${title}&body=${text}%0A%0A${url}%0A%0A🖼️ Product Image: ${imageUrl}`;
         break;
       case 'telegram':
         // Telegram will show the image preview when the link is shared
@@ -123,10 +172,13 @@ const ShareModal = ({ isOpen, onClose, product, isDarkMode }) => {
         return;
     }
     
-    window.open(shareLink, '_blank', 'width=600,height=500');
+    // Open the share link in a new window
+    if (shareLink) {
+      window.open(shareLink, '_blank', 'width=600,height=500');
+    }
   };
 
-  // Get first image or fallback
+  // Get display image
   const displayImage = product.images && product.images.length > 0 
     ? product.images[0] 
     : product.product_photo || '/placeholder-product.jpg';
@@ -193,6 +245,13 @@ const ShareModal = ({ isOpen, onClose, product, isDarkMode }) => {
                 <span>🔗</span>
                 <span className="truncate">{getFullShareUrl()}</span>
               </div>
+              {/* Show image that will be shared */}
+              {productImage && (
+                <div className={`mt-1 text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'} flex items-center gap-1`}>
+                  <span>🖼️</span>
+                  <span className="truncate">Image will be displayed with link</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -267,6 +326,11 @@ const ShareModal = ({ isOpen, onClose, product, isDarkMode }) => {
               ✓ Link copied to clipboard!
             </p>
           )}
+
+          {/* Info about image sharing */}
+          <div className={`mt-2 p-2 rounded-lg text-xs ${isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
+            <p>📸 The product image will appear when shared on social platforms</p>
+          </div>
         </div>
 
         {/* Footer */}

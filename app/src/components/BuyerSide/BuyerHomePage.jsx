@@ -1,4 +1,4 @@
-// BuyerHomePage.jsx - Updated with unified Header containing Settings navigation
+// BuyerHomePage.jsx - Updated with ProductMetaTags for social sharing
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BuyerCard, BuyerCardContent } from './BuyerCard';
@@ -15,6 +15,7 @@ import Loader from '../UISkeleton/Loader';
 import { usePageLoading } from '../../utils/PageLoadingContext';
 import { useDarkMode } from '../../utils/BuyerDarkModeContext';
 import ShareModal from './ShareModal';
+import ProductMetaTags from './ProductMetaTags';
 import { getProductShareLink, copyToClipboard } from '../../utils/shareUtils';
 import Header from './Header';
 
@@ -95,6 +96,9 @@ const BuyerHomePage = () => {
   const [filterCategory, setFilterCategory] = useState('');
   const [filterLocation, setFilterLocation] = useState('');
 
+  // State for the product being shared via meta tags
+  const [sharingProduct, setSharingProduct] = useState(null);
+
   // fetchProductsWithParams with location support
   const fetchProductsWithParams = useCallback(async (params = {}) => {
     const token = localStorage.getItem('accessToken');
@@ -143,6 +147,7 @@ const BuyerHomePage = () => {
           sellerUserId: product.seller_user_id,
           unit_price: product.unit_price,
           location: product.location || product.seller?.location || '',
+          description: product.description || '',
         };
       });
 
@@ -351,6 +356,20 @@ const BuyerHomePage = () => {
   };
 
   const handleShareTo = (post) => {
+    // Set the product for meta tags before opening modal
+    const productForSharing = {
+      id: post.id,
+      name: post.product,
+      product: post.product,
+      price: post.price,
+      images: post.images,
+      sellerName: post.sellerName,
+      sellerId: post.sellerId,
+      description: post.content,
+      unit_price: parseFloat(post.price.replace(/[^0-9.]/g, '')) || 0,
+    };
+    
+    setSharingProduct(productForSharing);
     setSelectedProduct({
       id: post.id,
       name: post.product,
@@ -443,6 +462,14 @@ const BuyerHomePage = () => {
     ];
   }, [navigate, startChat, handleShareTo, handleCopyLink]);
 
+  // Get the product image for meta tags
+  const getProductImage = (product) => {
+    if (!product) return null;
+    return product.images && product.images.length > 0 
+      ? product.images[0] 
+      : product.product_photo || null;
+  };
+
   if (contextLoading || !initialFetchDone || isLoading) {
     return (
       <div className={`p-3 sm:p-4 md:p-6 max-w-4xl mx-auto min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -453,6 +480,15 @@ const BuyerHomePage = () => {
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      {/* ProductMetaTags for sharing - dynamically updates when share is triggered */}
+      {sharingProduct && (
+        <ProductMetaTags 
+          product={sharingProduct}
+          productImage={getProductImage(sharingProduct)}
+          productDescription={sharingProduct.description}
+        />
+      )}
+      
       <div className="p-2 sm:p-4 md:p-6 max-w-6xl mx-auto relative">
 
         {/* Header with Search, Filters, and Settings Icon */}
@@ -819,6 +855,7 @@ const BuyerHomePage = () => {
             onClose={() => {
               setShareModalOpen(false);
               setSelectedProduct(null);
+              setSharingProduct(null);
             }}
             product={selectedProduct}
             isDarkMode={isDarkMode}
