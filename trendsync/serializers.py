@@ -714,3 +714,27 @@ class ReportCreateSerializer(serializers.Serializer):
     report_type = serializers.ChoiceField(choices=Report.REPORT_TYPES)
     description = serializers.CharField(required=True)
     evidence = serializers.CharField(required=False, allow_blank=True)
+
+class BuyerProfileSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    email = serializers.EmailField(source='user.email', read_only=True)
+    
+    class Meta:
+        model = Buyer
+        fields = [
+            'id', 'user', 'username', 'email', 'name', 'location', 
+            'contact', 'dob', 'profile_photo', 'recent_searches'
+        ]
+        read_only_fields = ['user', 'recent_searches']
+    
+    def update(self, instance, validated_data):
+        # Handle profile photo separately
+        if 'profile_photo' in validated_data:
+            instance.profile_photo = validated_data.pop('profile_photo')
+        
+        # Update other fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        instance.save()
+        return instance

@@ -66,10 +66,10 @@ class Buyer(models.Model):
     contact = models.CharField(max_length=100, blank=True)
     dob = models.DateField(null=True, blank=True)
     profile_photo = models.ImageField(upload_to='buyers/', blank=True, null=True)
+    recent_searches = models.JSONField(default=list, blank=True) 
 
     def __str__(self):
         return self.name
-
 
 class Product(models.Model):
     seller = models.ForeignKey(Seller, on_delete=models.CASCADE, related_name='products')
@@ -516,3 +516,5 @@ class Report(models.Model):
         self.admin_notes = notes
         self.resolved_at = timezone.now()
         self.save()
+
+

@@ -9,6 +9,18 @@ from .serializers import (
     CartItemSerializer, ReportSerializer, ProductCommentSerializer, SellerSerializer, BuyerRegisterSerializer,
     SellerRegisterSerializer, QuickDealSerializer, ReportCreateSerializer, SellerProfileSerializer, SellerProductSerializer,
     SellerOrderSerializer, SellerQuickDealSerializer, SellerStatsSerializer )
+from django.db.models.functions import Coalesce
+from django.db.models import Q, Count, Avg, F, Min, Max, DecimalField 
+from django.db.models.functions import Coalesce
+from decimal import Decimal
+from django.contrib.auth.models import User
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Product, Category, Seller, Buyer, ProductComment, Report
+from .serializers import ProductSerializer, CategorySerializer
+
 from rest_framework.permissions import AllowAny
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -2811,3 +2823,264 @@ def get_my_reports(request):
             'error': 'Failed to fetch reports',
             'detail': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ===== RECENT SEARCHES =====
+
+@api_view(['GET', 'POST', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def recent_searches(request):
+    """
+    GET: Get user's recent searches
+    POST: Add a search term
+    DELETE: Clear all recent searches
+    """
+    user = request.user
+    
+    if request.method == 'GET':
+        # Get recent searches from user profile or use localStorage fallback
+        try:
+            buyer = Buyer.objects.get(user=user)
+            # If you add a recent_searches field to Buyer model
+            if hasattr(buyer, 'recent_searches'):
+                searches = buyer.recent_searches or []
+                return Response({
+                    'status': 'success',
+                    'searches': searches[:5]  # Max 5
+                })
+        except Buyer.DoesNotExist:
+            pass
+        
+        # Fallback: return empty list (frontend will use localStorage)
+        return Response({
+            'status': 'success',
+            'searches': []
+        })
+    
+    elif request.method == 'POST':
+        term = request.data.get('term', '').strip()
+        if not term:
+            return Response({
+                'status': 'error',
+                'message': 'Search term is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            buyer = Buyer.objects.get(user=user)
+            if hasattr(buyer, 'recent_searches'):
+                searches = buyer.recent_searches or []
+                # Remove duplicate and add to front
+                searches = [term] + [s for s in searches if s.lower() != term.lower()]
+                searches = searches[:5]  # Keep max 5
+                buyer.recent_searches = searches
+                buyer.save()
+        except Buyer.DoesNotExist:
+            pass
+        
+        return Response({
+            'status': 'success',
+            'message': 'Search term saved'
+        })
+    
+    elif request.method == 'DELETE':
+        try:
+            buyer = Buyer.objects.get(user=user)
+            if hasattr(buyer, 'recent_searches'):
+                buyer.recent_searches = []
+                buyer.save()
+        except Buyer.DoesNotExist:
+            pass
+        
+        return Response({
+            'status': 'success',
+            'message': 'Recent searches cleared'
+        })
+
+
+# ===== UPDATED PRODUCT SEARCH WITH ADVANCED FILTERS =====
+
+@api_view(['GET'])
+def search_products(request):
+    """
+    Search products with advanced filters including:
+    - search: text search in name and description
+    - category: category ID
+    - location: seller location
+    - price_range: under_500k, 500k_1m, 1m_5m, above_5m
+    - min_rating: minimum rating (1-5)
+    - stock_status: all, in_stock, low_stock, out_of_stock
+    - sort: newest, price_low, price_high, rating, popularity, relevance
+    """
+    queryset = Product.objects.all().select_related('seller', 'category')
+    
+    # Search text
+    search = request.query_params.get('search', '')
+    if search:
+        queryset = queryset.filter(
+            Q(name__icontains=search) |
+            Q(description__icontains=search)
+        )
+    
+    # Category filter
+    category = request.query_params.get('category')
+    if category and category != 'all':
+        queryset = queryset.filter(category_id=category)
+    
+    # Location filter
+    location = request.query_params.get('location', '')
+    if location:
+        queryset = queryset.filter(
+            Q(seller__location__icontains=location) |
+            Q(seller__location_address__icontains=location)
+        )
+    
+    # Price range filter
+    price_range = request.query_params.get('price_range', 'all')
+    if price_range != 'all':
+        price_ranges = {
+            'under_500k': (0, 500000),
+            '500k_1m': (500000, 1000000),
+            '1m_5m': (1000000, 5000000),
+            'above_5m': (5000000, None)
+        }
+        if price_range in price_ranges:
+            min_price, max_price = price_ranges[price_range]
+            if max_price is None:
+                queryset = queryset.filter(unit_price__gte=min_price)
+            else:
+                queryset = queryset.filter(unit_price__gte=min_price, unit_price__lt=max_price)
+    
+    # Rating filter
+    min_rating = request.query_params.get('min_rating')
+    if min_rating and min_rating.isdigit():
+        min_rating = int(min_rating)
+        if min_rating > 0:
+            queryset = queryset.filter(rating_magnitude__gte=min_rating)
+    
+    # Stock status filter
+    stock_status = request.query_params.get('stock_status', 'all')
+    if stock_status != 'all':
+        if stock_status == 'in_stock':
+            queryset = queryset.filter(stock_quantity__gt=10)
+        elif stock_status == 'low_stock':
+            queryset = queryset.filter(stock_quantity__gte=1, stock_quantity__lte=10)
+        elif stock_status == 'out_of_stock':
+            queryset = queryset.filter(stock_quantity=0)
+    
+    # Sorting
+    sort = request.query_params.get('sort', 'newest')
+    sort_mappings = {
+        'newest': '-date_of_post',
+        'price_low': 'unit_price',
+        'price_high': '-unit_price',
+        'rating': '-rating_magnitude',
+        'popularity': '-sales_count',
+        'relevance': '-like_count',
+    }
+    if sort in sort_mappings:
+        queryset = queryset.order_by(sort_mappings[sort])
+    
+    # Pagination
+    page = int(request.query_params.get('page', 1))
+    page_size = int(request.query_params.get('page_size', 20))
+    start = (page - 1) * page_size
+    end = start + page_size
+    
+    total_count = queryset.count()
+    products = queryset[start:end]
+    
+    # Serialize with request context for image URLs
+    serializer = ProductSerializer(products, many=True, context={'request': request})
+    
+    return Response({
+        'status': 'success',
+        'data': serializer.data,
+        'pagination': {
+            'page': page,
+            'page_size': page_size,
+            'total_count': total_count,
+            'total_pages': (total_count + page_size - 1) // page_size
+        }
+    })
+
+
+# ===== GET FILTER OPTIONS =====
+
+@api_view(['GET'])
+def get_filter_options(request):
+    """
+    Get available filter options for the frontend
+    """
+    # Get unique price ranges from products
+    price_ranges = Product.objects.aggregate(
+        min_price=Coalesce(Min('unit_price'), Decimal('0')),
+        max_price=Coalesce(Max('unit_price'), Decimal('0'))
+    )
+    
+    # Get categories with product counts
+    categories = Category.objects.filter(
+        products__isnull=False,
+        is_active=True
+    ).annotate(
+        product_count=Count('products')
+    ).values('id', 'name', 'product_count')
+    
+    # Get locations from sellers with products
+    locations = Seller.objects.filter(
+        products__isnull=False
+    ).exclude(
+        location__isnull=True
+    ).exclude(
+        location=''
+    ).values_list('location', flat=True).distinct()[:50]
+    
+    # Get rating distribution
+    rating_distribution = Product.objects.aggregate(
+        rating_1=Count('id', filter=Q(rating_magnitude__gte=1, rating_magnitude__lt=2)),
+        rating_2=Count('id', filter=Q(rating_magnitude__gte=2, rating_magnitude__lt=3)),
+        rating_3=Count('id', filter=Q(rating_magnitude__gte=3, rating_magnitude__lt=4)),
+        rating_4=Count('id', filter=Q(rating_magnitude__gte=4, rating_magnitude__lt=5)),
+        rating_5=Count('id', filter=Q(rating_magnitude__gte=5)),
+    )
+    
+    return Response({
+        'status': 'success',
+        'data': {
+            'price_range': {
+                'min': float(price_ranges['min_price'] or 0),
+                'max': float(price_ranges['max_price'] or 0)
+            },
+            'categories': list(categories),
+            'locations': list(locations[:20]),  # Limit to 20 locations
+            'rating_distribution': rating_distribution,
+            'sort_options': [
+                {'value': 'newest', 'label': 'Newest First'},
+                {'value': 'price_low', 'label': 'Price: Low to High'},
+                {'value': 'price_high', 'label': 'Price: High to Low'},
+                {'value': 'rating', 'label': 'Best Rating'},
+                {'value': 'popularity', 'label': 'Most Popular'},
+                {'value': 'relevance', 'label': 'Relevance'},
+            ],
+            'price_options': [
+                {'value': 'all', 'label': 'All Prices'},
+                {'value': 'under_500k', 'label': 'Under 500,000 UGX'},
+                {'value': '500k_1m', 'label': '500,000 - 1,000,000 UGX'},
+                {'value': '1m_5m', 'label': '1,000,000 - 5,000,000 UGX'},
+                {'value': 'above_5m', 'label': 'Above 5,000,000 UGX'},
+            ],
+            'rating_options': [
+                {'value': 0, 'label': 'Any Rating'},
+                {'value': 1, 'label': '⭐ 1+ Stars'},
+                {'value': 2, 'label': '⭐⭐ 2+ Stars'},
+                {'value': 3, 'label': '⭐⭐⭐ 3+ Stars'},
+                {'value': 4, 'label': '⭐⭐⭐⭐ 4+ Stars'},
+                {'value': 5, 'label': '⭐⭐⭐⭐⭐ 5 Stars'},
+            ],
+            'stock_options': [
+                {'value': 'all', 'label': 'All Products'},
+                {'value': 'in_stock', 'label': 'In Stock'},
+                {'value': 'low_stock', 'label': 'Low Stock (< 10)'},
+                {'value': 'out_of_stock', 'label': 'Out of Stock'},
+            ]
+        }
+    })

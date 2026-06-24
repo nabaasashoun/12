@@ -1,3 +1,5 @@
+# trendsync/urls.py - Updated
+
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .main_views import (
@@ -57,6 +59,9 @@ from .main_views import (
     get_report_detail,
     update_report_status,
     get_my_reports,
+    recent_searches,
+    search_products,
+    get_filter_options,
 )
 
 from .views import (
@@ -87,6 +92,12 @@ urlpatterns = [
     
     # ===== LOCATIONS =====
     path('locations/', get_locations, name='get-locations'),
+    
+    # ===== SEARCH AND FILTERS (NO /api/ prefix - main urls.py adds it) =====
+    path('products/search/', search_products, name='search-products'),
+    path('products/search', search_products, name='search-products-no-slash'),  # extra
+    path('filter-options/', get_filter_options, name='filter-options'),
+    path('recent-searches/', recent_searches, name='recent-searches'),
     
     # ===== ROUTER =====
     path('', include(router.urls)),
