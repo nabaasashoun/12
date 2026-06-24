@@ -47,9 +47,8 @@ const SettingsPage = () => {
   // Account switching state
   const [linkedAccounts, setLinkedAccounts] = useState([]);
   const [activeAccount, setActiveAccount] = useState(null);
-  const [showAddAccountModal, setShowAddAccountModal] = useState(false);
-  const [showCreateAccountModal, setShowCreateAccountModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showCreateAccountModal, setShowCreateAccountModal] = useState(false);
   const [accountCreationStep, setAccountCreationStep] = useState('select');
   const [newAccountData, setNewAccountData] = useState({
     username: '',
@@ -92,7 +91,7 @@ const SettingsPage = () => {
     hasSpecialChar: false
   });
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSavingEmail, setIsSavingEmail] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
@@ -115,37 +114,12 @@ const SettingsPage = () => {
   const isInitialMount = useRef(true);
   const accountSwitchInProgress = useRef(false);
   const fetchInProgress = useRef(false);
+  const hasLoadedAccounts = useRef(false);
+  const hasLoadedProfile = useRef(false);
 
-  // Load linked accounts from localStorage
-  const loadAccountsFromStorage = useCallback(() => {
-    try {
-      const saved = localStorage.getItem('linkedAccounts');
-      if (saved) {
-        const accounts = JSON.parse(saved);
-        const validatedAccounts = accounts.map(acc => ({
-          ...acc,
-          isActive: acc.isActive || false,
-          avatar: acc.avatar || acc.name?.charAt(0).toUpperCase() || 'U'
-        }));
-        
-        const active = validatedAccounts.find(acc => acc.isActive);
-        if (active) {
-          setActiveAccount(active);
-        } else if (validatedAccounts.length > 0) {
-          validatedAccounts[0].isActive = true;
-          setActiveAccount(validatedAccounts[0]);
-          saveAccounts(validatedAccounts);
-        }
-        return validatedAccounts;
-      }
-      return [];
-    } catch (e) {
-      console.error('Error loading accounts:', e);
-      return [];
-    }
-  }, []);
-
-  // Save linked accounts to localStorage
+  // ============================================================
+  // 1. SAVE ACCOUNTS FUNCTION - DEFINED FIRST
+  // ============================================================
   const saveAccounts = useCallback((accounts) => {
     try {
       localStorage.setItem('linkedAccounts', JSON.stringify(accounts));
@@ -154,32 +128,70 @@ const SettingsPage = () => {
     }
   }, []);
 
-  // Initialize accounts on mount - ONLY ONCE
-  useEffect(() => {
-    if (isInitialMount.current) {
-      const accounts = loadAccountsFromStorage();
-      if (accounts.length > 0) {
-        setLinkedAccounts(accounts);
-      }
-      isInitialMount.current = false;
-    }
-  }, [loadAccountsFromStorage]);
+// ============================================================
+// 2. LOAD ACCOUNTS FUNCTION - WITH DEDUPLICATION
+// ============================================================
 
-  // Fetch profile with proper account context
-  const fetchProfile = useCallback(async (accountId = null) => {
-    if (fetchInProgress.current) return;
-    fetchInProgress.current = true;
-    
-    setIsLoading(true);
+// ============================================================
+// 2. LOAD ACCOUNTS FUNCTION - WITH DEDUPLICATION
+// ============================================================
+  const loadAccountsFromStorage = useCallback(() => {
     try {
-      // If switching accounts, use the account's token
-      if (accountId) {
-        const account = linkedAccounts.find(acc => acc.id === accountId);
-        if (account?.token) {
-          localStorage.setItem('accessToken', account.token);
+      const saved = localStorage.getItem('linkedAccounts');
+      if (saved) {
+        const accounts = JSON.parse(saved);
+        // Ensure each account has required fields and remove duplicates
+        const uniqueAccounts = [];
+        const seenIds = new Set();
+        
+        accounts.forEach(acc => {
+          if (!seenIds.has(acc.id)) {
+            seenIds.add(acc.id);
+            uniqueAccounts.push({
+              ...acc,
+              isActive: acc.isActive || false,
+              avatar: acc.avatar || acc.name?.charAt(0).toUpperCase() || 'U'
+            });
+          }
+        });
+        
+        // If after deduplication, the active account is not set, set the first as active
+        const activeExists = uniqueAccounts.some(acc => acc.isActive);
+        if (!activeExists && uniqueAccounts.length > 0) {
+          uniqueAccounts[0].isActive = true;
+          setActiveAccount(uniqueAccounts[0]);
+          saveAccounts(uniqueAccounts);
+        } else {
+          const active = uniqueAccounts.find(acc => acc.isActive);
+          if (active) {
+            setActiveAccount(active);
+          } else if (uniqueAccounts.length > 0) {
+            uniqueAccounts[0].isActive = true;
+            setActiveAccount(uniqueAccounts[0]);
+            saveAccounts(uniqueAccounts);
+          }
         }
+        
+        return uniqueAccounts;
       }
+      return [];
+    } catch (e) {
+      console.error('Error loading accounts:', e);
+      return [];
+    }
+  }, [saveAccounts]);
 
+  // ============================================================
+  // 3. FETCH PROFILE - WITH SILENT MODE AND DUPLICATE CHECK
+  // ============================================================
+  const fetchProfile = useCallback(async (silent = false) => {
+    if (fetchInProgress.current) return;
+    if (hasLoadedProfile.current && !silent) return;
+    
+    fetchInProgress.current = true;
+    if (!silent) setIsLoading(true);
+    
+    try {
       const buyerRes = await api.getBuyerProfile();
       const tokenRes = await api.verifyToken();
 
@@ -199,22 +211,56 @@ const SettingsPage = () => {
         
         setUserInfo(userData);
         
-        // Update the active account with latest info
+        // Update the active account with latest info - WITHOUT DUPLICATING
         setLinkedAccounts(prev => {
-          const updated = prev.map(acc => {
-            if (acc.isActive) {
+          const userId = tokenRes.data.user.id;
+          const existingIndex = prev.findIndex(acc => acc.id === userId);
+          
+          let updated;
+          let activeAccountData;
+          
+          if (existingIndex >= 0) {
+            // Account exists - update it and set as active
+            updated = prev.map((acc, index) => {
+              if (index === existingIndex) {
+                activeAccountData = {
+                  ...acc,
+                  name: userData.name,
+                  email: userData.email,
+                  username: userData.username,
+                  avatar: userData.name.split(' ').map(n => n[0]).join('').toUpperCase(),
+                  isActive: true
+                };
+                return activeAccountData;
+              }
               return {
                 ...acc,
-                name: userData.name,
-                email: userData.email,
-                username: userData.username,
-                avatar: userData.name.split(' ').map(n => n[0]).join('').toUpperCase()
+                isActive: false
               };
-            }
-            return acc;
-          });
-          saveAccounts(updated);
-          return updated;
+            });
+            // Save the updated accounts
+            saveAccounts(updated);
+            return updated;
+          } else {
+            // Account doesn't exist - add it as active
+            const newAccount = {
+              id: userId,
+              username: userData.username,
+              email: userData.email,
+              name: userData.name,
+              role: tokenRes.data.user.is_seller ? 'seller' : 'buyer',
+              isActive: true,
+              avatar: userData.name.split(' ').map(n => n[0]).join('').toUpperCase(),
+              token: localStorage.getItem('accessToken')
+            };
+            // Set all existing accounts to inactive
+            updated = prev.map(acc => ({ ...acc, isActive: false }));
+            // Add the new account
+            updated.push(newAccount);
+            // Save to localStorage
+            saveAccounts(updated);
+            return updated;
+          }
         });
         
         setProfileForm({
@@ -229,23 +275,46 @@ const SettingsPage = () => {
           newEmail: tokenRes.data.user.email || '',
           confirmEmail: tokenRes.data.user.email || ''
         }));
+        
+        hasLoadedProfile.current = true;
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
       fetchInProgress.current = false;
     }
-  }, [linkedAccounts, saveAccounts]);
+  }, [saveAccounts]);
 
-  // Load profile on mount and when active account changes
+
+  // ============================================================
+  // 4. INITIALIZE ACCOUNTS ON MOUNT
+  // ============================================================
   useEffect(() => {
-    if (!isInitialMount.current && activeAccount) {
-      fetchProfile(activeAccount.id);
+    if (isInitialMount.current) {
+      const accounts = loadAccountsFromStorage();
+      if (accounts.length > 0) {
+        setLinkedAccounts(accounts);
+        hasLoadedAccounts.current = true;
+      } else {
+        hasLoadedAccounts.current = true;
+      }
+      isInitialMount.current = false;
     }
-  }, [activeAccount, fetchProfile]);
+  }, [loadAccountsFromStorage]);
 
-  // Account switching function with proper persistence
+  // ============================================================
+  // 5. LOAD PROFILE ON MOUNT
+  // ============================================================
+  useEffect(() => {
+    if (!isInitialMount.current && !hasLoadedProfile.current) {
+      fetchProfile();
+    }
+  }, [fetchProfile]);
+
+  // ============================================================
+  // 6. SWITCH ACCOUNT - NO AUTHSTATE CHANGED EVENT
+  // ============================================================
   const switchAccount = useCallback(async (accountId) => {
     if (accountSwitchInProgress.current) return;
     if (activeAccount?.id === accountId) return;
@@ -258,7 +327,6 @@ const SettingsPage = () => {
       return;
     }
 
-    // Update active state
     const updated = linkedAccounts.map(acc => ({
       ...acc,
       isActive: acc.id === accountId
@@ -269,7 +337,6 @@ const SettingsPage = () => {
     setActiveAccount(newActive);
     saveAccounts(updated);
 
-    // If the account has a token, use it
     if (targetAccount.token) {
       localStorage.setItem('accessToken', targetAccount.token);
       localStorage.setItem('user', JSON.stringify({
@@ -282,16 +349,15 @@ const SettingsPage = () => {
       localStorage.setItem('userRole', targetAccount.role);
     }
 
-    // Dispatch auth event
-    window.dispatchEvent(new Event('authStateChanged'));
-    
-    // Fetch profile for new account
-    await fetchProfile(accountId);
+    hasLoadedProfile.current = false;
+    await fetchProfile(true);
     
     accountSwitchInProgress.current = false;
   }, [activeAccount, linkedAccounts, saveAccounts, fetchProfile]);
 
-  // Remove account function
+  // ============================================================
+  // 7. REMOVE ACCOUNT
+  // ============================================================
   const removeAccount = useCallback((accountId) => {
     if (linkedAccounts.length <= 1) {
       alert('You must have at least one account linked.');
@@ -306,7 +372,7 @@ const SettingsPage = () => {
       setActiveAccount(updated[0]);
       saveAccounts(updated);
       setLinkedAccounts(updated);
-      // Switch to the first account
+      hasLoadedProfile.current = false;
       switchAccount(updated[0].id);
     } else {
       setLinkedAccounts(updated);
@@ -314,7 +380,9 @@ const SettingsPage = () => {
     }
   }, [linkedAccounts, saveAccounts, switchAccount]);
 
-  // Handle adding existing account
+  // ============================================================
+  // 8. HANDLE ADD EXISTING ACCOUNT
+  // ============================================================
   const handleAddExistingAccount = useCallback(async (credentials) => {
     setIsSubmittingAccount(true);
     setAccountErrors({});
@@ -330,7 +398,6 @@ const SettingsPage = () => {
       if (response.data && response.data.user) {
         const user = response.data.user;
         
-        // Check if account already exists
         if (linkedAccounts.some(acc => acc.id === user.id)) {
           setAccountErrors({ general: 'This account is already linked.' });
           return;
@@ -347,21 +414,16 @@ const SettingsPage = () => {
           token: response.data.access
         };
         
-        // Add new account and keep current active
         const newAccounts = [...linkedAccounts, newAccount];
         setLinkedAccounts(newAccounts);
         saveAccounts(newAccounts);
         setShowLoginModal(false);
         
-        // Update localStorage with the token
         localStorage.setItem('accessToken', response.data.access);
         localStorage.setItem('user', JSON.stringify(user));
         localStorage.setItem('userRole', user.is_seller ? 'seller' : 'buyer');
         
-        // Dispatch auth event
         window.dispatchEvent(new Event('authStateChanged'));
-        
-        // Refresh to load the new account's data
         window.location.reload();
       }
     } catch (error) {
@@ -371,7 +433,9 @@ const SettingsPage = () => {
     }
   }, [linkedAccounts, saveAccounts]);
 
-  // Handle creating new account
+  // ============================================================
+  // 9. HANDLE CREATE NEW ACCOUNT
+  // ============================================================
   const handleCreateNewAccount = useCallback(async (accountData) => {
     setIsSubmittingAccount(true);
     setAccountErrors({});
@@ -422,8 +486,8 @@ const SettingsPage = () => {
         localStorage.setItem('accessToken', loginResponse.data.access);
         localStorage.setItem('user', JSON.stringify(user));
         localStorage.setItem('userRole', user.is_seller ? 'seller' : 'buyer');
-        window.dispatchEvent(new Event('authStateChanged'));
         
+        window.dispatchEvent(new Event('authStateChanged'));
         window.location.reload();
       }
     } catch (error) {
@@ -433,7 +497,9 @@ const SettingsPage = () => {
     }
   }, [linkedAccounts, saveAccounts]);
 
-  // ... rest of the validation functions remain the same ...
+  // ============================================================
+  // 10. VALIDATION FUNCTIONS
+  // ============================================================
   const validateNewAccount = () => {
     const errors = {};
     if (!newAccountData.username) errors.username = 'Username is required';
@@ -491,6 +557,9 @@ const SettingsPage = () => {
     return Object.keys(errors).length === 0;
   };
 
+  // ============================================================
+  // 11. HANDLER FUNCTIONS
+  // ============================================================
   const handleEmailChange = async () => {
     if (!validateEmailForm()) return;
     setIsSavingEmail(true);
@@ -580,6 +649,9 @@ const SettingsPage = () => {
     window.location.href = '/login';
   };
 
+  // ============================================================
+  // 12. TOGGLE FUNCTIONS
+  // ============================================================
   const toggleGroup = (group) => {
     setExpandedGroups(prev => ({ ...prev, [group]: !prev[group] }));
   };
@@ -614,6 +686,9 @@ const SettingsPage = () => {
     i18n.changeLanguage(e.target.value);
   };
 
+  // ============================================================
+  // 13. PASSWORD STRENGTH EFFECT
+  // ============================================================
   useEffect(() => {
     const password = passwordForm.newPassword;
     setPasswordStrength({
@@ -625,6 +700,9 @@ const SettingsPage = () => {
     });
   }, [passwordForm.newPassword]);
 
+  // ============================================================
+  // 14. LOADING STATE - START OF RETURN
+  // ============================================================
   if (isLoading) {
     return (
       <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
@@ -636,6 +714,7 @@ const SettingsPage = () => {
       </div>
     );
   }
+
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -701,7 +780,7 @@ const SettingsPage = () => {
           </div>
         </div>
 
-        {/* Settings Groups */}
+        {/* Settings Groups - Keep the same as before */}
         <div className="space-y-4">
           {/* Account Settings Group */}
           <div className={`rounded-xl shadow-sm overflow-hidden transition-colors ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
@@ -726,7 +805,7 @@ const SettingsPage = () => {
             
             {expandedGroups.account && (
               <div className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
-                {/* Account Switching Section */}
+                {/* Account Switching Section */}   
                 <div className="px-6 py-3">
                   <button
                     onClick={() => toggleSection('accounts')}
@@ -797,29 +876,35 @@ const SettingsPage = () => {
                         </div>
                       ))}
 
-                      <div className="flex gap-3 mt-4">
+                      {/* Add Account Buttons - Add Existing on top, Create New below */}
+                      <div className="flex flex-col gap-3 mt-4">
                         <button
                           onClick={() => {
                             setShowLoginModal(true);
                             setNewAccountData({ username: '', email: '', password: '' });
                           }}
-                          className={`flex-1 py-3 px-4 rounded-full border-2 transition-all hover:scale-[1.02] text-center font-medium ${
-                            isDarkMode ? 'border-gray-600 hover:border-blue-500 text-gray-300 hover:text-blue-400' : 'border-gray-300 hover:border-blue-500 text-gray-600 hover:text-blue-600'
+                          className={`w-full py-3 px-4 rounded-full border-2 transition-all hover:scale-[1.02] text-center font-medium ${
+                            isDarkMode
+                              ? 'border-blue-500 hover:border-blue-400 text-blue-400 hover:text-blue-300 bg-blue-900/20 hover:bg-blue-900/30'
+                              : 'border-blue-500 hover:border-blue-600 text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100'
                           }`}
                         >
-                          Add Existing Account
+                          + Add Existing Account
                         </button>
+                        
                         <button
                           onClick={() => {
                             setShowCreateAccountModal(true);
                             setNewAccountData({ username: '', email: '', password: '', confirmPassword: '', role: 'buyer' });
                             setAccountCreationStep('select');
                           }}
-                          className={`flex-1 py-3 px-4 rounded-full border-2 transition-all hover:scale-[1.02] text-center font-medium ${
-                            isDarkMode ? 'border-gray-600 hover:border-green-500 text-gray-300 hover:text-green-400' : 'border-gray-300 hover:border-green-500 text-gray-600 hover:text-green-600'
+                          className={`w-full py-3 px-4 rounded-full border-2 transition-all hover:scale-[1.02] text-center font-medium ${
+                            isDarkMode
+                              ? 'border-green-500 hover:border-green-400 text-green-400 hover:text-green-300 bg-green-900/20 hover:bg-green-900/30'
+                              : 'border-green-500 hover:border-green-600 text-green-600 hover:text-green-700 bg-green-50 hover:bg-green-100'
                           }`}
                         >
-                          Create New Account
+                          + Create New Account
                         </button>
                       </div>
                     </div>
