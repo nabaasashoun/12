@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { SellerCard, SellerCardContent } from './SellerCard';
 import { 
   User, Moon, LogOut, Save, ArrowLeft, 
@@ -119,189 +119,221 @@ const SellerSettings = () => {
     marketingEmails: false
   });
 
+  // Refs to prevent unnecessary re-renders and loops
+  const isInitialMount = useRef(true);
+  const accountSwitchInProgress = useRef(false);
+  const fetchInProgress = useRef(false);
+
   // Load linked accounts from localStorage
-  useEffect(() => {
-    const loadAccounts = () => {
-      try {
-        const saved = localStorage.getItem('linkedAccounts');
-        if (saved) {
-          const accounts = JSON.parse(saved);
-          setLinkedAccounts(accounts);
-          
-          const active = accounts.find(acc => acc.isActive);
-          if (active) {
-            setActiveAccount(active);
-          } else if (accounts.length > 0) {
-            setActiveAccount(accounts[0]);
-          }
+  const loadAccountsFromStorage = useCallback(() => {
+    try {
+      const saved = localStorage.getItem('linkedAccounts');
+      if (saved) {
+        const accounts = JSON.parse(saved);
+        const validatedAccounts = accounts.map(acc => ({
+          ...acc,
+          isActive: acc.isActive || false,
+          avatar: acc.avatar || acc.name?.charAt(0).toUpperCase() || 'S'
+        }));
+        
+        const active = validatedAccounts.find(acc => acc.isActive);
+        if (active) {
+          setActiveAccount(active);
+        } else if (validatedAccounts.length > 0) {
+          validatedAccounts[0].isActive = true;
+          setActiveAccount(validatedAccounts[0]);
+          saveAccounts(validatedAccounts);
         }
-      } catch (e) {
-        console.error('Error loading accounts:', e);
+        return validatedAccounts;
       }
-    };
-    loadAccounts();
+      return [];
+    } catch (e) {
+      console.error('Error loading accounts:', e);
+      return [];
+    }
   }, []);
 
   // Save linked accounts to localStorage
-  const saveAccounts = (accounts) => {
+  const saveAccounts = useCallback((accounts) => {
     try {
       localStorage.setItem('linkedAccounts', JSON.stringify(accounts));
     } catch (e) {
       console.error('Error saving accounts:', e);
     }
-  };
-
-  useEffect(() => {
-    const fetchSellerProfile = async () => {
-      setIsLoading(true);
-      console.log('========== FETCHING SELLER PROFILE ==========');
-      
-      try {
-        console.log('Making API call to get seller profile...');
-        const response = await api.getSellerProfile();
-        
-        console.log('Seller profile response:', response);
-
-        if (!response.error && response.data) {
-          console.log('Successfully received seller profile data');
-          
-          const sellerData = response.data;
-          
-          // Get user ID from the response
-          const userId = sellerData.user?.id || sellerData.user_id || Date.now();
-          
-          const sellerInfoData = {
-            name: sellerData.name || 'Seller',
-            email: sellerData.email || sellerData.user?.email || 'No email',
-            username: sellerData.username || sellerData.user?.username || '',
-            location: sellerData.location || 'Not set',
-            contact: sellerData.contact || 'Not provided',
-            about: sellerData.about || 'No about info',
-            nin_number: sellerData.nin_number || 'Not provided',
-            sales: sellerData.sales || 0,
-            trust: sellerData.trust || 0,
-            followers: sellerData.followers || 0,
-            profile_photo: sellerData.profile_photo || null,
-            memberSince: new Date().toLocaleDateString('en-US', {
-              month: 'long',
-              year: 'numeric'
-            }),
-            user_id: userId
-          };
-          
-          setSellerInfo(sellerInfoData);
-          
-          // Add current account to linked accounts if not exists - ONLY ONCE
-          const currentAccount = {
-            id: userId,
-            username: sellerData.username || sellerData.user?.username || '',
-            email: sellerData.email || sellerData.user?.email || '',
-            name: sellerInfoData.name,
-            role: 'seller',
-            isActive: true,
-            avatar: sellerInfoData.name.split(' ').map(n => n[0]).join('').toUpperCase()
-          };
-          
-          // Only update linked accounts on initial load or if the account doesn't exist
-          if (isInitialLoad) {
-            setLinkedAccounts(prev => {
-              // Check if account already exists
-              const exists = prev.some(acc => acc.id === currentAccount.id);
-              if (!exists) {
-                // If no account exists, add this one as active
-                const newAccounts = [currentAccount];
-                saveAccounts(newAccounts);
-                return newAccounts;
-              }
-              // If account exists, make sure it's active and others are not
-              const updated = prev.map(acc => ({
-                ...acc,
-                isActive: acc.id === currentAccount.id
-              }));
-              saveAccounts(updated);
-              return updated;
-            });
-            setIsInitialLoad(false);
-          }
-          
-          setProfileForm({
-            name: sellerInfoData.name,
-            location: sellerInfoData.location === 'Not set' ? '' : sellerInfoData.location,
-            contact: sellerInfoData.contact === 'Not provided' ? '' : sellerInfoData.contact,
-            about: sellerInfoData.about === 'No about info' ? '' : sellerInfoData.about,
-            nin_number: sellerInfoData.nin_number === 'Not provided' ? '' : sellerInfoData.nin_number
-          });
-          
-          setEmailForm(prev => ({
-            ...prev,
-            newEmail: sellerInfoData.email,
-            confirmEmail: sellerInfoData.email
-          }));
-        }
-      } catch (error) {
-        console.error('ERROR fetching seller profile:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchSellerProfile();
   }, []);
 
+  // Initialize accounts on mount - ONLY ONCE
   useEffect(() => {
-    const password = passwordForm.newPassword;
-    setPasswordStrength({
-      hasMinLength: password.length >= 8,
-      hasUpperCase: /[A-Z]/.test(password),
-      hasLowerCase: /[a-z]/.test(password),
-      hasNumber: /[0-9]/.test(password),
-      hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password)
-    });
-  }, [passwordForm.newPassword]);
+    if (isInitialMount.current) {
+      const accounts = loadAccountsFromStorage();
+      if (accounts.length > 0) {
+        setLinkedAccounts(accounts);
+      }
+      isInitialMount.current = false;
+    }
+  }, [loadAccountsFromStorage]);
 
-  const toggleGroup = (group) => {
-    setExpandedGroups(prev => ({
-      ...prev,
-      [group]: !prev[group]
-    }));
-  };
+  // Fetch seller profile with proper account context
+  const fetchSellerProfile = useCallback(async (accountId = null) => {
+    if (fetchInProgress.current) return;
+    fetchInProgress.current = true;
+    
+    setIsLoading(true);
+    try {
+      // If switching accounts, use the account's token
+      if (accountId) {
+        const account = linkedAccounts.find(acc => acc.id === accountId);
+        if (account?.token) {
+          localStorage.setItem('accessToken', account.token);
+        }
+      }
 
-  const toggleSection = (section) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
-  };
+      const response = await api.getSellerProfile();
 
-  // Account switching functions
-  const switchAccount = (accountId) => {
+      if (!response.error && response.data) {
+        const sellerData = response.data;
+        
+        const userId = sellerData.user?.id || sellerData.user_id || Date.now();
+        
+        const sellerInfoData = {
+          name: sellerData.name || 'Seller',
+          email: sellerData.email || sellerData.user?.email || 'No email',
+          username: sellerData.username || sellerData.user?.username || '',
+          location: sellerData.location || 'Not set',
+          contact: sellerData.contact || 'Not provided',
+          about: sellerData.about || 'No about info',
+          nin_number: sellerData.nin_number || 'Not provided',
+          sales: sellerData.sales || 0,
+          trust: sellerData.trust || 0,
+          followers: sellerData.followers || 0,
+          profile_photo: sellerData.profile_photo || null,
+          memberSince: new Date().toLocaleDateString('en-US', {
+            month: 'long',
+            year: 'numeric'
+          }),
+          user_id: userId
+        };
+        
+        setSellerInfo(sellerInfoData);
+        
+        // Update the active account with latest info
+        setLinkedAccounts(prev => {
+          const updated = prev.map(acc => {
+            if (acc.isActive) {
+              return {
+                ...acc,
+                name: sellerInfoData.name,
+                email: sellerInfoData.email,
+                username: sellerInfoData.username,
+                avatar: sellerInfoData.name.split(' ').map(n => n[0]).join('').toUpperCase()
+              };
+            }
+            return acc;
+          });
+          saveAccounts(updated);
+          return updated;
+        });
+        
+        setProfileForm({
+          name: sellerInfoData.name,
+          location: sellerInfoData.location === 'Not set' ? '' : sellerInfoData.location,
+          contact: sellerInfoData.contact === 'Not provided' ? '' : sellerInfoData.contact,
+          about: sellerInfoData.about === 'No about info' ? '' : sellerInfoData.about,
+          nin_number: sellerInfoData.nin_number === 'Not provided' ? '' : sellerInfoData.nin_number
+        });
+        
+        setEmailForm(prev => ({
+          ...prev,
+          newEmail: sellerInfoData.email,
+          confirmEmail: sellerInfoData.email
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching seller profile:', error);
+    } finally {
+      setIsLoading(false);
+      fetchInProgress.current = false;
+    }
+  }, [linkedAccounts, saveAccounts]);
+
+  // Load profile on mount and when active account changes
+  useEffect(() => {
+    if (!isInitialMount.current && activeAccount) {
+      fetchSellerProfile(activeAccount.id);
+    }
+  }, [activeAccount, fetchSellerProfile]);
+
+  // Account switching function with proper persistence
+  const switchAccount = useCallback(async (accountId) => {
+    if (accountSwitchInProgress.current) return;
+    if (activeAccount?.id === accountId) return;
+
+    accountSwitchInProgress.current = true;
+
+    const targetAccount = linkedAccounts.find(acc => acc.id === accountId);
+    if (!targetAccount) {
+      accountSwitchInProgress.current = false;
+      return;
+    }
+
+    // Update active state
     const updated = linkedAccounts.map(acc => ({
       ...acc,
       isActive: acc.id === accountId
     }));
+    
     setLinkedAccounts(updated);
-    const active = updated.find(acc => acc.isActive);
-    setActiveAccount(active);
+    const newActive = updated.find(acc => acc.isActive);
+    setActiveAccount(newActive);
     saveAccounts(updated);
-    console.log('Switching to account:', active);
-  };
 
-  const removeAccount = (accountId) => {
+    // If the account has a token, use it
+    if (targetAccount.token) {
+      localStorage.setItem('accessToken', targetAccount.token);
+      localStorage.setItem('user', JSON.stringify({
+        id: targetAccount.id,
+        username: targetAccount.username,
+        email: targetAccount.email,
+        is_buyer: targetAccount.role === 'buyer',
+        is_seller: targetAccount.role === 'seller'
+      }));
+      localStorage.setItem('userRole', targetAccount.role);
+    }
+
+    // Dispatch auth event
+    window.dispatchEvent(new Event('authStateChanged'));
+    
+    // Fetch profile for new account
+    await fetchSellerProfile(accountId);
+    
+    accountSwitchInProgress.current = false;
+  }, [activeAccount, linkedAccounts, saveAccounts, fetchSellerProfile]);
+
+  // Remove account function
+  const removeAccount = useCallback((accountId) => {
     if (linkedAccounts.length <= 1) {
       alert('You must have at least one account linked.');
       return;
     }
     
     const updated = linkedAccounts.filter(acc => acc.id !== accountId);
-    if (linkedAccounts.find(acc => acc.id === accountId)?.isActive) {
+    const wasActive = linkedAccounts.find(acc => acc.id === accountId)?.isActive;
+    
+    if (wasActive && updated.length > 0) {
       updated[0].isActive = true;
       setActiveAccount(updated[0]);
+      saveAccounts(updated);
+      setLinkedAccounts(updated);
+      // Switch to the first account
+      switchAccount(updated[0].id);
+    } else {
+      setLinkedAccounts(updated);
+      saveAccounts(updated);
     }
-    setLinkedAccounts(updated);
-    saveAccounts(updated);
-  };
+  }, [linkedAccounts, saveAccounts, switchAccount]);
 
-  const handleAddExistingAccount = async (credentials) => {
+  // Handle adding existing account
+  const handleAddExistingAccount = useCallback(async (credentials) => {
     setIsSubmittingAccount(true);
     setAccountErrors({});
     
@@ -316,9 +348,8 @@ const SellerSettings = () => {
       if (response.data && response.data.user) {
         const user = response.data.user;
         
-        // Check if account already exists in linked accounts
-        const exists = linkedAccounts.some(acc => acc.id === user.id);
-        if (exists) {
+        // Check if account already exists
+        if (linkedAccounts.some(acc => acc.id === user.id)) {
           setAccountErrors({ general: 'This account is already linked.' });
           return;
         }
@@ -334,18 +365,21 @@ const SellerSettings = () => {
           token: response.data.access
         };
         
-        const updated = linkedAccounts.map(acc => ({ ...acc, isActive: false }));
-        const newAccounts = [...updated, newAccount];
+        // Add new account and keep current active
+        const newAccounts = [...linkedAccounts, newAccount];
         setLinkedAccounts(newAccounts);
         saveAccounts(newAccounts);
-        setActiveAccount(newAccount);
         setShowLoginModal(false);
         
+        // Update localStorage with the token
         localStorage.setItem('accessToken', response.data.access);
-        localStorage.setItem('access', response.data.access);
         localStorage.setItem('user', JSON.stringify(user));
         localStorage.setItem('userRole', user.is_seller ? 'seller' : 'buyer');
+        
+        // Dispatch auth event
         window.dispatchEvent(new Event('authStateChanged'));
+        
+        // Refresh to load the new account's data
         window.location.reload();
       }
     } catch (error) {
@@ -353,9 +387,10 @@ const SellerSettings = () => {
     } finally {
       setIsSubmittingAccount(false);
     }
-  };
+  }, [linkedAccounts, saveAccounts]);
 
-  const handleCreateNewAccount = async (accountData) => {
+  // Handle creating new account
+  const handleCreateNewAccount = useCallback(async (accountData) => {
     setIsSubmittingAccount(true);
     setAccountErrors({});
     
@@ -380,9 +415,7 @@ const SellerSettings = () => {
       if (loginResponse.data && loginResponse.data.user) {
         const user = loginResponse.data.user;
         
-        // Check if account already exists
-        const exists = linkedAccounts.some(acc => acc.id === user.id);
-        if (exists) {
+        if (linkedAccounts.some(acc => acc.id === user.id)) {
           setAccountErrors({ general: 'This account is already linked.' });
           return;
         }
@@ -398,19 +431,17 @@ const SellerSettings = () => {
           token: loginResponse.data.access
         };
         
-        const updated = linkedAccounts.map(acc => ({ ...acc, isActive: false }));
-        const newAccounts = [...updated, newAccount];
+        const newAccounts = [...linkedAccounts, newAccount];
         setLinkedAccounts(newAccounts);
         saveAccounts(newAccounts);
-        setActiveAccount(newAccount);
         setShowCreateAccountModal(false);
         setAccountCreationStep('select');
         
         localStorage.setItem('accessToken', loginResponse.data.access);
-        localStorage.setItem('access', loginResponse.data.access);
         localStorage.setItem('user', JSON.stringify(user));
         localStorage.setItem('userRole', user.is_seller ? 'seller' : 'buyer');
         window.dispatchEvent(new Event('authStateChanged'));
+        
         window.location.reload();
       }
     } catch (error) {
@@ -418,7 +449,7 @@ const SellerSettings = () => {
     } finally {
       setIsSubmittingAccount(false);
     }
-  };
+  }, [linkedAccounts, saveAccounts]);
 
   const validateNewAccount = () => {
     const errors = {};
@@ -433,46 +464,38 @@ const SellerSettings = () => {
 
   const validateEmailForm = () => {
     const errors = {};
-    
     if (!emailForm.newEmail) {
       errors.newEmail = 'New email is required';
     } else if (!/\S+@\S+\.\S+/.test(emailForm.newEmail)) {
       errors.newEmail = 'Email is invalid';
     }
-    
     if (!emailForm.confirmEmail) {
       errors.confirmEmail = 'Please confirm your email';
     } else if (emailForm.newEmail !== emailForm.confirmEmail) {
       errors.confirmEmail = 'Emails do not match';
     }
-    
     if (!emailForm.password) {
       errors.password = 'Password is required to verify your identity';
     }
-    
     setEmailErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const validatePasswordForm = () => {
     const errors = {};
-    
     if (!passwordForm.currentPassword) {
       errors.currentPassword = 'Current password is required';
     }
-    
     if (!passwordForm.newPassword) {
       errors.newPassword = 'New password is required';
     } else if (passwordForm.newPassword.length < 8) {
       errors.newPassword = 'Password must be at least 8 characters';
     }
-    
     if (!passwordForm.confirmPassword) {
       errors.confirmPassword = 'Please confirm your new password';
     } else if (passwordForm.newPassword !== passwordForm.confirmPassword) {
       errors.confirmPassword = 'Passwords do not match';
     }
-    
     setPasswordErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -487,19 +510,15 @@ const SellerSettings = () => {
 
   const handleEmailChange = async () => {
     if (!validateEmailForm()) return;
-    
     setIsSavingEmail(true);
     setEmailSuccess('');
-    
     try {
       const response = await api.changeEmail(emailForm.newEmail, emailForm.password);
-      
       if (!response.error) {
         setEmailSuccess('Email updated successfully!');
         setEmailForm(prev => ({ ...prev, password: '' }));
         setEmailErrors({});
         setSellerInfo(prev => ({ ...prev, email: emailForm.newEmail }));
-        
         setTimeout(() => setEmailSuccess(''), 3000);
       } else if (response.status === 401) {
         setEmailErrors({ password: response.data?.error || 'Current password is incorrect' });
@@ -516,13 +535,10 @@ const SellerSettings = () => {
 
   const handlePasswordChange = async () => {
     if (!validatePasswordForm()) return;
-    
     setIsSavingPassword(true);
     setPasswordSuccess('');
-    
     try {
       const response = await api.changePassword(passwordForm.currentPassword, passwordForm.newPassword);
-      
       if (!response.error) {
         setPasswordSuccess('Password updated successfully!');
         setPasswordForm({
@@ -547,9 +563,7 @@ const SellerSettings = () => {
 
   const handleProfileSave = async () => {
     if (!validateProfileForm()) return;
-    
     setIsSavingProfile(true);
-    
     try {
       const dataToSend = {
         name: profileForm.name,
@@ -570,6 +584,22 @@ const SellerSettings = () => {
           about: profileForm.about || 'No about info',
           nin_number: profileForm.nin_number || 'Not provided'
         }));
+        
+        // Update active account name
+        setLinkedAccounts(prev => {
+          const updated = prev.map(acc => {
+            if (acc.isActive) {
+              return {
+                ...acc,
+                name: profileForm.name,
+                avatar: profileForm.name.split(' ').map(n => n[0]).join('').toUpperCase()
+              };
+            }
+            return acc;
+          });
+          saveAccounts(updated);
+          return updated;
+        });
       } else {
         let errorMessage = 'Failed to update profile. ';
         if (response.data) {
@@ -584,7 +614,6 @@ const SellerSettings = () => {
         }
         alert(errorMessage);
       }
-      
     } catch (error) {
       console.error('Error in profile save:', error);
       alert('Failed to update profile. Please try again.');
@@ -600,15 +629,21 @@ const SellerSettings = () => {
     localStorage.removeItem('refresh');
     localStorage.removeItem('user');
     localStorage.removeItem('userRole');
-    
+    localStorage.removeItem('linkedAccounts');
+    window.dispatchEvent(new Event('authStateChanged'));
     window.location.href = '/seller/login';
   };
 
+  const toggleGroup = (group) => {
+    setExpandedGroups(prev => ({ ...prev, [group]: !prev[group] }));
+  };
+
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
   const togglePasswordVisibility = (field) => {
-    setShowPasswords(prev => ({
-      ...prev,
-      [field]: !prev[field]
-    }));
+    setShowPasswords(prev => ({ ...prev, [field]: !prev[field] }));
   };
 
   const getPasswordStrengthColor = () => {
@@ -626,21 +661,19 @@ const SellerSettings = () => {
   };
 
   const toggleNotification = (key) => {
-    setNotificationSettings(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
+    setNotificationSettings(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // Update active account when linkedAccounts changes
   useEffect(() => {
-    if (linkedAccounts.length > 0) {
-      const active = linkedAccounts.find(acc => acc.isActive);
-      if (active) {
-        setActiveAccount(active);
-      }
-    }
-  }, [linkedAccounts]);
+    const password = passwordForm.newPassword;
+    setPasswordStrength({
+      hasMinLength: password.length >= 8,
+      hasUpperCase: /[A-Z]/.test(password),
+      hasLowerCase: /[a-z]/.test(password),
+      hasNumber: /[0-9]/.test(password),
+      hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    });
+  }, [passwordForm.newPassword]);
 
   if (isLoading) {
     return (
@@ -652,10 +685,6 @@ const SellerSettings = () => {
     );
   }
 
-  // Rest of the component remains the same...
-  // (The JSX return statement is unchanged from the previous version)
-  // ... [the rest of the return JSX stays exactly the same]
-
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="p-3 sm:p-4 md:p-6 max-w-4xl mx-auto">
@@ -663,22 +692,21 @@ const SellerSettings = () => {
         <div className={`flex items-center mb-3 sm:mb-4 p-4 rounded-xl shadow-sm transition-colors ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
           <button
             onClick={() => navigate(-1)}
-            className={`p-2 mr-4 rounded-lg transition-all ${isDarkMode 
-              ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700' 
-              : 'text-gray-600 hover:text-black hover:bg-gray-100'
-            }`}
+            className={`p-2 mr-4 rounded-lg transition-all ${isDarkMode ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700' : 'text-gray-600 hover:text-black hover:bg-gray-100'}`}
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex-1">
-            <p className={`text-[15px] sm:text-xl font-bold ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Settings</p>
+            <p className={`text-[15px] sm:text-xl font-bold ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>
+              {activeAccount?.role === 'buyer' ? 'Buyer Settings' : 'Seller Settings'}
+            </p>
+            <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              {activeAccount?.name || 'Manage your seller preferences'}
+            </p>
           </div>
           <button
             onClick={toggleDarkMode}
-            className={`p-3 rounded-full transition-colors ${isDarkMode 
-              ? 'bg-purple-600 hover:bg-purple-700 text-white' 
-              : 'bg-purple-100 hover:bg-purple-200 text-purple-600'
-            }`}
+            className={`p-3 rounded-full transition-colors ${isDarkMode ? 'bg-purple-600 hover:bg-purple-700 text-white' : 'bg-purple-100 hover:bg-purple-200 text-purple-600'}`}
             aria-label="Toggle dark mode"
           >
             {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
@@ -687,40 +715,31 @@ const SellerSettings = () => {
 
         {/* Active Account Indicator */}
         {activeAccount && (
-          <div className={`mb-4 rounded-xl p-3 flex items-center justify-between ${
-            isDarkMode ? 'bg-green-900/30 border border-green-800' : 'bg-green-50 border border-green-200'
-          }`}>
+          <div className={`mb-4 rounded-xl p-3 flex items-center justify-between ${isDarkMode ? 'bg-green-900/30 border border-green-800' : 'bg-green-50 border border-green-200'}`}>
             <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${
-                activeAccount.role === 'seller' ? 'bg-purple-600' : 'bg-blue-600'
-              }`}>
-                {activeAccount.avatar}
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${activeAccount.role === 'seller' ? 'bg-purple-600' : 'bg-blue-600'}`}>
+                {activeAccount.avatar || activeAccount.name?.charAt(0).toUpperCase() || 'S'}
               </div>
               <div>
                 <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-                  {activeAccount.name}
+                  {activeAccount.name || activeAccount.username}
                 </p>
                 <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                   {activeAccount.role === 'seller' ? 'Seller Account' : 'Buyer Account'} • {activeAccount.email}
                 </p>
               </div>
             </div>
-            <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-              isDarkMode ? 'bg-green-800 text-green-300' : 'bg-green-200 text-green-800'
-            }`}>
+            <div className={`px-2 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-green-800 text-green-300' : 'bg-green-200 text-green-800'}`}>
               Active
             </div>
           </div>
         )}
 
         {/* Seller Profile Header Card */}
-        <div className={`mb-6 rounded-xl p-6 shadow-lg transition-colors ${isDarkMode 
-          ? 'bg-gradient-to-r from-green-600 to-teal-700' 
-          : 'bg-gradient-to-r from-green-500 to-teal-600'
-        }`}>
+        <div className={`mb-6 rounded-xl p-6 shadow-lg transition-colors ${isDarkMode ? 'bg-gradient-to-r from-green-600 to-teal-700' : 'bg-gradient-to-r from-green-500 to-teal-600'}`}>
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-2xl font-bold border-2 border-white text-white">
-              {sellerInfo.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+              {sellerInfo.name.split(' ').map(n => n[0]).join('').toUpperCase() || 'S'}
             </div>
             <div className="flex-1">
               <h2 className="text-xl font-bold text-white">{sellerInfo.name}</h2>
@@ -728,20 +747,19 @@ const SellerSettings = () => {
               <div className="flex items-center space-x-4 mt-2 text-xs">
                 <span className="flex items-center"><Briefcase className="w-3 h-3 mr-1" /> {sellerInfo.sales} Sales</span>
                 <span className="flex items-center"><User className="w-3 h-3 mr-1" /> {sellerInfo.followers} Followers</span>
+                <span className="flex items-center"><Award className="w-3 h-3 mr-1" /> {sellerInfo.trust}% Trust</span>
               </div>
             </div>
           </div>
         </div>
 
+        {/* Settings Groups */}
         <div className="space-y-4">
           {/* Account Settings Group */}
           <div className={`rounded-xl shadow-sm overflow-hidden transition-colors ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
             <button
               onClick={() => toggleGroup('account')}
-              className={`w-full px-6 py-4 flex items-center justify-between transition-colors ${isDarkMode 
-                ? 'hover:bg-gray-700 border-gray-700' 
-                : 'hover:bg-gray-50 border-gray-100'
-              } border-b`}
+              className={`w-full px-6 py-4 flex items-center justify-between transition-colors ${isDarkMode ? 'hover:bg-gray-700 border-gray-700' : 'hover:bg-gray-50 border-gray-100'} border-b`}
             >
               <div className="flex items-center space-x-3">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100'}`}>
@@ -781,24 +799,17 @@ const SellerSettings = () => {
                   
                   {expandedSections.accounts && (
                     <div className="mt-3 pl-7 space-y-3">
-                      {/* List of linked accounts */}
                       {linkedAccounts.map((account) => (
                         <div
                           key={account.id}
                           className={`flex items-center justify-between p-3 rounded-lg transition-all ${
                             account.isActive
-                              ? isDarkMode
-                                ? 'bg-blue-900/30 border border-blue-700'
-                                : 'bg-blue-50 border border-blue-200'
-                              : isDarkMode
-                                ? 'bg-gray-700/50 hover:bg-gray-700'
-                                : 'bg-gray-50 hover:bg-gray-100'
+                              ? isDarkMode ? 'bg-blue-900/30 border border-blue-700' : 'bg-blue-50 border border-blue-200'
+                              : isDarkMode ? 'bg-gray-700/50 hover:bg-gray-700' : 'bg-gray-50 hover:bg-gray-100'
                           }`}
                         >
                           <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${
-                              account.role === 'seller' ? 'bg-purple-600' : 'bg-blue-600'
-                            }`}>
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${account.role === 'seller' ? 'bg-purple-600' : 'bg-blue-600'}`}>
                               {account.avatar}
                             </div>
                             <div>
@@ -812,18 +823,14 @@ const SellerSettings = () => {
                           </div>
                           <div className="flex items-center gap-2">
                             {account.isActive ? (
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                isDarkMode ? 'bg-green-800 text-green-300' : 'bg-green-200 text-green-800'
-                              }`}>
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-green-800 text-green-300' : 'bg-green-200 text-green-800'}`}>
                                 Active
                               </span>
                             ) : (
                               <button
                                 onClick={() => switchAccount(account.id)}
                                 className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
-                                  isDarkMode
-                                    ? 'bg-gray-600 hover:bg-gray-500 text-gray-200'
-                                    : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                                  isDarkMode ? 'bg-gray-600 hover:bg-gray-500 text-gray-200' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
                                 }`}
                               >
                                 Switch
@@ -832,9 +839,7 @@ const SellerSettings = () => {
                             <button
                               onClick={() => removeAccount(account.id)}
                               className={`p-1 rounded transition-colors ${
-                                isDarkMode
-                                  ? 'text-gray-400 hover:text-red-400 hover:bg-red-900/30'
-                                  : 'text-gray-400 hover:text-red-600 hover:bg-red-50'
+                                isDarkMode ? 'text-gray-400 hover:text-red-400 hover:bg-red-900/30' : 'text-gray-400 hover:text-red-600 hover:bg-red-50'
                               }`}
                               title="Remove account"
                             >
@@ -844,7 +849,6 @@ const SellerSettings = () => {
                         </div>
                       ))}
 
-                      {/* Add Account Buttons - Simplified rounded rectangles */}
                       <div className="flex gap-3 mt-4">
                         <button
                           onClick={() => {
@@ -852,9 +856,7 @@ const SellerSettings = () => {
                             setNewAccountData({ username: '', email: '', password: '' });
                           }}
                           className={`flex-1 py-3 px-4 rounded-full border-2 transition-all hover:scale-[1.02] text-center font-medium ${
-                            isDarkMode
-                              ? 'border-gray-600 hover:border-blue-500 text-gray-300 hover:text-blue-400'
-                              : 'border-gray-300 hover:border-blue-500 text-gray-600 hover:text-blue-600'
+                            isDarkMode ? 'border-gray-600 hover:border-blue-500 text-gray-300 hover:text-blue-400' : 'border-gray-300 hover:border-blue-500 text-gray-600 hover:text-blue-600'
                           }`}
                         >
                           Add Existing Account
@@ -866,9 +868,7 @@ const SellerSettings = () => {
                             setAccountCreationStep('select');
                           }}
                           className={`flex-1 py-3 px-4 rounded-full border-2 transition-all hover:scale-[1.02] text-center font-medium ${
-                            isDarkMode
-                              ? 'border-gray-600 hover:border-green-500 text-gray-300 hover:text-green-400'
-                              : 'border-gray-300 hover:border-green-500 text-gray-600 hover:text-green-600'
+                            isDarkMode ? 'border-gray-600 hover:border-green-500 text-gray-300 hover:text-green-400' : 'border-gray-300 hover:border-green-500 text-gray-600 hover:text-green-600'
                           }`}
                         >
                           Create New Account
@@ -906,10 +906,7 @@ const SellerSettings = () => {
                             type="text"
                             value={profileForm.name}
                             onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-                            className={`w-full px-3 py-2 text-sm rounded-lg transition-colors border ${isDarkMode 
-                              ? 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-green-500' 
-                              : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-green-500'
-                            }`}
+                            className={`w-full px-3 py-2 text-sm rounded-lg transition-colors border ${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-green-500' : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-green-500'}`}
                             placeholder="Enter business name"
                           />
                         </div>
@@ -918,10 +915,7 @@ const SellerSettings = () => {
                           <input
                             type="text"
                             value={`@${sellerInfo.username}`}
-                            className={`w-full px-3 py-2 text-sm rounded-lg border ${isDarkMode 
-                              ? 'bg-gray-600 border-gray-600 text-gray-400' 
-                              : 'bg-gray-50 border-gray-200 text-gray-600'
-                            }`}
+                            className={`w-full px-3 py-2 text-sm rounded-lg border ${isDarkMode ? 'bg-gray-600 border-gray-600 text-gray-400' : 'bg-gray-50 border-gray-200 text-gray-600'}`}
                             disabled
                           />
                         </div>
@@ -932,10 +926,7 @@ const SellerSettings = () => {
                           type="text"
                           value={profileForm.location}
                           onChange={(e) => setProfileForm({ ...profileForm, location: e.target.value })}
-                          className={`w-full px-3 py-2 text-sm rounded-lg transition-colors border ${isDarkMode 
-                            ? 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-green-500' 
-                            : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-green-500'
-                          }`}
+                          className={`w-full px-3 py-2 text-sm rounded-lg transition-colors border ${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-green-500' : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-green-500'}`}
                           placeholder="Add your business location"
                         />
                       </div>
@@ -945,10 +936,7 @@ const SellerSettings = () => {
                           type="tel"
                           value={profileForm.contact}
                           onChange={(e) => setProfileForm({ ...profileForm, contact: e.target.value })}
-                          className={`w-full px-3 py-2 text-sm rounded-lg transition-colors border ${isDarkMode 
-                            ? 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-green-500' 
-                            : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-green-500'
-                          }`}
+                          className={`w-full px-3 py-2 text-sm rounded-lg transition-colors border ${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-green-500' : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-green-500'}`}
                           placeholder="Add phone number"
                         />
                       </div>
@@ -958,20 +946,14 @@ const SellerSettings = () => {
                           value={profileForm.about}
                           onChange={(e) => setProfileForm({ ...profileForm, about: e.target.value })}
                           rows="3"
-                          className={`w-full px-3 py-2 text-sm rounded-lg transition-colors border ${isDarkMode 
-                            ? 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-green-500' 
-                            : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-green-500'
-                          }`}
+                          className={`w-full px-3 py-2 text-sm rounded-lg transition-colors border ${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-green-500' : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-green-500'}`}
                           placeholder="Tell customers about your business..."
                         />
                       </div>
                       <button 
                         onClick={handleProfileSave}
                         disabled={isSavingProfile}
-                        className={`mt-2 px-4 py-2 text-sm rounded-lg transition-colors ${isDarkMode 
-                          ? 'bg-green-600 hover:bg-green-700 text-white' 
-                          : 'bg-green-600 hover:bg-green-700 text-white'
-                        } disabled:opacity-50`}
+                        className={`mt-2 px-4 py-2 text-sm rounded-lg transition-colors ${isDarkMode ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-green-600 hover:bg-green-700 text-white'} disabled:opacity-50`}
                       >
                         {isSavingProfile ? 'Saving...' : 'Save Profile Changes'}
                       </button>
@@ -1001,34 +983,24 @@ const SellerSettings = () => {
                   {expandedSections.email && (
                     <div className="mt-3 space-y-3 pl-7">
                       {emailSuccess && (
-                        <div className={`p-2 rounded-lg text-xs flex items-center ${isDarkMode 
-                          ? 'bg-green-900/30 border border-green-800 text-green-400' 
-                          : 'bg-green-50 border border-green-200 text-green-700'
-                        }`}>
+                        <div className={`p-2 rounded-lg text-xs flex items-center ${isDarkMode ? 'bg-green-900/30 border border-green-800 text-green-400' : 'bg-green-50 border border-green-200 text-green-700'}`}>
                           <CheckCircle className="w-3 h-3 mr-1" />
                           {emailSuccess}
                         </div>
                       )}
                       {emailErrors.general && (
-                        <div className={`p-2 rounded-lg text-xs flex items-center ${isDarkMode 
-                          ? 'bg-red-900/30 border border-red-800 text-red-400' 
-                          : 'bg-red-50 border border-red-200 text-red-700'
-                        }`}>
+                        <div className={`p-2 rounded-lg text-xs flex items-center ${isDarkMode ? 'bg-red-900/30 border border-red-800 text-red-400' : 'bg-red-50 border border-red-200 text-red-700'}`}>
                           <XCircle className="w-3 h-3 mr-1" />
                           {emailErrors.general}
                         </div>
                       )}
-                      
                       <div>
                         <label className={`block text-xs mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Current Email</label>
                         <input
                           type="email"
                           value={sellerInfo.email}
                           disabled
-                          className={`w-full px-3 py-2 text-sm rounded-lg border ${isDarkMode 
-                            ? 'bg-gray-600 border-gray-600 text-gray-400' 
-                            : 'bg-gray-50 border-gray-200 text-gray-600'
-                          }`}
+                          className={`w-full px-3 py-2 text-sm rounded-lg border ${isDarkMode ? 'bg-gray-600 border-gray-600 text-gray-400' : 'bg-gray-50 border-gray-200 text-gray-600'}`}
                         />
                       </div>
                       <div>
@@ -1037,10 +1009,7 @@ const SellerSettings = () => {
                           type="email"
                           value={emailForm.newEmail}
                           onChange={(e) => setEmailForm({ ...emailForm, newEmail: e.target.value })}
-                          className={`w-full px-3 py-2 text-sm rounded-lg border transition-colors ${isDarkMode 
-                            ? 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-green-500' 
-                            : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-green-500'
-                          } ${emailErrors.newEmail ? 'border-red-500' : ''}`}
+                          className={`w-full px-3 py-2 text-sm rounded-lg border transition-colors ${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-green-500' : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-green-500'} ${emailErrors.newEmail ? 'border-red-500' : ''}`}
                           placeholder="Enter new email"
                         />
                         {emailErrors.newEmail && (
@@ -1053,10 +1022,7 @@ const SellerSettings = () => {
                           type="email"
                           value={emailForm.confirmEmail}
                           onChange={(e) => setEmailForm({ ...emailForm, confirmEmail: e.target.value })}
-                          className={`w-full px-3 py-2 text-sm rounded-lg border transition-colors ${isDarkMode 
-                            ? 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-green-500' 
-                            : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-green-500'
-                          } ${emailErrors.confirmEmail ? 'border-red-500' : ''}`}
+                          className={`w-full px-3 py-2 text-sm rounded-lg border transition-colors ${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-green-500' : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-green-500'} ${emailErrors.confirmEmail ? 'border-red-500' : ''}`}
                           placeholder="Confirm new email"
                         />
                         {emailErrors.confirmEmail && (
@@ -1070,10 +1036,7 @@ const SellerSettings = () => {
                             type={showEmailPassword ? 'text' : 'password'}
                             value={emailForm.password}
                             onChange={(e) => setEmailForm({ ...emailForm, password: e.target.value })}
-                            className={`w-full px-3 py-2 text-sm rounded-lg pr-10 transition-colors border ${isDarkMode 
-                              ? 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-green-500' 
-                              : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-green-500'
-                            } ${emailErrors.password ? 'border-red-500' : ''}`}
+                            className={`w-full px-3 py-2 text-sm rounded-lg pr-10 transition-colors border ${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-green-500' : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-green-500'} ${emailErrors.password ? 'border-red-500' : ''}`}
                             placeholder="Enter password to verify"
                           />
                           <button
@@ -1091,10 +1054,7 @@ const SellerSettings = () => {
                       <button
                         onClick={handleEmailChange}
                         disabled={isSavingEmail}
-                        className={`mt-2 px-4 py-2 text-sm rounded-lg transition-colors ${isDarkMode 
-                          ? 'bg-green-600 hover:bg-green-700 text-white' 
-                          : 'bg-green-600 hover:bg-green-700 text-white'
-                        } disabled:opacity-50`}
+                        className={`mt-2 px-4 py-2 text-sm rounded-lg transition-colors ${isDarkMode ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-green-600 hover:bg-green-700 text-white'} disabled:opacity-50`}
                       >
                         {isSavingEmail ? 'Updating...' : 'Update Email'}
                       </button>
@@ -1124,24 +1084,17 @@ const SellerSettings = () => {
                   {expandedSections.password && (
                     <div className="mt-3 space-y-3 pl-7">
                       {passwordSuccess && (
-                        <div className={`p-2 rounded-lg text-xs flex items-center ${isDarkMode 
-                          ? 'bg-green-900/30 border border-green-800 text-green-400' 
-                          : 'bg-green-50 border border-green-200 text-green-700'
-                        }`}>
+                        <div className={`p-2 rounded-lg text-xs flex items-center ${isDarkMode ? 'bg-green-900/30 border border-green-800 text-green-400' : 'bg-green-50 border border-green-200 text-green-700'}`}>
                           <CheckCircle className="w-3 h-3 mr-1" />
                           {passwordSuccess}
                         </div>
                       )}
                       {passwordErrors.general && (
-                        <div className={`p-2 rounded-lg text-xs flex items-center ${isDarkMode 
-                          ? 'bg-red-900/30 border border-red-800 text-red-400' 
-                          : 'bg-red-50 border border-red-200 text-red-700'
-                        }`}>
+                        <div className={`p-2 rounded-lg text-xs flex items-center ${isDarkMode ? 'bg-red-900/30 border border-red-800 text-red-400' : 'bg-red-50 border border-red-200 text-red-700'}`}>
                           <XCircle className="w-3 h-3 mr-1" />
                           {passwordErrors.general}
                         </div>
                       )}
-                      
                       <div>
                         <label className={`block text-xs mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Current Password</label>
                         <div className="relative">
@@ -1149,10 +1102,7 @@ const SellerSettings = () => {
                             type={showPasswords.current ? 'text' : 'password'}
                             value={passwordForm.currentPassword}
                             onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
-                            className={`w-full px-3 py-2 text-sm rounded-lg pr-10 transition-colors border ${isDarkMode 
-                              ? passwordErrors.currentPassword ? 'bg-gray-700 border-red-600 text-gray-100' : 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-green-500'
-                              : passwordErrors.currentPassword ? 'bg-white border-red-300 text-black' : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-green-500'
-                            }`}
+                            className={`w-full px-3 py-2 text-sm rounded-lg pr-10 transition-colors border ${isDarkMode ? passwordErrors.currentPassword ? 'bg-gray-700 border-red-600 text-gray-100' : 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-green-500' : passwordErrors.currentPassword ? 'bg-white border-red-300 text-black' : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-green-500'}`}
                             placeholder="Enter current password"
                           />
                           <button
@@ -1167,7 +1117,6 @@ const SellerSettings = () => {
                           <p className="mt-1 text-xs text-red-600">{passwordErrors.currentPassword}</p>
                         )}
                       </div>
-                      
                       <div>
                         <label className={`block text-xs mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>New Password</label>
                         <div className="relative">
@@ -1175,10 +1124,7 @@ const SellerSettings = () => {
                             type={showPasswords.new ? 'text' : 'password'}
                             value={passwordForm.newPassword}
                             onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                            className={`w-full px-3 py-2 text-sm rounded-lg pr-10 transition-colors border ${isDarkMode 
-                              ? passwordErrors.newPassword ? 'bg-gray-700 border-red-600 text-gray-100' : 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-green-500'
-                              : passwordErrors.newPassword ? 'bg-white border-red-300 text-black' : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-green-500'
-                            }`}
+                            className={`w-full px-3 py-2 text-sm rounded-lg pr-10 transition-colors border ${isDarkMode ? passwordErrors.newPassword ? 'bg-gray-700 border-red-600 text-gray-100' : 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-green-500' : passwordErrors.newPassword ? 'bg-white border-red-300 text-black' : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-green-500'}`}
                             placeholder="Enter new password"
                           />
                           <button
@@ -1193,7 +1139,6 @@ const SellerSettings = () => {
                           <p className="mt-1 text-xs text-red-600">{passwordErrors.newPassword}</p>
                         )}
                       </div>
-                      
                       <div>
                         <label className={`block text-xs mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Confirm Password</label>
                         <div className="relative">
@@ -1201,10 +1146,7 @@ const SellerSettings = () => {
                             type={showPasswords.confirm ? 'text' : 'password'}
                             value={passwordForm.confirmPassword}
                             onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                            className={`w-full px-3 py-2 text-sm rounded-lg pr-10 transition-colors border ${isDarkMode 
-                              ? passwordErrors.confirmPassword ? 'bg-gray-700 border-red-600 text-gray-100' : 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-green-500'
-                              : passwordErrors.confirmPassword ? 'bg-white border-red-300 text-black' : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-green-500'
-                            }`}
+                            className={`w-full px-3 py-2 text-sm rounded-lg pr-10 transition-colors border ${isDarkMode ? passwordErrors.confirmPassword ? 'bg-gray-700 border-red-600 text-gray-100' : 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-green-500' : passwordErrors.confirmPassword ? 'bg-white border-red-300 text-black' : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-green-500'}`}
                             placeholder="Confirm new password"
                           />
                           <button
@@ -1231,42 +1173,23 @@ const SellerSettings = () => {
                             </span>
                           </div>
                           <div className={`h-1 w-full rounded-full overflow-hidden mb-2 ${isDarkMode ? 'bg-gray-600' : 'bg-gray-200'}`}>
-                            <div 
-                              className={`h-full ${getPasswordStrengthColor()} transition-all duration-300`}
-                              style={{ width: `${(Object.values(passwordStrength).filter(Boolean).length / 5) * 100}%` }}
-                            />
+                            <div className={`h-full ${getPasswordStrengthColor()} transition-all duration-300`} style={{ width: `${(Object.values(passwordStrength).filter(Boolean).length / 5) * 100}%` }} />
                           </div>
                           <div className="grid grid-cols-2 gap-1 text-[10px]">
                             <div className="flex items-center">
-                              {passwordStrength.hasMinLength ? (
-                                <CheckCircle className="w-3 h-3 text-green-500 mr-1" />
-                              ) : (
-                                <XCircle className="w-3 h-3 text-red-500 mr-1" />
-                              )}
+                              {passwordStrength.hasMinLength ? <CheckCircle className="w-3 h-3 text-green-500 mr-1" /> : <XCircle className="w-3 h-3 text-red-500 mr-1" />}
                               <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>8+ chars</span>
                             </div>
                             <div className="flex items-center">
-                              {passwordStrength.hasUpperCase ? (
-                                <CheckCircle className="w-3 h-3 text-green-500 mr-1" />
-                              ) : (
-                                <XCircle className="w-3 h-3 text-red-500 mr-1" />
-                              )}
+                              {passwordStrength.hasUpperCase ? <CheckCircle className="w-3 h-3 text-green-500 mr-1" /> : <XCircle className="w-3 h-3 text-red-500 mr-1" />}
                               <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Uppercase</span>
                             </div>
                             <div className="flex items-center">
-                              {passwordStrength.hasLowerCase ? (
-                                <CheckCircle className="w-3 h-3 text-green-500 mr-1" />
-                              ) : (
-                                <XCircle className="w-3 h-3 text-red-500 mr-1" />
-                              )}
+                              {passwordStrength.hasLowerCase ? <CheckCircle className="w-3 h-3 text-green-500 mr-1" /> : <XCircle className="w-3 h-3 text-red-500 mr-1" />}
                               <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Lowercase</span>
                             </div>
                             <div className="flex items-center">
-                              {passwordStrength.hasNumber ? (
-                                <CheckCircle className="w-3 h-3 text-green-500 mr-1" />
-                              ) : (
-                                <XCircle className="w-3 h-3 text-red-500 mr-1" />
-                              )}
+                              {passwordStrength.hasNumber ? <CheckCircle className="w-3 h-3 text-green-500 mr-1" /> : <XCircle className="w-3 h-3 text-red-500 mr-1" />}
                               <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Number</span>
                             </div>
                           </div>
@@ -1276,10 +1199,7 @@ const SellerSettings = () => {
                       <button
                         onClick={handlePasswordChange}
                         disabled={isSavingPassword}
-                        className={`mt-2 px-4 py-2 text-sm rounded-lg transition-colors ${isDarkMode 
-                          ? 'bg-green-600 hover:bg-green-700 text-white' 
-                          : 'bg-green-600 hover:bg-green-700 text-white'
-                        } disabled:opacity-50`}
+                        className={`mt-2 px-4 py-2 text-sm rounded-lg transition-colors ${isDarkMode ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-green-600 hover:bg-green-700 text-white'} disabled:opacity-50`}
                       >
                         {isSavingPassword ? 'Updating...' : 'Update Password'}
                       </button>
@@ -1296,10 +1216,7 @@ const SellerSettings = () => {
                         Two-Factor Authentication
                       </span>
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded-full ${isDarkMode 
-                      ? 'bg-gray-700 text-gray-400' 
-                      : 'bg-gray-100 text-gray-600'
-                    }`}>Coming Soon</span>
+                    <span className={`text-xs px-2 py-1 rounded-full ${isDarkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-600'}`}>Coming Soon</span>
                   </div>
                 </div>
               </div>
@@ -1310,10 +1227,7 @@ const SellerSettings = () => {
           <div className={`rounded-xl shadow-sm overflow-hidden transition-colors ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
             <button
               onClick={() => toggleGroup('business')}
-              className={`w-full px-6 py-4 flex items-center justify-between transition-colors ${isDarkMode 
-                ? 'hover:bg-gray-700 border-gray-700' 
-                : 'hover:bg-gray-50 border-gray-100'
-              } border-b`}
+              className={`w-full px-6 py-4 flex items-center justify-between transition-colors ${isDarkMode ? 'hover:bg-gray-700 border-gray-700' : 'hover:bg-gray-50 border-gray-100'} border-b`}
             >
               <div className="flex items-center space-x-3">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100'}`}>
@@ -1358,10 +1272,7 @@ const SellerSettings = () => {
                           type="text"
                           value={profileForm.nin_number}
                           onChange={(e) => setProfileForm({ ...profileForm, nin_number: e.target.value })}
-                          className={`w-full px-3 py-2 text-sm rounded-lg transition-colors border ${isDarkMode 
-                            ? 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-green-500' 
-                            : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-green-500'
-                          }`}
+                          className={`w-full px-3 py-2 text-sm rounded-lg transition-colors border ${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-green-500' : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-green-500'}`}
                           placeholder="Enter NIN number"
                         />
                         <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>Your National Identification Number (optional)</p>
@@ -1388,10 +1299,7 @@ const SellerSettings = () => {
           <div className={`rounded-xl shadow-sm overflow-hidden transition-colors ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
             <button
               onClick={() => toggleGroup('preferences')}
-              className={`w-full px-6 py-4 flex items-center justify-between transition-colors ${isDarkMode 
-                ? 'hover:bg-gray-700 border-gray-700' 
-                : 'hover:bg-gray-50 border-gray-100'
-              } border-b`}
+              className={`w-full px-6 py-4 flex items-center justify-between transition-colors ${isDarkMode ? 'hover:bg-gray-700 border-gray-700' : 'hover:bg-gray-50 border-gray-100'} border-b`}
             >
               <div className="flex items-center space-x-3">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDarkMode ? 'bg-purple-900/30' : 'bg-purple-100'}`}>
@@ -1417,11 +1325,7 @@ const SellerSettings = () => {
                     className="w-full flex items-center justify-between py-2 text-left"
                   >
                     <div className="flex items-center space-x-3">
-                      {isDarkMode ? (
-                        <Sun className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
-                      ) : (
-                        <Moon className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
-                      )}
+                      {isDarkMode ? <Sun className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} /> : <Moon className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />}
                       <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                         Appearance
                       </span>
@@ -1526,10 +1430,7 @@ const SellerSettings = () => {
                     <div className="mt-3 pl-7">
                       <select 
                         onChange={(e) => console.log('Language changed to:', e.target.value)}
-                        className={`w-full px-3 py-2 text-sm rounded-lg border transition-colors ${isDarkMode 
-                          ? 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-green-500' 
-                          : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-green-500'
-                        }`}
+                        className={`w-full px-3 py-2 text-sm rounded-lg border transition-colors ${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-100 focus:ring-2 focus:ring-green-500' : 'bg-white border-gray-200 text-black focus:ring-2 focus:ring-green-500'}`}
                       >
                         <option>English (US)</option>
                         <option>English (UK)</option>
@@ -1551,10 +1452,7 @@ const SellerSettings = () => {
         <div className="mt-6">
           <button 
             onClick={handleLogout}
-            className={`w-full flex items-center justify-center space-x-2 py-3 px-4 rounded-xl transition-colors border ${isDarkMode 
-              ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50 border-red-800' 
-              : 'bg-red-50 text-red-600 hover:bg-red-100 border-red-200'
-            } focus:outline-none focus:ring-2 focus:ring-red-500`}
+            className={`w-full flex items-center justify-center space-x-2 py-3 px-4 rounded-xl transition-colors border ${isDarkMode ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50 border-red-800' : 'bg-red-50 text-red-600 hover:bg-red-100 border-red-200'} focus:outline-none focus:ring-2 focus:ring-red-500`}
           >
             <LogOut className="w-4 h-4" />
             <span className="font-medium">Logout</span>
@@ -1580,12 +1478,7 @@ const SellerSettings = () => {
             </div>
 
             <div className="space-y-4">
-              {/* Google Login Option */}
-              <button className={`w-full py-3 px-4 rounded-xl border-2 flex items-center justify-center gap-3 transition-all hover:scale-[1.02] ${
-                isDarkMode 
-                  ? 'border-gray-600 hover:border-blue-500 text-gray-200' 
-                  : 'border-gray-300 hover:border-blue-500 text-gray-700'
-              }`}>
+              <button className={`w-full py-3 px-4 rounded-xl border-2 flex items-center justify-center gap-3 transition-all hover:scale-[1.02] ${isDarkMode ? 'border-gray-600 hover:border-blue-500 text-gray-200' : 'border-gray-300 hover:border-blue-500 text-gray-700'}`}>
                 <Chrome className="w-6 h-6 text-blue-500" />
                 <span className="font-medium">Continue with Google</span>
               </button>
@@ -1604,11 +1497,7 @@ const SellerSettings = () => {
                 value={newAccountData.username}
                 onChange={(e) => setNewAccountData({ ...newAccountData, username: e.target.value })}
                 placeholder="Username or Email"
-                className={`w-full px-4 py-3 rounded-xl border transition-colors ${
-                  isDarkMode 
-                    ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-blue-500' 
-                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'
-                } focus:outline-none focus:ring-2 focus:ring-blue-500/30`}
+                className={`w-full px-4 py-3 rounded-xl border transition-colors ${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-blue-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'} focus:outline-none focus:ring-2 focus:ring-blue-500/30`}
               />
               <div className="relative">
                 <input
@@ -1616,27 +1505,19 @@ const SellerSettings = () => {
                   value={newAccountData.password}
                   onChange={(e) => setNewAccountData({ ...newAccountData, password: e.target.value })}
                   placeholder="Password"
-                  className={`w-full px-4 py-3 rounded-xl border transition-colors pr-12 ${
-                    isDarkMode 
-                      ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-blue-500' 
-                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'
-                  } focus:outline-none focus:ring-2 focus:ring-blue-500/30`}
+                  className={`w-full px-4 py-3 rounded-xl border transition-colors pr-12 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-blue-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'} focus:outline-none focus:ring-2 focus:ring-blue-500/30`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
-                  className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${
-                    isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'
-                  }`}
+                  className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
                 >
                   {showPasswords.current ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
 
               {accountErrors.general && (
-                <div className={`p-3 rounded-lg text-sm flex items-center gap-2 ${
-                  isDarkMode ? 'bg-red-900/30 text-red-400 border border-red-800' : 'bg-red-50 text-red-700 border border-red-200'
-                }`}>
+                <div className={`p-3 rounded-lg text-sm flex items-center gap-2 ${isDarkMode ? 'bg-red-900/30 text-red-400 border border-red-800' : 'bg-red-50 text-red-700 border border-red-200'}`}>
                   <AlertCircle className="w-4 h-4" />
                   {accountErrors.general}
                 </div>
@@ -1651,11 +1532,7 @@ const SellerSettings = () => {
                   }
                 }}
                 disabled={isSubmittingAccount}
-                className={`w-full py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 ${
-                  isDarkMode 
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                    : 'bg-blue-600 hover:bg-blue-700 text-white'
-                } disabled:opacity-50`}
+                className={`w-full py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 ${isDarkMode ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'} disabled:opacity-50`}
               >
                 {isSubmittingAccount ? (
                   <>
@@ -1705,16 +1582,10 @@ const SellerSettings = () => {
                     setNewAccountData({ ...newAccountData, role: 'buyer' });
                     setAccountCreationStep('form');
                   }}
-                  className={`w-full p-6 rounded-xl border-2 transition-all hover:scale-[1.02] text-left ${
-                    isDarkMode 
-                      ? 'border-gray-600 hover:border-blue-500 bg-gray-700/50' 
-                      : 'border-gray-200 hover:border-blue-500 bg-gray-50'
-                  }`}
+                  className={`w-full p-6 rounded-xl border-2 transition-all hover:scale-[1.02] text-left ${isDarkMode ? 'border-gray-600 hover:border-blue-500 bg-gray-700/50' : 'border-gray-200 hover:border-blue-500 bg-gray-50'}`}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                      isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100'
-                    }`}>
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100'}`}>
                       <User className={`w-6 h-6 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
                     </div>
                     <div>
@@ -1729,16 +1600,10 @@ const SellerSettings = () => {
                     setNewAccountData({ ...newAccountData, role: 'seller' });
                     setAccountCreationStep('form');
                   }}
-                  className={`w-full p-6 rounded-xl border-2 transition-all hover:scale-[1.02] text-left ${
-                    isDarkMode 
-                      ? 'border-gray-600 hover:border-purple-500 bg-gray-700/50' 
-                      : 'border-gray-200 hover:border-purple-500 bg-gray-50'
-                  }`}
+                  className={`w-full p-6 rounded-xl border-2 transition-all hover:scale-[1.02] text-left ${isDarkMode ? 'border-gray-600 hover:border-purple-500 bg-gray-700/50' : 'border-gray-200 hover:border-purple-500 bg-gray-50'}`}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                      isDarkMode ? 'bg-purple-900/30' : 'bg-purple-100'
-                    }`}>
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${isDarkMode ? 'bg-purple-900/30' : 'bg-purple-100'}`}>
                       <Users className={`w-6 h-6 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`} />
                     </div>
                     <div>
@@ -1754,11 +1619,7 @@ const SellerSettings = () => {
                   <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                     Account Type
                   </label>
-                  <div className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                    newAccountData.role === 'seller'
-                      ? isDarkMode ? 'bg-purple-900/30 text-purple-400' : 'bg-purple-100 text-purple-700'
-                      : isDarkMode ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-700'
-                  }`}>
+                  <div className={`px-4 py-2 rounded-lg text-sm font-medium ${newAccountData.role === 'seller' ? isDarkMode ? 'bg-purple-900/30 text-purple-400' : 'bg-purple-100 text-purple-700' : isDarkMode ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-700'}`}>
                     {newAccountData.role === 'seller' ? 'Seller Account' : 'Buyer Account'}
                   </div>
                 </div>
@@ -1768,11 +1629,7 @@ const SellerSettings = () => {
                   value={newAccountData.username}
                   onChange={(e) => setNewAccountData({ ...newAccountData, username: e.target.value })}
                   placeholder="Username *"
-                  className={`w-full px-4 py-3 rounded-xl border transition-colors ${
-                    isDarkMode 
-                      ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-blue-500' 
-                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'
-                  } focus:outline-none focus:ring-2 focus:ring-blue-500/30`}
+                  className={`w-full px-4 py-3 rounded-xl border transition-colors ${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-blue-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'} focus:outline-none focus:ring-2 focus:ring-blue-500/30`}
                 />
                 {accountErrors.username && (
                   <p className="text-xs text-red-500">{accountErrors.username}</p>
@@ -1783,11 +1640,7 @@ const SellerSettings = () => {
                   value={newAccountData.email}
                   onChange={(e) => setNewAccountData({ ...newAccountData, email: e.target.value })}
                   placeholder="Email *"
-                  className={`w-full px-4 py-3 rounded-xl border transition-colors ${
-                    isDarkMode 
-                      ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-blue-500' 
-                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'
-                  } focus:outline-none focus:ring-2 focus:ring-blue-500/30`}
+                  className={`w-full px-4 py-3 rounded-xl border transition-colors ${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-blue-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'} focus:outline-none focus:ring-2 focus:ring-blue-500/30`}
                 />
                 {accountErrors.email && (
                   <p className="text-xs text-red-500">{accountErrors.email}</p>
@@ -1799,18 +1652,12 @@ const SellerSettings = () => {
                     value={newAccountData.password}
                     onChange={(e) => setNewAccountData({ ...newAccountData, password: e.target.value })}
                     placeholder="Password (min 8 chars) *"
-                    className={`w-full px-4 py-3 rounded-xl border transition-colors pr-12 ${
-                      isDarkMode 
-                        ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-blue-500' 
-                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'
-                    } focus:outline-none focus:ring-2 focus:ring-blue-500/30`}
+                    className={`w-full px-4 py-3 rounded-xl border transition-colors pr-12 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-blue-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'} focus:outline-none focus:ring-2 focus:ring-blue-500/30`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
-                    className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${
-                      isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'
-                    }`}
+                    className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
                   >
                     {showPasswords.new ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -1825,18 +1672,12 @@ const SellerSettings = () => {
                     value={newAccountData.confirmPassword}
                     onChange={(e) => setNewAccountData({ ...newAccountData, confirmPassword: e.target.value })}
                     placeholder="Confirm Password *"
-                    className={`w-full px-4 py-3 rounded-xl border transition-colors pr-12 ${
-                      isDarkMode 
-                        ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-blue-500' 
-                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'
-                    } focus:outline-none focus:ring-2 focus:ring-blue-500/30`}
+                    className={`w-full px-4 py-3 rounded-xl border transition-colors pr-12 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-blue-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'} focus:outline-none focus:ring-2 focus:ring-blue-500/30`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}
-                    className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${
-                      isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'
-                    }`}
+                    className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
                   >
                     {showPasswords.confirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -1846,9 +1687,7 @@ const SellerSettings = () => {
                 )}
 
                 {accountErrors.general && (
-                  <div className={`p-3 rounded-lg text-sm flex items-center gap-2 ${
-                    isDarkMode ? 'bg-red-900/30 text-red-400 border border-red-800' : 'bg-red-50 text-red-700 border border-red-200'
-                  }`}>
+                  <div className={`p-3 rounded-lg text-sm flex items-center gap-2 ${isDarkMode ? 'bg-red-900/30 text-red-400 border border-red-800' : 'bg-red-50 text-red-700 border border-red-200'}`}>
                     <AlertCircle className="w-4 h-4" />
                     {accountErrors.general}
                   </div>
@@ -1857,11 +1696,7 @@ const SellerSettings = () => {
                 <div className="flex gap-3">
                   <button
                     onClick={() => setAccountCreationStep('select')}
-                    className={`flex-1 py-3 px-4 rounded-xl border transition-colors ${
-                      isDarkMode 
-                        ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
-                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
+                    className={`flex-1 py-3 px-4 rounded-xl border transition-colors ${isDarkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
                   >
                     Back
                   </button>
@@ -1872,11 +1707,7 @@ const SellerSettings = () => {
                       }
                     }}
                     disabled={isSubmittingAccount}
-                    className={`flex-1 py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 ${
-                      isDarkMode 
-                        ? 'bg-green-600 hover:bg-green-700 text-white' 
-                        : 'bg-green-600 hover:bg-green-700 text-white'
-                    } disabled:opacity-50`}
+                    className={`flex-1 py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 ${isDarkMode ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-green-600 hover:bg-green-700 text-white'} disabled:opacity-50`}
                   >
                     {isSubmittingAccount ? (
                       <>
