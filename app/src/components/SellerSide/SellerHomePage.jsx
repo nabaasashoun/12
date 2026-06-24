@@ -732,7 +732,7 @@ const SellerHomePage = () => {
 
       {/* Header section with connection status and notifications */}
       <div className="flex justify-between items-center mb-2">
-        <p className={`text-[30px] font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>My Store</p>
+        <p className={`text-[22px] font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>My Store</p>
         <div className="flex items-center gap-3">
           <ConnectionBadge isConnected={isConnected} />
           <button

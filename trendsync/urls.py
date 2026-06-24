@@ -1,30 +1,50 @@
-# urls.py - Fixed version
+# urls.py - FIXED
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
+
+# Import Google OAuth views
+from .views.auth_views import (
+    google_login,
+    google_callback,
+    login_view,
+    verify_token_view,
+    BuyerRegisterView,
+    SellerRegisterView,
+)
+
+# Import get_locations from views
+from .views import get_locations
 
 router = DefaultRouter()
 router.register(r'products', views.ProductViewSet)
 router.register(r'wishlist', views.WishlistViewSet, basename='wishlist')
 router.register(r'sellers', views.SellerViewSet)
 router.register(r'categories', views.CategoryViewSet, basename='category')
+# REMOVED duplicate router.register lines
 
 urlpatterns = [
-    # ===== MOVED LOCATIONS HERE - BEFORE the router include =====
-    path('locations/', views.get_locations, name='get-locations'),
+    # ===== GOOGLE OAUTH =====
+    path('auth/google/', google_login, name='google-login'),
+    path('auth/google/callback/', google_callback, name='google-callback'),
     
-    # ===== Everything else after =====
+    # ===== AUTH =====
+    path('login/', login_view, name='login'),
+    path('verify-token/', verify_token_view, name='verify_token'),
+    path('register/buyer/', BuyerRegisterView.as_view(), name='register-buyer'),
+    path('register/seller/', SellerRegisterView.as_view(), name='register-seller'),
+    
+    # ===== LOCATIONS =====
+    path('locations/', get_locations, name='get-locations'),
+    
+    # ===== Everything else =====
     path('sellers/rate/', views.rate_seller, name='rate-seller'),
-    path('', include(router.urls)),  # Router is now AFTER locations
+    path('', include(router.urls)),
 
     path('cart/', views.CartView.as_view()),
     path('cart/merge/', views.merge_cart),
     path('categories/', views.category_list, name='category_list'),
-    path('login/', views.login_view, name='login'),
-    path('verify-token/', views.verify_token_view, name='verify_token'),
-    path('register/buyer/', views.BuyerRegisterView.as_view()),
-    path('register/seller/', views.SellerRegisterView.as_view()),
 
     path('liked-products/', views.LikedProductsView.as_view(), name='liked-products'),
     path('products/<int:product_id>/toggle-like/', views.toggle_product_like, name='toggle-product-like'),

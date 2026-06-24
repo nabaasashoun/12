@@ -550,36 +550,43 @@ const Product = () => {
       </div>
 
       {/* Quantity + Add to Cart */}
+      {/* Quantity + Add to Cart */}
       <div className="flex items-center mt-8">
-        <button
-          onClick={decreaseQuantity}
-          disabled={quantity <= product.min_order}
-          className={`p-3 rounded-xl transition-all ${quantity <= product.min_order ? 'bg-gray-700 cursor-not-allowed' : isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'}`}
-        >
-          <Minus className="w-5 h-5" />
-        </button>
+        <div className={`flex items-center rounded-full overflow-hidden border ${isDarkMode ? 'border-gray-600' : 'border-gray-300'}`}>
+          <button
+            onClick={decreaseQuantity}
+            disabled={quantity <= product.min_order}
+            className={`p-2 transition-all ${quantity <= product.min_order ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'}`}
+          >
+            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white">
+              <Minus className="w-5 h-5" />
+            </div>
+          </button>
 
-        <input
-          type="number"
-          value={quantity}
-          onChange={handleQuantityChange}
-          min={product.min_order}
-          max={Math.min(product.max_order, product.stock_quantity)}
-          className={`mx-4 w-16 text-center text-xl font-medium border rounded-xl py-3 focus:outline-none ${isDarkMode ? 'bg-gray-800 border-gray-600 text-gray-100' : 'bg-white border-gray-300'}`}
-        />
+          <input
+            type="number"
+            value={quantity}
+            onChange={handleQuantityChange}
+            min={product.min_order}
+            max={Math.min(product.max_order, product.stock_quantity)}
+            className={`w-16 text-center text-xl font-medium py-3 focus:outline-none ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-black'}`}
+          />
 
-        <button
-          onClick={increaseQuantity}
-          disabled={quantity >= Math.min(product.max_order, product.stock_quantity)}
-          className={`p-3 rounded-xl transition-all ${quantity >= Math.min(product.max_order, product.stock_quantity) ? 'bg-gray-700 cursor-not-allowed' : isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'}`}
-        >
-          <Plus className="w-5 h-5" />
-        </button>
+          <button
+            onClick={increaseQuantity}
+            disabled={quantity >= Math.min(product.max_order, product.stock_quantity)}
+            className={`p-2 transition-all ${quantity >= Math.min(product.max_order, product.stock_quantity) ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'}`}
+          >
+            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white">
+              <Plus className="w-5 h-5" />
+            </div>
+          </button>
+        </div>
 
         <button
           onClick={handleAddToCart}
           disabled={isAddingToCart || isInCart}
-          className={`ml-6 flex-1 py-3 px-6 rounded-xl font-semibold transition-all ${isAddingToCart || isInCart ? 'bg-gray-600 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 text-white'}`}
+          className={`ml-6 flex-1 py-3 px-6 rounded-2xl font-semibold transition-all ${isAddingToCart || isInCart ? 'bg-gray-600 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 text-white'}`}
         >
           {isAddingToCart ? 'Adding...' : isInCart ? 'Already in Cart' : 'Add to Cart'}
         </button>

@@ -820,8 +820,8 @@ const AccountPage = () => {
                       : 'bg-blue-600 hover:bg-blue-700 text-white'
                   }`}
                 >
-                  <Edit className="w-4 h-4" />
-                  <span>Edit Profile</span>
+                  <Edit className="w-4 h-4 text-white/95 hover:text-white/95 transition-colors" /> 
+                  <span className="text-white/95 hover:text-white/95 transition-colors">Edit Profile</span>
                 </Link>
               </div>
             </div>

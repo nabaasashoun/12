@@ -5,7 +5,9 @@ import {
   Mail, Lock, Eye, EyeOff, CheckCircle, XCircle,
   ChevronDown, ChevronUp, Shield, Edit3, Bell,
   Globe, Smartphone, Palette, Key, AtSign, MapPin,
-  Phone, FileText, Briefcase, Award, Sun
+  Phone, FileText, Briefcase, Award, Sun,
+  Users, UserPlus, LogIn, SwitchCamera, X,
+  Chrome, AlertCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
@@ -28,7 +30,8 @@ const SellerSettings = () => {
     password: false,
     businessInfo: false,
     appearance: false,
-    notifications: false
+    notifications: false,
+    accounts: false
   });
   
   const [sellerInfo, setSellerInfo] = useState({
@@ -43,8 +46,26 @@ const SellerSettings = () => {
     trust: 0,
     followers: 0,
     memberSince: '',
-    profile_photo: null
+    profile_photo: null,
+    user_id: null
   });
+
+  // Account switching state
+  const [linkedAccounts, setLinkedAccounts] = useState([]);
+  const [activeAccount, setActiveAccount] = useState(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showCreateAccountModal, setShowCreateAccountModal] = useState(false);
+  const [accountCreationStep, setAccountCreationStep] = useState('select');
+  const [newAccountData, setNewAccountData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    role: 'seller'
+  });
+  const [accountErrors, setAccountErrors] = useState({});
+  const [isSubmittingAccount, setIsSubmittingAccount] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const [profileForm, setProfileForm] = useState({
     name: '',
@@ -98,6 +119,38 @@ const SellerSettings = () => {
     marketingEmails: false
   });
 
+  // Load linked accounts from localStorage
+  useEffect(() => {
+    const loadAccounts = () => {
+      try {
+        const saved = localStorage.getItem('linkedAccounts');
+        if (saved) {
+          const accounts = JSON.parse(saved);
+          setLinkedAccounts(accounts);
+          
+          const active = accounts.find(acc => acc.isActive);
+          if (active) {
+            setActiveAccount(active);
+          } else if (accounts.length > 0) {
+            setActiveAccount(accounts[0]);
+          }
+        }
+      } catch (e) {
+        console.error('Error loading accounts:', e);
+      }
+    };
+    loadAccounts();
+  }, []);
+
+  // Save linked accounts to localStorage
+  const saveAccounts = (accounts) => {
+    try {
+      localStorage.setItem('linkedAccounts', JSON.stringify(accounts));
+    } catch (e) {
+      console.error('Error saving accounts:', e);
+    }
+  };
+
   useEffect(() => {
     const fetchSellerProfile = async () => {
       setIsLoading(true);
@@ -111,9 +164,11 @@ const SellerSettings = () => {
 
         if (!response.error && response.data) {
           console.log('Successfully received seller profile data');
-          console.log('Raw response data:', response.data);
           
           const sellerData = response.data;
+          
+          // Get user ID from the response
+          const userId = sellerData.user?.id || sellerData.user_id || Date.now();
           
           const sellerInfoData = {
             name: sellerData.name || 'Seller',
@@ -130,11 +185,44 @@ const SellerSettings = () => {
             memberSince: new Date().toLocaleDateString('en-US', {
               month: 'long',
               year: 'numeric'
-            })
+            }),
+            user_id: userId
           };
           
-          console.log('Processed sellerInfo:', sellerInfoData);
           setSellerInfo(sellerInfoData);
+          
+          // Add current account to linked accounts if not exists - ONLY ONCE
+          const currentAccount = {
+            id: userId,
+            username: sellerData.username || sellerData.user?.username || '',
+            email: sellerData.email || sellerData.user?.email || '',
+            name: sellerInfoData.name,
+            role: 'seller',
+            isActive: true,
+            avatar: sellerInfoData.name.split(' ').map(n => n[0]).join('').toUpperCase()
+          };
+          
+          // Only update linked accounts on initial load or if the account doesn't exist
+          if (isInitialLoad) {
+            setLinkedAccounts(prev => {
+              // Check if account already exists
+              const exists = prev.some(acc => acc.id === currentAccount.id);
+              if (!exists) {
+                // If no account exists, add this one as active
+                const newAccounts = [currentAccount];
+                saveAccounts(newAccounts);
+                return newAccounts;
+              }
+              // If account exists, make sure it's active and others are not
+              const updated = prev.map(acc => ({
+                ...acc,
+                isActive: acc.id === currentAccount.id
+              }));
+              saveAccounts(updated);
+              return updated;
+            });
+            setIsInitialLoad(false);
+          }
           
           setProfileForm({
             name: sellerInfoData.name,
@@ -149,14 +237,11 @@ const SellerSettings = () => {
             newEmail: sellerInfoData.email,
             confirmEmail: sellerInfoData.email
           }));
-        } else {
-          console.log('Failed to get seller profile data');
         }
       } catch (error) {
         console.error('ERROR fetching seller profile:', error);
       } finally {
         setIsLoading(false);
-        console.log('========== FETCH PROFILE END ==========');
       }
     };
     
@@ -186,6 +271,164 @@ const SellerSettings = () => {
       ...prev,
       [section]: !prev[section]
     }));
+  };
+
+  // Account switching functions
+  const switchAccount = (accountId) => {
+    const updated = linkedAccounts.map(acc => ({
+      ...acc,
+      isActive: acc.id === accountId
+    }));
+    setLinkedAccounts(updated);
+    const active = updated.find(acc => acc.isActive);
+    setActiveAccount(active);
+    saveAccounts(updated);
+    console.log('Switching to account:', active);
+  };
+
+  const removeAccount = (accountId) => {
+    if (linkedAccounts.length <= 1) {
+      alert('You must have at least one account linked.');
+      return;
+    }
+    
+    const updated = linkedAccounts.filter(acc => acc.id !== accountId);
+    if (linkedAccounts.find(acc => acc.id === accountId)?.isActive) {
+      updated[0].isActive = true;
+      setActiveAccount(updated[0]);
+    }
+    setLinkedAccounts(updated);
+    saveAccounts(updated);
+  };
+
+  const handleAddExistingAccount = async (credentials) => {
+    setIsSubmittingAccount(true);
+    setAccountErrors({});
+    
+    try {
+      const response = await api.login(credentials.username, credentials.password);
+      
+      if (response.error) {
+        setAccountErrors({ general: 'Invalid credentials. Please try again.' });
+        return;
+      }
+      
+      if (response.data && response.data.user) {
+        const user = response.data.user;
+        
+        // Check if account already exists in linked accounts
+        const exists = linkedAccounts.some(acc => acc.id === user.id);
+        if (exists) {
+          setAccountErrors({ general: 'This account is already linked.' });
+          return;
+        }
+        
+        const newAccount = {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          name: user.username,
+          role: user.is_seller ? 'seller' : 'buyer',
+          isActive: false,
+          avatar: user.username.charAt(0).toUpperCase(),
+          token: response.data.access
+        };
+        
+        const updated = linkedAccounts.map(acc => ({ ...acc, isActive: false }));
+        const newAccounts = [...updated, newAccount];
+        setLinkedAccounts(newAccounts);
+        saveAccounts(newAccounts);
+        setActiveAccount(newAccount);
+        setShowLoginModal(false);
+        
+        localStorage.setItem('accessToken', response.data.access);
+        localStorage.setItem('access', response.data.access);
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('userRole', user.is_seller ? 'seller' : 'buyer');
+        window.dispatchEvent(new Event('authStateChanged'));
+        window.location.reload();
+      }
+    } catch (error) {
+      setAccountErrors({ general: 'Failed to add account. Please try again.' });
+    } finally {
+      setIsSubmittingAccount(false);
+    }
+  };
+
+  const handleCreateNewAccount = async (accountData) => {
+    setIsSubmittingAccount(true);
+    setAccountErrors({});
+    
+    try {
+      const response = await api.register(
+        {
+          username: accountData.username,
+          email: accountData.email,
+          password: accountData.password,
+          name: accountData.username,
+        },
+        accountData.role === 'seller'
+      );
+      
+      if (response.error) {
+        setAccountErrors({ general: 'Failed to create account. Please try again.' });
+        return;
+      }
+      
+      const loginResponse = await api.login(accountData.username, accountData.password);
+      
+      if (loginResponse.data && loginResponse.data.user) {
+        const user = loginResponse.data.user;
+        
+        // Check if account already exists
+        const exists = linkedAccounts.some(acc => acc.id === user.id);
+        if (exists) {
+          setAccountErrors({ general: 'This account is already linked.' });
+          return;
+        }
+        
+        const newAccount = {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          name: user.username,
+          role: accountData.role,
+          isActive: false,
+          avatar: user.username.charAt(0).toUpperCase(),
+          token: loginResponse.data.access
+        };
+        
+        const updated = linkedAccounts.map(acc => ({ ...acc, isActive: false }));
+        const newAccounts = [...updated, newAccount];
+        setLinkedAccounts(newAccounts);
+        saveAccounts(newAccounts);
+        setActiveAccount(newAccount);
+        setShowCreateAccountModal(false);
+        setAccountCreationStep('select');
+        
+        localStorage.setItem('accessToken', loginResponse.data.access);
+        localStorage.setItem('access', loginResponse.data.access);
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('userRole', user.is_seller ? 'seller' : 'buyer');
+        window.dispatchEvent(new Event('authStateChanged'));
+        window.location.reload();
+      }
+    } catch (error) {
+      setAccountErrors({ general: 'Failed to create account. Please try again.' });
+    } finally {
+      setIsSubmittingAccount(false);
+    }
+  };
+
+  const validateNewAccount = () => {
+    const errors = {};
+    if (!newAccountData.username) errors.username = 'Username is required';
+    if (!newAccountData.email) errors.email = 'Email is required';
+    if (!/\S+@\S+\.\S+/.test(newAccountData.email)) errors.email = 'Invalid email format';
+    if (newAccountData.password.length < 8) errors.password = 'Password must be at least 8 characters';
+    if (newAccountData.password !== newAccountData.confirmPassword) errors.confirmPassword = 'Passwords do not match';
+    setAccountErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const validateEmailForm = () => {
@@ -243,8 +486,6 @@ const SellerSettings = () => {
   };
 
   const handleEmailChange = async () => {
-    console.log('========== EMAIL CHANGE ATTEMPT ==========');
-    
     if (!validateEmailForm()) return;
     
     setIsSavingEmail(true);
@@ -274,8 +515,6 @@ const SellerSettings = () => {
   };
 
   const handlePasswordChange = async () => {
-    console.log('========== PASSWORD CHANGE ATTEMPT ==========');
-    
     if (!validatePasswordForm()) return;
     
     setIsSavingPassword(true);
@@ -307,9 +546,6 @@ const SellerSettings = () => {
   };
 
   const handleProfileSave = async () => {
-    console.log('========== PROFILE SAVE ATTEMPT ==========');
-    console.log('Current profile form data:', profileForm);
-    
     if (!validateProfileForm()) return;
     
     setIsSavingProfile(true);
@@ -323,11 +559,7 @@ const SellerSettings = () => {
         nin_number: profileForm.nin_number || ''
       };
       
-      console.log('Data to send to backend:', dataToSend);
-      
       const response = await api.updateSellerProfile(dataToSend);
-      
-      console.log('Profile update response:', response);
       
       if (!response.error) {
         setSellerInfo(prev => ({
@@ -362,8 +594,6 @@ const SellerSettings = () => {
   };
   
   const handleLogout = () => {
-    console.log('========== LOGOUT ==========');
-    
     localStorage.removeItem('accessToken');
     localStorage.removeItem('access');
     localStorage.removeItem('refreshToken');
@@ -402,6 +632,16 @@ const SellerSettings = () => {
     }));
   };
 
+  // Update active account when linkedAccounts changes
+  useEffect(() => {
+    if (linkedAccounts.length > 0) {
+      const active = linkedAccounts.find(acc => acc.isActive);
+      if (active) {
+        setActiveAccount(active);
+      }
+    }
+  }, [linkedAccounts]);
+
   if (isLoading) {
     return (
       <div className={`p-3 sm:p-4 md:p-6 max-w-4xl mx-auto min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -411,6 +651,10 @@ const SellerSettings = () => {
       </div>
     );
   }
+
+  // Rest of the component remains the same...
+  // (The JSX return statement is unchanged from the previous version)
+  // ... [the rest of the return JSX stays exactly the same]
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -429,7 +673,6 @@ const SellerSettings = () => {
           <div className="flex-1">
             <p className={`text-[15px] sm:text-xl font-bold ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Settings</p>
           </div>
-          {/* Seller-specific Dark Mode Toggle */}
           <button
             onClick={toggleDarkMode}
             className={`p-3 rounded-full transition-colors ${isDarkMode 
@@ -441,6 +684,34 @@ const SellerSettings = () => {
             {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
         </div>
+
+        {/* Active Account Indicator */}
+        {activeAccount && (
+          <div className={`mb-4 rounded-xl p-3 flex items-center justify-between ${
+            isDarkMode ? 'bg-green-900/30 border border-green-800' : 'bg-green-50 border border-green-200'
+          }`}>
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${
+                activeAccount.role === 'seller' ? 'bg-purple-600' : 'bg-blue-600'
+              }`}>
+                {activeAccount.avatar}
+              </div>
+              <div>
+                <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                  {activeAccount.name}
+                </p>
+                <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  {activeAccount.role === 'seller' ? 'Seller Account' : 'Buyer Account'} • {activeAccount.email}
+                </p>
+              </div>
+            </div>
+            <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+              isDarkMode ? 'bg-green-800 text-green-300' : 'bg-green-200 text-green-800'
+            }`}>
+              Active
+            </div>
+          </div>
+        )}
 
         {/* Seller Profile Header Card */}
         <div className={`mb-6 rounded-xl p-6 shadow-lg transition-colors ${isDarkMode 
@@ -489,6 +760,124 @@ const SellerSettings = () => {
             
             {expandedGroups.account && (
               <div className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
+                {/* Account Switching Section */}
+                <div className="px-6 py-3">
+                  <button
+                    onClick={() => toggleSection('accounts')}
+                    className="w-full flex items-center justify-between py-2 text-left"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <Users className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                      <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        Linked Accounts ({linkedAccounts.length})
+                      </span>
+                    </div>
+                    {expandedSections.accounts ? (
+                      <ChevronUp className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                    ) : (
+                      <ChevronDown className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                    )}
+                  </button>
+                  
+                  {expandedSections.accounts && (
+                    <div className="mt-3 pl-7 space-y-3">
+                      {/* List of linked accounts */}
+                      {linkedAccounts.map((account) => (
+                        <div
+                          key={account.id}
+                          className={`flex items-center justify-between p-3 rounded-lg transition-all ${
+                            account.isActive
+                              ? isDarkMode
+                                ? 'bg-blue-900/30 border border-blue-700'
+                                : 'bg-blue-50 border border-blue-200'
+                              : isDarkMode
+                                ? 'bg-gray-700/50 hover:bg-gray-700'
+                                : 'bg-gray-50 hover:bg-gray-100'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${
+                              account.role === 'seller' ? 'bg-purple-600' : 'bg-blue-600'
+                            }`}>
+                              {account.avatar}
+                            </div>
+                            <div>
+                              <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                                {account.name}
+                              </p>
+                              <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                {account.role === 'seller' ? 'Seller' : 'Buyer'} • {account.email}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {account.isActive ? (
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                isDarkMode ? 'bg-green-800 text-green-300' : 'bg-green-200 text-green-800'
+                              }`}>
+                                Active
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() => switchAccount(account.id)}
+                                className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+                                  isDarkMode
+                                    ? 'bg-gray-600 hover:bg-gray-500 text-gray-200'
+                                    : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                                }`}
+                              >
+                                Switch
+                              </button>
+                            )}
+                            <button
+                              onClick={() => removeAccount(account.id)}
+                              className={`p-1 rounded transition-colors ${
+                                isDarkMode
+                                  ? 'text-gray-400 hover:text-red-400 hover:bg-red-900/30'
+                                  : 'text-gray-400 hover:text-red-600 hover:bg-red-50'
+                              }`}
+                              title="Remove account"
+                            >
+                              <XCircle className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Add Account Buttons - Simplified rounded rectangles */}
+                      <div className="flex gap-3 mt-4">
+                        <button
+                          onClick={() => {
+                            setShowLoginModal(true);
+                            setNewAccountData({ username: '', email: '', password: '' });
+                          }}
+                          className={`flex-1 py-3 px-4 rounded-full border-2 transition-all hover:scale-[1.02] text-center font-medium ${
+                            isDarkMode
+                              ? 'border-gray-600 hover:border-blue-500 text-gray-300 hover:text-blue-400'
+                              : 'border-gray-300 hover:border-blue-500 text-gray-600 hover:text-blue-600'
+                          }`}
+                        >
+                          Add Existing Account
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowCreateAccountModal(true);
+                            setNewAccountData({ username: '', email: '', password: '', confirmPassword: '', role: 'seller' });
+                            setAccountCreationStep('select');
+                          }}
+                          className={`flex-1 py-3 px-4 rounded-full border-2 transition-all hover:scale-[1.02] text-center font-medium ${
+                            isDarkMode
+                              ? 'border-gray-600 hover:border-green-500 text-gray-300 hover:text-green-400'
+                              : 'border-gray-300 hover:border-green-500 text-gray-600 hover:text-green-600'
+                          }`}
+                        >
+                          Create New Account
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Profile Section */}
                 <div className="px-6 py-3">
                   <button
@@ -1172,6 +1561,341 @@ const SellerSettings = () => {
           </button>
         </div>
       </div>
+
+      {/* Add Existing Account Modal */}
+      {showLoginModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn" onClick={() => setShowLoginModal(false)}>
+          <div className={`rounded-2xl max-w-md w-full p-6 animate-scaleIn ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`} onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h3 className={`text-xl font-bold ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>Add Existing Account</h3>
+                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Sign in to link another account</p>
+              </div>
+              <button
+                onClick={() => setShowLoginModal(false)}
+                className={`p-1 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
+              >
+                <X className={`w-5 h-5 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Google Login Option */}
+              <button className={`w-full py-3 px-4 rounded-xl border-2 flex items-center justify-center gap-3 transition-all hover:scale-[1.02] ${
+                isDarkMode 
+                  ? 'border-gray-600 hover:border-blue-500 text-gray-200' 
+                  : 'border-gray-300 hover:border-blue-500 text-gray-700'
+              }`}>
+                <Chrome className="w-6 h-6 text-blue-500" />
+                <span className="font-medium">Continue with Google</span>
+              </button>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className={`w-full border-t ${isDarkMode ? 'border-gray-600' : 'border-gray-200'}`}></div>
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className={`px-2 ${isDarkMode ? 'bg-gray-800 text-gray-400' : 'bg-white text-gray-500'}`}>or sign in with email</span>
+                </div>
+              </div>
+
+              <input
+                type="text"
+                value={newAccountData.username}
+                onChange={(e) => setNewAccountData({ ...newAccountData, username: e.target.value })}
+                placeholder="Username or Email"
+                className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                  isDarkMode 
+                    ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-blue-500' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'
+                } focus:outline-none focus:ring-2 focus:ring-blue-500/30`}
+              />
+              <div className="relative">
+                <input
+                  type={showPasswords.current ? 'text' : 'password'}
+                  value={newAccountData.password}
+                  onChange={(e) => setNewAccountData({ ...newAccountData, password: e.target.value })}
+                  placeholder="Password"
+                  className={`w-full px-4 py-3 rounded-xl border transition-colors pr-12 ${
+                    isDarkMode 
+                      ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-blue-500' 
+                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'
+                  } focus:outline-none focus:ring-2 focus:ring-blue-500/30`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
+                  className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${
+                    isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'
+                  }`}
+                >
+                  {showPasswords.current ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+
+              {accountErrors.general && (
+                <div className={`p-3 rounded-lg text-sm flex items-center gap-2 ${
+                  isDarkMode ? 'bg-red-900/30 text-red-400 border border-red-800' : 'bg-red-50 text-red-700 border border-red-200'
+                }`}>
+                  <AlertCircle className="w-4 h-4" />
+                  {accountErrors.general}
+                </div>
+              )}
+
+              <button
+                onClick={() => {
+                  if (newAccountData.username && newAccountData.password) {
+                    handleAddExistingAccount(newAccountData);
+                  } else {
+                    setAccountErrors({ general: 'Please enter your username and password' });
+                  }
+                }}
+                disabled={isSubmittingAccount}
+                className={`w-full py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 ${
+                  isDarkMode 
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                } disabled:opacity-50`}
+              >
+                {isSubmittingAccount ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Signing in...
+                  </>
+                ) : (
+                  <>
+                    <LogIn className="w-4 h-4" />
+                    Sign In
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create New Account Modal */}
+      {showCreateAccountModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn" onClick={() => setShowCreateAccountModal(false)}>
+          <div className={`rounded-2xl max-w-md w-full p-6 animate-scaleIn ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`} onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h3 className={`text-xl font-bold ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                  {accountCreationStep === 'select' ? 'Create New Account' : 'Account Details'}
+                </h3>
+                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  {accountCreationStep === 'select' ? 'Choose what type of account to create' : 'Enter your account information'}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowCreateAccountModal(false);
+                  setAccountCreationStep('select');
+                }}
+                className={`p-1 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
+              >
+                <X className={`w-5 h-5 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+              </button>
+            </div>
+
+            {accountCreationStep === 'select' ? (
+              <div className="space-y-4">
+                <button
+                  onClick={() => {
+                    setNewAccountData({ ...newAccountData, role: 'buyer' });
+                    setAccountCreationStep('form');
+                  }}
+                  className={`w-full p-6 rounded-xl border-2 transition-all hover:scale-[1.02] text-left ${
+                    isDarkMode 
+                      ? 'border-gray-600 hover:border-blue-500 bg-gray-700/50' 
+                      : 'border-gray-200 hover:border-blue-500 bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                      isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100'
+                    }`}>
+                      <User className={`w-6 h-6 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+                    </div>
+                    <div>
+                      <p className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>Buyer Account</p>
+                      <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Shop and purchase products</p>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setNewAccountData({ ...newAccountData, role: 'seller' });
+                    setAccountCreationStep('form');
+                  }}
+                  className={`w-full p-6 rounded-xl border-2 transition-all hover:scale-[1.02] text-left ${
+                    isDarkMode 
+                      ? 'border-gray-600 hover:border-purple-500 bg-gray-700/50' 
+                      : 'border-gray-200 hover:border-purple-500 bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                      isDarkMode ? 'bg-purple-900/30' : 'bg-purple-100'
+                    }`}>
+                      <Users className={`w-6 h-6 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`} />
+                    </div>
+                    <div>
+                      <p className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>Seller Account</p>
+                      <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Sell products and manage your store</p>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    Account Type
+                  </label>
+                  <div className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                    newAccountData.role === 'seller'
+                      ? isDarkMode ? 'bg-purple-900/30 text-purple-400' : 'bg-purple-100 text-purple-700'
+                      : isDarkMode ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-700'
+                  }`}>
+                    {newAccountData.role === 'seller' ? 'Seller Account' : 'Buyer Account'}
+                  </div>
+                </div>
+
+                <input
+                  type="text"
+                  value={newAccountData.username}
+                  onChange={(e) => setNewAccountData({ ...newAccountData, username: e.target.value })}
+                  placeholder="Username *"
+                  className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                    isDarkMode 
+                      ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-blue-500' 
+                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'
+                  } focus:outline-none focus:ring-2 focus:ring-blue-500/30`}
+                />
+                {accountErrors.username && (
+                  <p className="text-xs text-red-500">{accountErrors.username}</p>
+                )}
+
+                <input
+                  type="email"
+                  value={newAccountData.email}
+                  onChange={(e) => setNewAccountData({ ...newAccountData, email: e.target.value })}
+                  placeholder="Email *"
+                  className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                    isDarkMode 
+                      ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-blue-500' 
+                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'
+                  } focus:outline-none focus:ring-2 focus:ring-blue-500/30`}
+                />
+                {accountErrors.email && (
+                  <p className="text-xs text-red-500">{accountErrors.email}</p>
+                )}
+
+                <div className="relative">
+                  <input
+                    type={showPasswords.new ? 'text' : 'password'}
+                    value={newAccountData.password}
+                    onChange={(e) => setNewAccountData({ ...newAccountData, password: e.target.value })}
+                    placeholder="Password (min 8 chars) *"
+                    className={`w-full px-4 py-3 rounded-xl border transition-colors pr-12 ${
+                      isDarkMode 
+                        ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-blue-500' 
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'
+                    } focus:outline-none focus:ring-2 focus:ring-blue-500/30`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
+                    className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${
+                      isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'
+                    }`}
+                  >
+                    {showPasswords.new ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+                {accountErrors.password && (
+                  <p className="text-xs text-red-500">{accountErrors.password}</p>
+                )}
+
+                <div className="relative">
+                  <input
+                    type={showPasswords.confirm ? 'text' : 'password'}
+                    value={newAccountData.confirmPassword}
+                    onChange={(e) => setNewAccountData({ ...newAccountData, confirmPassword: e.target.value })}
+                    placeholder="Confirm Password *"
+                    className={`w-full px-4 py-3 rounded-xl border transition-colors pr-12 ${
+                      isDarkMode 
+                        ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-blue-500' 
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'
+                    } focus:outline-none focus:ring-2 focus:ring-blue-500/30`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}
+                    className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${
+                      isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'
+                    }`}
+                  >
+                    {showPasswords.confirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+                {accountErrors.confirmPassword && (
+                  <p className="text-xs text-red-500">{accountErrors.confirmPassword}</p>
+                )}
+
+                {accountErrors.general && (
+                  <div className={`p-3 rounded-lg text-sm flex items-center gap-2 ${
+                    isDarkMode ? 'bg-red-900/30 text-red-400 border border-red-800' : 'bg-red-50 text-red-700 border border-red-200'
+                  }`}>
+                    <AlertCircle className="w-4 h-4" />
+                    {accountErrors.general}
+                  </div>
+                )}
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setAccountCreationStep('select')}
+                    className={`flex-1 py-3 px-4 rounded-xl border transition-colors ${
+                      isDarkMode 
+                        ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
+                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    Back
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (validateNewAccount()) {
+                        handleCreateNewAccount(newAccountData);
+                      }
+                    }}
+                    disabled={isSubmittingAccount}
+                    className={`flex-1 py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 ${
+                      isDarkMode 
+                        ? 'bg-green-600 hover:bg-green-700 text-white' 
+                        : 'bg-green-600 hover:bg-green-700 text-white'
+                    } disabled:opacity-50`}
+                  >
+                    {isSubmittingAccount ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Creating...
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="w-4 h-4" />
+                        Create Account
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from 'lucide-react';
 import styled from 'styled-components';
@@ -49,7 +49,6 @@ const StyledInputWrapper = styled.div`
     transition: border-color 0.2s;
   }
 
-  /* Remove autofill background and any outline */
   .form-control input:-webkit-autofill,
   .form-control input:-webkit-autofill:hover,
   .form-control input:-webkit-autofill:focus,
@@ -65,7 +64,7 @@ const StyledInputWrapper = styled.div`
   .form-control input:valid,
   .form-control input:-webkit-autofill {
     outline: 0;
-    border-bottom-color: #3b82f6; /* blue on focus/autofill */
+    border-bottom-color: #3b82f6;
   }
 
   .form-control label {
@@ -99,7 +98,43 @@ const SellerLoginPage = ({ setIsAuthenticated, setUserRole }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Handle Google OAuth callback
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const userData = urlParams.get('user');
+
+    if (token && userData) {
+      try {
+        const user = JSON.parse(decodeURIComponent(userData));
+        
+        // Check if user is a seller
+        if (!user.is_seller) {
+          setError('This account is not registered as a seller. Please use buyer login.');
+          window.history.replaceState({}, document.title, window.location.pathname);
+          return;
+        }
+
+        localStorage.setItem('accessToken', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('userRole', 'seller');
+
+        window.dispatchEvent(new Event('authStateChanged'));
+        setIsAuthenticated(true);
+        setUserRole('seller');
+
+        window.history.replaceState({}, document.title, window.location.pathname);
+        navigate('/seller-home');
+      } catch (error) {
+        console.error('Error processing Google login:', error);
+        setError('Error processing Google login. Please try again.');
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+  }, [navigate, setIsAuthenticated, setUserRole]);
 
   const handleChange = (e) => {
     setFormData({
@@ -157,6 +192,12 @@ const SellerLoginPage = ({ setIsAuthenticated, setUserRole }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleLogin = () => {
+    setGoogleLoading(true);
+    // Redirect to Google OAuth endpoint
+    window.location.href = `${API_BASE_URL}/api/auth/google/`;
   };
 
   return (
@@ -255,42 +296,38 @@ const SellerLoginPage = ({ setIsAuthenticated, setUserRole }) => {
           </div>
         </div>
 
-        {/* Social Login */}
-        <div className="flex justify-center space-x-8">
-          {/* Google */}
-          <button className="p-2 hover:bg-gray-50 rounded-full transition-colors text-gray-800">
-            <svg className="w-6 h-6" viewBox="0 0 24 24">
-              <path
-                fill="#EA4335"
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-              />
-              <path
-                fill="#4285F4"
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-              />
-              <path
-                fill="#FBBC05"
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-              />
-              <path
-                fill="#34A853"
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-              />
-            </svg>
-          </button>
-
-          {/* Facebook */}
-          <button className="p-2 hover:bg-gray-50 rounded-full transition-colors text-gray-800">
-            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="#1877F2">
-              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-            </svg>
-          </button>
-
-          {/* Apple */}
-          <button className="p-2 hover:bg-gray-50 rounded-full transition-colors text-gray-800">
-            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
-            </svg>
+        {/* Social Login - Google only */}
+        <div className="flex justify-center">
+          <button
+            onClick={handleGoogleLogin}
+            disabled={googleLoading}
+            className="flex items-center justify-center gap-3 w-full max-w-xs py-3 px-4 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            {googleLoading ? (
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600"></div>
+            ) : (
+              <>
+                <svg className="w-6 h-6" viewBox="0 0 24 24">
+                  <path
+                    fill="#EA4335"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  />
+                  <path
+                    fill="#4285F4"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  />
+                </svg>
+                <span className="text-gray-700 font-medium">Continue with Google</span>
+              </>
+            )}
           </button>
         </div>
 
@@ -314,6 +351,19 @@ const SellerLoginPage = ({ setIsAuthenticated, setUserRole }) => {
               Login here
             </Link>
           </p>
+        </div>
+
+        {/* Terms and Privacy Policy */}
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <div className="flex justify-center items-center gap-4 text-xs text-gray-500">
+            <Link to="/terms" className="hover:text-gray-700 hover:underline transition-colors">
+              Terms of Service
+            </Link>
+            <span className="text-gray-300">|</span>
+            <Link to="/privacy" className="hover:text-gray-700 hover:underline transition-colors">
+              Privacy Policy
+            </Link>
+          </div>
         </div>
       </div>
     </div>

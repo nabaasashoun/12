@@ -1,7 +1,7 @@
-// TrendingPage.jsx - Updated with main product image and share UI
+// TrendingPage.jsx - Updated with Report functionality, Share Modal, and Copy Link
 import { BuyerCard, BuyerCardContent } from './BuyerCard';
 import {
-  Heart, MessageSquare, Star, Bookmark, Plus, MoreHorizontal, Share2, ExternalLink
+  Heart, MessageSquare, Star, Bookmark, Plus, MoreHorizontal, Share2, ExternalLink, Flag
 } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -13,6 +13,10 @@ import { usePageLoading } from '../../utils/PageLoadingContext';
 import { useChat } from '../../utils/ChatContext';
 import api from '../../utils/api';
 import Header from './Header';
+import ShareModal from './ShareModal';
+import ReportModal from './ReportModal';
+import ProductMetaTags from './ProductMetaTags';
+import { getProductShareLink, copyToClipboard } from '../../utils/shareUtils';
 
 const formatCurrency = (amount) => {
   return `UGX ${parseFloat(amount).toLocaleString('en-UG')}`;
@@ -33,7 +37,21 @@ const TrendingPage = () => {
   const [categories, setCategories] = useState([]);
   const [filterCategory, setFilterCategory] = useState('');
   const [filterLocation, setFilterLocation] = useState('');
-  const [showShareModal, setShowShareModal] = useState(null);
+
+  // Share modal state
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [shareToast, setShareToast] = useState('');
+
+  // Report modal state
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportingSellerId, setReportingSellerId] = useState(null);
+  const [reportingSellerName, setReportingSellerName] = useState('');
+  const [reportingProductId, setReportingProductId] = useState(null);
+  const [reportingProductName, setReportingProductName] = useState('');
+
+  // State for the product being shared via meta tags
+  const [sharingProduct, setSharingProduct] = useState(null);
 
   // Animations
   const [animatingLike, setAnimatingLike] = useState(null);
@@ -44,6 +62,14 @@ const TrendingPage = () => {
     if (item.product?.id) acc[item.product.id] = true;
     return acc;
   }, {});
+
+  // Clear toast after 2 seconds
+  useEffect(() => {
+    if (shareToast) {
+      const timer = setTimeout(() => setShareToast(''), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [shareToast]);
 
   // Fetch categories for the dropdown
   useEffect(() => {
@@ -89,7 +115,6 @@ const TrendingPage = () => {
         sellerUsername: product.seller?.user?.username || 'seller',
         authorAvatar: (product.seller_name || product.seller?.name || 'S').charAt(0),
         price: formatCurrency(product.unit_price || 0),
-        // Use product_photo as main image, fallback to first image, then placeholder
         mainImage: product.product_photo || (product.images && product.images.length > 0 ? product.images[0] : null),
         images: product.images && product.images.length > 0
           ? product.images
@@ -103,6 +128,8 @@ const TrendingPage = () => {
         sellerId: product.seller,
         sellerUserId: product.seller_user_id,
         location: product.location || product.seller?.location || '',
+        description: product.description || '',
+        unit_price: product.unit_price || 0,
       }));
       setPosts(transformedPosts);
     } catch (error) {
@@ -149,55 +176,67 @@ const TrendingPage = () => {
   const closeDropdown = () => setDropdownOpen(null);
 
   // Share handlers
-  const handleShare = (postId) => {
-    setShowShareModal(postId);
+  const handleShareTo = (post) => {
+    const productForSharing = {
+      id: post.id,
+      name: post.product,
+      product: post.product,
+      price: post.price,
+      images: post.images,
+      sellerName: post.sellerName,
+      sellerId: post.sellerId,
+      description: post.content,
+      unit_price: parseFloat(post.price.replace(/[^0-9.]/g, '')) || 0,
+    };
+    
+    setSharingProduct(productForSharing);
+    setSelectedProduct({
+      id: post.id,
+      name: post.product,
+      product: post.product,
+      price: post.price,
+      images: post.images,
+      sellerName: post.sellerName,
+      sellerId: post.sellerId
+    });
+    setShareModalOpen(true);
     closeDropdown();
   };
 
-  const closeShareModal = () => setShowShareModal(null);
-
   const handleCopyLink = async (postId) => {
-    const url = `${window.location.origin}/product/${postId}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      alert('Link copied to clipboard!');
-    } catch (err) {
-      // Fallback
-      const textArea = document.createElement('textarea');
-      textArea.value = url;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      alert('Link copied to clipboard!');
-    }
-    closeShareModal();
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+    
+    const shareLink = getProductShareLink(postId);
+    await copyToClipboard(
+      shareLink,
+      () => {
+        setShareToast('Link copied to clipboard! ✓');
+        setTimeout(() => setShareToast(''), 2000);
+      },
+      () => {
+        setShareToast('Failed to copy link');
+        setTimeout(() => setShareToast(''), 2000);
+      }
+    );
+    closeDropdown();
   };
 
-  const handleShareSocial = (postId, platform) => {
-    const url = `${window.location.origin}/product/${postId}`;
-    const text = `Check out this product on TrendSync!`;
-    let shareUrl = '';
-    
-    switch(platform) {
-      case 'whatsapp':
-        shareUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
-        break;
-      case 'facebook':
-        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
-        break;
-      case 'twitter':
-        shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
-        break;
-      case 'email':
-        shareUrl = `mailto:?subject=Check out this product&body=${encodeURIComponent(text + '\n\n' + url)}`;
-        break;
-      default:
-        return;
-    }
-    
-    window.open(shareUrl, '_blank', 'width=600,height=400');
-    closeShareModal();
+  const handleReportSeller = (post) => {
+    closeDropdown();
+    setReportingSellerId(post.sellerId);
+    setReportingSellerName(post.sellerName);
+    setReportingProductId(post.id);
+    setReportingProductName(post.product);
+    setReportModalOpen(true);
+  };
+
+  // Get the product image for meta tags
+  const getProductImage = (product) => {
+    if (!product) return null;
+    return product.images && product.images.length > 0 
+      ? product.images[0] 
+      : product.product_photo || null;
   };
 
   // Like handler
@@ -240,8 +279,14 @@ const TrendingPage = () => {
 
   const dropdownItems = (postId) => {
     const post = posts.find(p => p.id === postId);
+    if (!post) return [];
+    
     return [
-      { label: 'Report', action: () => {} },
+      { 
+        label: 'Report Seller', 
+        
+        action: () => handleReportSeller(post)
+      },
       { 
         label: 'Message Seller', 
         action: async () => {
@@ -254,19 +299,28 @@ const TrendingPage = () => {
             }
           }
           if (targetUserId) {
+            const sellerName = post.sellerName || 'Seller';
+            navigate(`/chat?userId=${targetUserId}&name=${encodeURIComponent(sellerName)}`);
             startChat(targetUserId);
-            navigate('/chat');
           } else {
             console.warn('Could not resolve seller user ID', post);
+            setShareToast('Unable to message seller');
+            setTimeout(() => setShareToast(''), 2000);
           }
         }
       },
-      { label: 'Go to Post', action: () => { closeDropdown(); navigate(`/product/${postId}`); } },
-      { label: 'Share', action: () => handleShare(postId) },
-      { label: 'Copy Link', action: () => { handleCopyLink(postId); closeDropdown(); } },
-      { label: 'Remove from Cart', action: () => {} },
-      { label: 'Unfollow', action: () => {} },
-      { label: 'Cancel', action: closeDropdown },
+      { label: 'Go to Post', icon: null, action: () => { closeDropdown(); navigate(`/product/${postId}`); } },
+      { 
+        label: 'Share to', 
+       
+        action: () => handleShareTo(post)
+      },
+      { 
+        label: 'Copy Link', 
+        icon: null,
+        action: () => handleCopyLink(postId)
+      },
+      { label: 'Cancel', icon: null, action: closeDropdown },
     ];
   };
 
@@ -280,6 +334,15 @@ const TrendingPage = () => {
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      {/* ProductMetaTags for sharing - dynamically updates when share is triggered */}
+      {sharingProduct && (
+        <ProductMetaTags 
+          product={sharingProduct}
+          productImage={getProductImage(sharingProduct)}
+          productDescription={sharingProduct.description}
+        />
+      )}
+
       <div className="p-2 sm:p-4 md:p-6 max-w-6xl mx-auto relative">
         {/* Header with back button, search bar, filters, and Settings icon */}
         <Header
@@ -295,16 +358,26 @@ const TrendingPage = () => {
           settingsPath="/settings"
         />
 
+        {/* Share Toast */}
+        {shareToast && (
+          <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[100] animate-slideDown">
+            <div className={`px-4 py-2 rounded-lg shadow-lg text-sm font-medium ${
+              shareToast.includes('Failed') ? 'bg-red-500' : 'bg-green-500'
+            } text-white`}>
+              {shareToast}
+            </div>
+          </div>
+        )}
+
         {/* Trending Posts Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mt-4">
           {posts.map((post) => {
             const currentIndex = currentImageIndex[post.id] || 0;
             const totalImages = post.images.length;
-            // Use mainImage if available, otherwise use the first image from the carousel
             const displayImage = post.mainImage || post.images[currentIndex] || '/sample1.jpg';
 
             return (
-              <BuyerCard key={post.id} variant="elevated" className="overflow-hidden flex flex-col">
+              <BuyerCard key={post.id} variant="elevated" className="overflow-hidden flex flex-col hover:shadow-xl transition-shadow duration-300">
                 <BuyerCardContent className="p-0 flex flex-col">
                   {/* Header */}
                   <div className={`p-0 sm:p-3 flex flex-col border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
@@ -406,11 +479,12 @@ const TrendingPage = () => {
                         </div>
                         <div className="flex space-x-1">
                           <button
-                            onClick={() => handleShare(post.id)}
+                            onClick={() => handleShareTo(post)}
                             className={`p-1 rounded-full transition-colors ${isDarkMode
                               ? 'text-gray-400 hover:text-blue-400 hover:bg-blue-900/30'
                               : 'text-gray-600 hover:text-blue-500 hover:bg-blue-50'
                             }`}
+                            aria-label="Share"
                           >
                             <Share2 className="w-3 h-3 sm:w-4 sm:h-4" />
                           </button>
@@ -465,92 +539,72 @@ const TrendingPage = () => {
           })}
         </div>
 
-        {/* Share Modal */}
-        {showShareModal && (
+        {/* Dropdown Modal */}
+        {dropdownOpen && (
           <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={closeShareModal}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn"
+            onClick={closeDropdown}
           >
-            <div className={`rounded-xl max-w-sm w-full transition-colors duration-300 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`} onClick={(e) => e.stopPropagation()}>
+            <div
+              className={`rounded-xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'} w-72 max-w-[90%] animate-scaleIn`}
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className={`p-4 border-b text-center ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                <h3 className={`font-semibold text-lg ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>Share Product</h3>
-                <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Share this product with your friends</p>
+                <h3 className={`font-semibold text-lg ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Post Options</h3>
               </div>
-              <div className="p-4">
-                <div className="grid grid-cols-3 gap-3">
-                  <button
-                    onClick={() => handleShareSocial(showShareModal, 'whatsapp')}
-                    className={`p-3 rounded-lg text-center transition-all hover:scale-105 ${isDarkMode ? 'bg-green-900/30 hover:bg-green-900/50' : 'bg-green-50 hover:bg-green-100'}`}
-                  >
-                    <div className="text-2xl mb-1">💬</div>
-                    <span className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>WhatsApp</span>
-                  </button>
-                  <button
-                    onClick={() => handleShareSocial(showShareModal, 'facebook')}
-                    className={`p-3 rounded-lg text-center transition-all hover:scale-105 ${isDarkMode ? 'bg-blue-900/30 hover:bg-blue-900/50' : 'bg-blue-50 hover:bg-blue-100'}`}
-                  >
-                    <div className="text-2xl mb-1">📘</div>
-                    <span className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Facebook</span>
-                  </button>
-                  <button
-                    onClick={() => handleShareSocial(showShareModal, 'twitter')}
-                    className={`p-3 rounded-lg text-center transition-all hover:scale-105 ${isDarkMode ? 'bg-blue-900/30 hover:bg-blue-900/50' : 'bg-blue-50 hover:bg-blue-100'}`}
-                  >
-                    <div className="text-2xl mb-1">🐦</div>
-                    <span className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Twitter</span>
-                  </button>
-                  <button
-                    onClick={() => handleShareSocial(showShareModal, 'email')}
-                    className={`p-3 rounded-lg text-center transition-all hover:scale-105 ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}
-                  >
-                    <div className="text-2xl mb-1">📧</div>
-                    <span className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Email</span>
-                  </button>
-                  <button
-                    onClick={() => handleCopyLink(showShareModal)}
-                    className={`p-3 rounded-lg text-center transition-all hover:scale-105 ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} col-span-1`}
-                  >
-                    <div className="text-2xl mb-1">🔗</div>
-                    <span className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Copy Link</span>
-                  </button>
-                </div>
-              </div>
-              <div className={`p-3 border-t text-center ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                <button
-                  onClick={closeShareModal}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
-                >
-                  Close
-                </button>
+              <div className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
+                {dropdownOpen && dropdownItems(dropdownOpen).map((item, index) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={index}
+                      onClick={item.action}
+                      className={`w-full text-center px-4 py-3 text-sm transition-colors first:rounded-t-lg last:rounded-b-lg flex items-center justify-center gap-2 ${
+                        isDarkMode 
+                          ? 'text-gray-300 hover:bg-gray-700' 
+                          : 'text-black hover:bg-gray-50'
+                      }`}
+                    >
+                      {Icon && <Icon className="w-4 h-4" />}
+                      {item.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
         )}
 
-        {/* Dropdown Modal */}
-        {dropdownOpen && (
-          <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={closeDropdown}
-          >
-            <div className={`rounded-xl max-w-sm w-full transition-colors duration-300 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`} onClick={(e) => e.stopPropagation()}>
-              <div className={`p-4 border-b text-center ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                <h3 className={`font-semibold text-lg ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>Post Options</h3>
-              </div>
-              <div className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
-                {dropdownItems(dropdownOpen).map((item, index) => (
-                  <button
-                    key={index}
-                    onClick={item.action}
-                    className={`w-full text-center px-4 py-3 text-sm transition-all first:rounded-t-lg last:rounded-b-lg ${isDarkMode ? 'text-gray-300 hover:bg-gray-700 hover:text-indigo-400' : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600'}`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+        {/* Share Modal */}
+        {shareModalOpen && selectedProduct && (
+          <ShareModal
+            isOpen={shareModalOpen}
+            onClose={() => {
+              setShareModalOpen(false);
+              setSelectedProduct(null);
+              setSharingProduct(null);
+            }}
+            product={selectedProduct}
+            isDarkMode={isDarkMode}
+          />
         )}
+
+        {/* Report Modal */}
+        <ReportModal
+          isOpen={reportModalOpen}
+          onClose={() => {
+            setReportModalOpen(false);
+            setReportingSellerId(null);
+            setReportingSellerName('');
+            setReportingProductId(null);
+            setReportingProductName('');
+          }}
+          sellerId={reportingSellerId}
+          sellerName={reportingSellerName}
+          productId={reportingProductId}
+          productName={reportingProductName}
+          isDarkMode={isDarkMode}
+        />
       </div>
 
       <style>{`
@@ -564,6 +618,27 @@ const TrendingPage = () => {
           0% { transform: scale(1); }
           50% { transform: scale(1.2); }
           100% { transform: scale(1); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+          from { transform: scale(0.9); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.2s ease-out forwards;
+        }
+        .animate-scaleIn {
+          animation: scaleIn 0.25s ease-out forwards;
+        }
+        .animate-slideDown {
+          animation: slideDown 0.3s ease-out forwards;
+        }
+        @keyframes slideDown {
+          from { transform: translate(-50%, -20px); opacity: 0; }
+          to { transform: translate(-50%, 0); opacity: 1; }
         }
       `}</style>
     </div>

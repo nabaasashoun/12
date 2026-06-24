@@ -246,12 +246,6 @@ const ShareModal = ({ isOpen, onClose, product, isDarkMode }) => {
                 <span className="truncate">{getFullShareUrl()}</span>
               </div>
               {/* Show image that will be shared */}
-              {productImage && (
-                <div className={`mt-1 text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'} flex items-center gap-1`}>
-                  <span>🖼️</span>
-                  <span className="truncate">Image will be displayed with link</span>
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -326,11 +320,6 @@ const ShareModal = ({ isOpen, onClose, product, isDarkMode }) => {
               ✓ Link copied to clipboard!
             </p>
           )}
-
-          {/* Info about image sharing */}
-          <div className={`mt-2 p-2 rounded-lg text-xs ${isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
-            <p>📸 The product image will appear when shared on social platforms</p>
-          </div>
         </div>
 
         {/* Footer */}
