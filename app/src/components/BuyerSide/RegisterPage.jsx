@@ -169,7 +169,7 @@ const RegisterPage = ({ setIsAuthenticated, setUserRole }) => {
     setLoading(true);
 
     const data = new FormData();
-    data.append('username', formData.buyerName);
+    data.append('username', formData.buyerEmail);
     data.append('email', formData.buyerEmail);
     data.append('password', formData.password);
     data.append('name', formData.buyerName);
