@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate, NavLink } from "react-router-dom";
 import { AddProductProvider } from "./utils/AddProductContext";
 import HomePage from "./components/BuyerSide/BuyerHomePage";
+import { HelmetProvider } from 'react-helmet-async';
 import SellerHomePage from "./components/SellerSide/SellerHomePage";
 import LoginPage from "./components/BuyerSide/LoginPage";
 import SellerLoginPage from "./components/SellerSide/SellerLoginPage";
@@ -33,6 +34,9 @@ import { DarkModeProvider } from "./utils/BuyerDarkModeContext";
 import { LikeBookmarkProvider } from "./utils/LikeBookmarkContext";
 import { SellerDarkModeProvider } from "./utils/SellerDarkModeContext";
 import { DataProvider } from './context/DataProvider';
+// Import Privacy and Terms components
+import PrivacyPolicy from './components/Docs/PrivacyPolicy';
+import TermsConditions from './components/Docs/Terms&Conditions';
 
 // Lazy load ChatProvider to improve initial load time
 const ChatProvider = lazy(() => 
@@ -61,17 +65,25 @@ const SellerRoute = ({ children, userRole, isAuthenticated }) => {
   return children;
 };
 
+// Public routes that don't require authentication
+const PublicRoutes = () => {
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/seller/login" element={<SellerLoginPage />} />
+      <Route path="/seller/register" element={<SellerRegisterPage />} />
+      {/* Public legal pages - accessible without authentication */}
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/terms" element={<TermsConditions />} />
+      <Route path="*" element={<Navigate to="/login" />} />
+    </Routes>
+  );
+};
+
 const AuthenticatedContent = ({ isAuthenticated, userRole, handleLogout, setIsAuthenticated, setUserRole }) => {
   if (!isAuthenticated) {
-    return (
-      <Routes>
-        <Route path="/login" element={<LoginPage setIsAuthenticated={setIsAuthenticated} setUserRole={setUserRole} />} />
-        <Route path="/register" element={<RegisterPage setIsAuthenticated={setIsAuthenticated} setUserRole={setUserRole} />} />
-        <Route path="/seller/login" element={<SellerLoginPage setIsAuthenticated={setIsAuthenticated} setUserRole={setUserRole} />} />
-        <Route path="/seller/register" element={<SellerRegisterPage setIsAuthenticated={setIsAuthenticated} setUserRole={setUserRole} />} />
-        <Route path="*" element={<Navigate to="/login" />} />
-      </Routes>
-    );
+    return <PublicRoutes />;
   }
 
   return (
@@ -96,11 +108,17 @@ const AuthenticatedContent = ({ isAuthenticated, userRole, handleLogout, setIsAu
 
       <div className={`flex-1 overflow-y-auto ${userRole === 'buyer' ? 'pb-16 md:pb-0' : 'pb-16 md:pb-0'}`}>
         <Routes>
+          {/* Redirect login/register to home if already authenticated */}
           <Route path="/login" element={<Navigate to={userRole === 'seller' ? "/seller-home" : "/"} />} />
           <Route path="/register" element={<Navigate to={userRole === 'seller' ? "/seller-home" : "/"} />} />
           <Route path="/seller/login" element={<Navigate to={userRole === 'seller' ? "/seller-home" : "/"} />} />
           <Route path="/seller/register" element={<Navigate to={userRole === 'seller' ? "/seller-home" : "/"} />} />
+          
+          {/* Public legal pages - accessible even when authenticated */}
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsConditions />} />
 
+          {/* Buyer Routes */}
           <Route path="/" element={<BuyerRoute userRole={userRole} isAuthenticated={isAuthenticated}><HomePage /></BuyerRoute>} />
           <Route path="/cart" element={<BuyerRoute userRole={userRole} isAuthenticated={isAuthenticated}><CartPage /></BuyerRoute>} />
           <Route path="/trending" element={<BuyerRoute userRole={userRole} isAuthenticated={isAuthenticated}><TrendingPage /></BuyerRoute>} />
@@ -113,6 +131,7 @@ const AuthenticatedContent = ({ isAuthenticated, userRole, handleLogout, setIsAu
           <Route path="/seller/:sellerId" element={<BuyerRoute userRole={userRole} isAuthenticated={isAuthenticated}><SellerPage /></BuyerRoute>} />
           <Route path="/product/:productId/comments" element={<BuyerRoute userRole={userRole} isAuthenticated={isAuthenticated}><ProductCommentsPage /></BuyerRoute>} />
 
+          {/* Seller Routes */}
           <Route path="/seller-home" element={<SellerRoute userRole={userRole} isAuthenticated={isAuthenticated}><SellerHomePage /></SellerRoute>} />
           <Route path="/seller/products" element={<SellerRoute userRole={userRole} isAuthenticated={isAuthenticated}><div className="p-8"><h1 className="text-2xl font-bold">My Products</h1><p>Products management page</p></div></SellerRoute>} />
           <Route path="/seller/orders" element={<SellerRoute userRole={userRole} isAuthenticated={isAuthenticated}><div className="p-8"><h1 className="text-2xl font-bold">Orders</h1><p>Orders management page</p></div></SellerRoute>} />
@@ -223,33 +242,35 @@ const App = () => {
   }
 
   return (
-    <DataProvider>
-      <BrowserRouter>    
-        <DarkModeProvider>
-          <SellerDarkModeProvider>
-            <LikeBookmarkProvider>
-              <Suspense fallback={<ChatLoadingFallback />}>
-                <ChatProvider>
-                  <PageLoadingProvider>
-                    <NotificationProvider>
-                      <AddProductProvider>
-                        <AuthenticatedContent
-                          isAuthenticated={isAuthenticated}
-                          userRole={userRole}
-                          handleLogout={handleLogout}
-                          setIsAuthenticated={setIsAuthenticated}
-                          setUserRole={setUserRole}
-                        />
-                      </AddProductProvider>
-                    </NotificationProvider>
-                  </PageLoadingProvider>
-                </ChatProvider>
-              </Suspense>
-            </LikeBookmarkProvider>
-          </SellerDarkModeProvider>
-        </DarkModeProvider>
-      </BrowserRouter>
-    </DataProvider>
+    <HelmetProvider>
+      <DataProvider>
+        <BrowserRouter>    
+          <DarkModeProvider>
+            <SellerDarkModeProvider>
+              <LikeBookmarkProvider>
+                <Suspense fallback={<ChatLoadingFallback />}>
+                  <ChatProvider>
+                    <PageLoadingProvider>
+                      <NotificationProvider>
+                        <AddProductProvider>
+                          <AuthenticatedContent
+                            isAuthenticated={isAuthenticated}
+                            userRole={userRole}
+                            handleLogout={handleLogout}
+                            setIsAuthenticated={setIsAuthenticated}
+                            setUserRole={setUserRole}
+                          />
+                        </AddProductProvider>
+                      </NotificationProvider>
+                    </PageLoadingProvider>
+                  </ChatProvider>
+                </Suspense>
+              </LikeBookmarkProvider>
+            </SellerDarkModeProvider>
+          </DarkModeProvider>
+        </BrowserRouter>
+      </DataProvider>
+    </HelmetProvider>
   );
 };
 

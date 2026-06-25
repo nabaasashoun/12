@@ -1,6 +1,171 @@
-// api.js - Fully updated with request deduplication and caching
-const API_BASE_URL = 'http://localhost:8000/api';
+// api.js - Fully updated with correct URL construction
+const API_BASE_URL = 'http://localhost:8000';
 
+// Helper function to build API URLs correctly
+const buildUrl = (endpoint) => {
+  // Remove leading slash from endpoint if it exists
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+  // If endpoint already starts with http, return as is
+  if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
+    return endpoint;
+  }
+  // Build the full URL
+  return `${API_BASE_URL}/${cleanEndpoint}`;
+};
+
+// ===== RECENT SEARCHES API =====
+export const getRecentSearches = async () => {
+  const token = localStorage.getItem('accessToken');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+  
+  try {
+    const response = await fetch(buildUrl('api/recent-searches/'), {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch recent searches: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching recent searches:', error);
+    return { status: 'error', searches: [] };
+  }
+};
+
+export const addRecentSearch = async (term) => {
+  const token = localStorage.getItem('accessToken');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+  
+  try {
+    const response = await fetch(buildUrl('api/recent-searches/'), {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ term }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to add recent search: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error adding recent search:', error);
+    return { status: 'error' };
+  }
+};
+
+export const clearRecentSearches = async () => {
+  const token = localStorage.getItem('accessToken');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+  
+  try {
+    const response = await fetch(buildUrl('api/recent-searches/'), {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to clear recent searches: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error clearing recent searches:', error);
+    return { status: 'error' };
+  }
+};
+
+// ===== ADVANCED SEARCH API =====
+// In api.js - update searchProductsWithFilters
+
+export const searchProductsWithFilters = async (params) => {
+  const token = localStorage.getItem('accessToken');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+  
+  const queryParams = new URLSearchParams();
+  
+  if (params.search) queryParams.append('search', params.search);
+  if (params.category) queryParams.append('category', params.category);
+  if (params.location) queryParams.append('location', params.location);
+  if (params.price_range && params.price_range !== 'all') 
+    queryParams.append('price_range', params.price_range);
+  if (params.min_rating && params.min_rating > 0) 
+    queryParams.append('min_rating', params.min_rating);
+  if (params.stock_status && params.stock_status !== 'all') 
+    queryParams.append('stock_status', params.stock_status);
+  if (params.sort) queryParams.append('sort', params.sort);
+  if (params.page) queryParams.append('page', params.page);
+  if (params.page_size) queryParams.append('page_size', params.page_size);
+  
+  try {
+    // Use /api/products/search/ - the main urls.py adds the /api/ prefix
+    const response = await fetch(`${API_BASE_URL}/api/products/search/?${queryParams.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to search products: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error searching products:', error);
+    return { status: 'error', data: [] };
+  }
+};
+
+// ===== FILTER OPTIONS API =====
+export const getFilterOptions = async () => {
+  const token = localStorage.getItem('accessToken');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+  
+  try {
+    const response = await fetch(buildUrl('api/filter-options/'), {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch filter options: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching filter options:', error);
+    return { status: 'error', data: {} };
+  }
+};
+
+// Also update the Api class to use the buildUrl function
 class Api {
   constructor() {
     // Request deduplication cache
@@ -37,7 +202,8 @@ class Api {
 
   // Deduplicated request with caching
   async request(endpoint, options = {}) {
-    const url = `${API_BASE_URL}${endpoint}`;
+    // Use buildUrl for consistent URL construction
+    const url = buildUrl(endpoint);
     const method = options.method || 'GET';
     
     // Only cache GET requests
@@ -161,7 +327,7 @@ class Api {
     }
 
     try {
-      const response = await this.request('/locations/');
+      const response = await this.request('api/locations/');
       if (!response.error && response.data) {
         let locationData = [];
         if (Array.isArray(response.data)) {
@@ -199,7 +365,7 @@ class Api {
 
     try {
       console.log('Attempting token refresh...');
-      const response = await fetch(`${API_BASE_URL}/token/refresh/`, {
+      const response = await fetch(buildUrl('api/token/refresh/'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -227,7 +393,7 @@ class Api {
   }
 
   async login(username, password) {
-    const response = await this.request('/login/', {
+    const response = await this.request('api/login/', {
       method: 'POST',
       body: JSON.stringify({ username, password }),
       public: true,
@@ -252,7 +418,7 @@ class Api {
   }
 
   async register(userData, isSeller = false) {
-    const endpoint = isSeller ? '/register/seller/' : '/register/buyer/';
+    const endpoint = isSeller ? 'api/register/seller/' : 'api/register/buyer/';
     return this.request(endpoint, {
       method: 'POST',
       body: JSON.stringify(userData),
@@ -272,20 +438,20 @@ class Api {
   }
 
   async verifyToken() {
-    return this.request('/verify-token/');
+    return this.request('api/verify-token/');
   }
 
   async getProducts(params = {}) {
     const queryString = new URLSearchParams(params).toString();
-    return this.request(`/products/${queryString ? '?' + queryString : ''}`);
+    return this.request(`api/products/${queryString ? '?' + queryString : ''}`);
   }
 
   async getProduct(productId) {
-    return this.request(`/products/${productId}/`);
+    return this.request(`api/products/${productId}/`);
   }
 
   async getSellerProducts(sellerId) {
-    return this.request(`/sellers/${sellerId}/products/`);
+    return this.request(`api/sellers/${sellerId}/products/`);
   }
 
   async createProduct(productData) {
@@ -305,7 +471,7 @@ class Api {
     const token = this.getToken();
     
     try {
-      const response = await fetch(`${API_BASE_URL}/products/`, {
+      const response = await fetch(buildUrl('api/products/'), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -325,91 +491,91 @@ class Api {
   }
 
   async updateProduct(productId, productData) {
-    return this.request(`/products/${productId}/`, {
+    return this.request(`api/products/${productId}/`, {
       method: 'PUT',
       body: JSON.stringify(productData),
     });
   }
 
   async deleteProduct(productId) {
-    return this.request(`/products/${productId}/`, {
+    return this.request(`api/products/${productId}/`, {
       method: 'DELETE',
     });
   }
 
   async getCategories() {
-    return this.request('/categories/');
+    return this.request('api/categories/');
   }
 
   async getLikedProducts() {
-    return this.request('/liked-products/');
+    return this.request('api/liked-products/');
   }
 
   async toggleLike(productId) {
-    return this.request(`/products/${productId}/like/`, {
+    return this.request(`api/products/${productId}/like/`, {
       method: 'POST',
     });
   }
 
   async checkProductLike(productId) {
-    return this.request(`/products/${productId}/check-like/`);
+    return this.request(`api/products/${productId}/check-like/`);
   }
 
   async getProductComments(productId) {
-    return this.request(`/products/${productId}/comments/`);
+    return this.request(`api/products/${productId}/comments/`);
   }
 
   async addComment(productId, commentData) {
-    return this.request(`/products/${productId}/comments/`, {
+    return this.request(`api/products/${productId}/comments/`, {
       method: 'POST',
       body: JSON.stringify(commentData),
     });
   }
 
   async updateComment(commentId, commentData) {
-    return this.request(`/comments/${commentId}/`, {
+    return this.request(`api/comments/${commentId}/`, {
       method: 'PUT',
       body: JSON.stringify(commentData),
     });
   }
 
   async deleteComment(commentId) {
-    return this.request(`/comments/${commentId}/`, {
+    return this.request(`api/comments/${commentId}/`, {
       method: 'DELETE',
     });
   }
 
   async markCommentHelpful(commentId) {
-    return this.request(`/comments/${commentId}/helpful/`, {
+    return this.request(`api/comments/${commentId}/helpful/`, {
       method: 'POST',
     });
   }
 
   async getWishlist() {
-    return this.request('/wishlist/');
+    return this.request('api/wishlist/');
   }
 
   async toggleWishlist(productId) {
-    return this.request(`/wishlist/toggle/${productId}/`, {
+    return this.request(`api/wishlist/toggle/${productId}/`, {
       method: 'POST',
     });
   }
   
   async addToWishlist(productId) {
-    return this.request('/wishlist/add/', {
+    return this.request('api/wishlist/add/', {
       method: 'POST',
       body: JSON.stringify({ product_id: productId }),
     });
   }
 
   async removeFromWishlist(productId) {
-    return this.request(`/wishlist/remove/${productId}/`, {
+    return this.request(`api/wishlist/remove/${productId}/`, {
       method: 'DELETE',
     });
   }
 
   async addToCart(productId, quantity = 1, answers = {}) {
-    return this.request('/cart/add/', {
+    return this.request('api/cart/add/', {
       method: 'POST',
       body: JSON.stringify({ 
         product_id: productId, 
@@ -420,7 +586,7 @@ class Api {
   }
 
   async removeFromCart(productId) {
-    return this.request(`/cart/remove/${productId}/`, {
+    return this.request(`api/cart/remove/${productId}/`, {
       method: 'DELETE',
     });
   }
@@ -430,232 +596,232 @@ class Api {
     if (quantity !== undefined) body.quantity = quantity;
     if (answers !== null) body.answers = answers;
     
-    return this.request(`/cart/update/${productId}/`, {
+    return this.request(`api/cart/update/${productId}/`, {
       method: 'PUT',
       body: JSON.stringify(body),
     });
   }
 
   async getCart() {
-    return this.request('/cart/items/');
+    return this.request('api/cart/items/');
   }
 
   async clearCart() {
-    return this.request('/cart/clear/', {
+    return this.request('api/cart/clear/', {
       method: 'DELETE',
     });
   }
 
   async mergeCart() {
-    return this.request('/cart/merge/', {
+    return this.request('api/cart/merge/', {
       method: 'POST',
     });
   }
 
   async getSeller(sellerId) {
-    return this.request(`/sellers/${sellerId}/`);
+    return this.request(`api/sellers/${sellerId}/`);
   }
 
   async getCurrentSeller() {
-    return this.request('/seller/profile/');
+    return this.request('api/seller/profile/');
   }
 
   async updateSellerProfile(sellerData) {
-    return this.request('/seller/profile/', {
+    return this.request('api/seller/profile/', {
       method: 'PUT',
       body: JSON.stringify(sellerData),
     });
   }
 
   async toggleFollowSeller(sellerId) {
-    return this.request(`/sellers/${sellerId}/follow/`, {
+    return this.request(`api/sellers/${sellerId}/follow/`, {
       method: 'POST',
     });
   }
 
   async getFollowing() {
-    return this.request('/sellers/following/');
+    return this.request('api/sellers/following/');
   }
 
   async getCurrentBuyer() {
-    return this.request('/buyers/me/');
+    return this.request('api/buyers/me/');
   }
 
   async updateBuyerProfile(buyerData) {
-    return this.request('/buyers/me/', {
+    return this.request('api/buyers/me/', {
       method: 'PUT',
       body: JSON.stringify(buyerData),
     });
   }
 
   async getAddresses() {
-    return this.request('/addresses/');
+    return this.request('api/addresses/');
   }
 
   async addAddress(addressData) {
-    return this.request('/addresses/', {
+    return this.request('api/addresses/', {
       method: 'POST',
       body: JSON.stringify(addressData),
     });
   }
 
   async updateAddress(addressId, addressData) {
-    return this.request(`/addresses/${addressId}/`, {
+    return this.request(`api/addresses/${addressId}/`, {
       method: 'PUT',
       body: JSON.stringify(addressData),
     });
   }
 
   async deleteAddress(addressId) {
-    return this.request(`/addresses/${addressId}/`, {
+    return this.request(`api/addresses/${addressId}/`, {
       method: 'DELETE',
     });
   }
 
   async setDefaultAddress(addressId) {
-    return this.request(`/addresses/${addressId}/set-default/`, {
+    return this.request(`api/addresses/${addressId}/set-default/`, {
       method: 'POST',
     });
   }
 
   async getOrders() {
-    return this.request('/orders/');
+    return this.request('api/orders/');
   }
 
   async getOrder(orderId) {
-    return this.request(`/orders/${orderId}/`);
+    return this.request(`api/orders/${orderId}/`);
   }
 
   async createOrder(orderData) {
-    return this.request('/orders/', {
+    return this.request('api/orders/', {
       method: 'POST',
       body: JSON.stringify(orderData),
     });
   }
 
   async cancelOrder(orderId) {
-    return this.request(`/orders/${orderId}/cancel/`, {
+    return this.request(`api/orders/${orderId}/cancel/`, {
       method: 'POST',
     });
   }
 
   async createOrderFromCart() {
-    return this.request('/orders/create-from-cart/', {
+    return this.request('api/orders/create-from-cart/', {
       method: 'POST',
     });
   }
 
   async initiatePayment(orderId) {
-    return this.request('/payments/initiate/', {
+    return this.request('api/payments/initiate/', {
       method: 'POST',
       body: JSON.stringify({ order_id: orderId }),
     });
   }
 
   async verifyPayment(reference) {
-    return this.request(`/payments/verify/${reference}/`);
+    return this.request(`api/payments/verify/${reference}/`);
   }
 
   async getOrderStatus(orderId) {
-    return this.request(`/payments/status/${orderId}/`);
+    return this.request(`api/payments/status/${orderId}/`);
   }
 
   async getNotifications() {
-    return this.request('/notifications/');
+    return this.request('api/notifications/');
   }
 
   async markNotificationRead(notificationId) {
-    return this.request(`/notifications/${notificationId}/read/`, {
+    return this.request(`api/notifications/${notificationId}/read/`, {
       method: 'POST',
     });
   }
 
   async markAllNotificationsRead() {
-    return this.request('/notifications/read-all/', {
+    return this.request('api/notifications/read-all/', {
       method: 'POST',
     });
   }
 
   async deleteNotification(notificationId) {
-    return this.request(`/notifications/${notificationId}/delete/`, {
+    return this.request(`api/notifications/${notificationId}/delete/`, {
       method: 'DELETE',
     });
   }
 
   async clearAllNotifications() {
-    return this.request('/notifications/clear-all/', {
+    return this.request('api/notifications/clear-all/', {
       method: 'DELETE',
     });
   }
 
   async getQuickDeals() {
-    return this.request('/quick-deals/');
+    return this.request('api/quick-deals/');
   }
 
   async incrementQuickDealViews(dealId) {
-    return this.request(`/quick-deals/${dealId}/view/`, {
+    return this.request(`api/quick-deals/${dealId}/view/`, {
       method: 'POST',
     });
   }
 
   async search(query, filters = {}) {
     const params = new URLSearchParams({ q: query, ...filters });
-    return this.request(`/search/?${params.toString()}`);
+    return this.request(`api/search/?${params.toString()}`);
   }
 
   async getTrendingProducts() {
-    return this.request('/trending/');
+    return this.request('api/trending/');
   }
 
   async getSellerAnalytics() {
-    return this.request('/sellers/analytics/');
+    return this.request('api/sellers/analytics/');
   }
 
   async getProductQuestions(productId) {
-    return this.request(`/products/${productId}/questions/`);
+    return this.request(`api/products/${productId}/questions/`);
   }
 
   async submitQuestionAnswers(productId, answers) {
-    return this.request(`/products/${productId}/questions/submit/`, {
+    return this.request(`api/products/${productId}/questions/submit/`, {
       method: 'POST',
       body: JSON.stringify({ answers }),
     });
   }
 
   async getSimpleNotifications() {
-    return this.request('/simple-notifications/');
+    return this.request('api/simple-notifications/');
   }
 
   async markSimpleNotificationRead(notificationId) {
-    return this.request(`/simple-notifications/${notificationId}/read/`, {
+    return this.request(`api/simple-notifications/${notificationId}/read/`, {
       method: 'POST',
     });
   }
 
   async markAllSimpleNotificationsRead() {
-    return this.request('/simple-notifications/read-all/', {
+    return this.request('api/simple-notifications/read-all/', {
       method: 'POST',
     });
   }
 
   async deleteSimpleNotification(notificationId) {
-    return this.request(`/simple-notifications/${notificationId}/delete/`, {
+    return this.request(`api/simple-notifications/${notificationId}/delete/`, {
       method: 'DELETE',
     });
   }
 
   async clearAllSimpleNotifications() {
-    return this.request('/simple-notifications/clear-all/', {
+    return this.request('api/simple-notifications/clear-all/', {
       method: 'DELETE',
     });
   }
 
   async getBuyerProfile() {
-    return this.request('/buyer/profile/');
+    return this.request('api/buyer/profile/');
   }
 
   async getOrderCount() {
-    return this.request('/orders/count/');
+    return this.request('api/orders/count/');
   }
 
   async searchProducts(query, category = 'all', location = '') {
@@ -677,19 +843,19 @@ class Api {
       queryParams.append('location', location.trim());
     }
     
-    const url = `/products/${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+    const url = `api/products/${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
     return this.request(url);
   }
 
   async changeEmail(newEmail, password) {
-    return this.request('/change-email/', {
+    return this.request('api/change-email/', {
       method: 'POST',
       body: JSON.stringify({ new_email: newEmail, password }),
     });
   }
 
   async changePassword(currentPassword, newPassword) {
-    return this.request('/change-password/', {
+    return this.request('api/change-password/', {
       method: 'POST',
       body: JSON.stringify({ 
         current_password: currentPassword, 
@@ -701,7 +867,7 @@ class Api {
   async getSellerProfile() {
     try {
       const token = this.getToken();
-      const response = await fetch(`${API_BASE_URL}/seller/profile/`, {
+      const response = await fetch(buildUrl('api/seller/profile/'), {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -722,14 +888,14 @@ class Api {
   }
 
   async updateSellerTrustRating(data) {
-    return this.request('/sellers/rate/', {
+    return this.request('api/sellers/rate/', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
   async getOrderDetail(orderId) {
-    return this.request(`/orders/${orderId}/`);
+    return this.request(`api/orders/${orderId}/`);
   }
 
   async rateSeller(ratingData) {
@@ -737,7 +903,7 @@ class Api {
     console.log('Sending rating data:', ratingData);
     
     try {
-      const response = await this.request('/sellers/rate/', {
+      const response = await this.request('api/sellers/rate/', {
         method: 'POST',
         body: JSON.stringify(ratingData),
       });
@@ -753,7 +919,7 @@ class Api {
   }
 
   async getSellerQuickDeals() {
-    return this.request('/seller/quick-deals/');
+    return this.request('api/seller/quick-deals/');
   }
 
   async createQuickDeal(dealData) {
@@ -769,7 +935,7 @@ class Api {
       }
       
       try {
-        const response = await fetch(`${API_BASE_URL}/seller/quick-deals/`, {
+        const response = await fetch(buildUrl('api/seller/quick-deals/'), {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -787,7 +953,7 @@ class Api {
         return { error: true, message: error.message };
       }
     } else {
-      return this.request('/seller/quick-deals/', {
+      return this.request('api/seller/quick-deals/', {
         method: 'POST',
         body: JSON.stringify(dealData),
       });
@@ -795,7 +961,7 @@ class Api {
   }
 
   async deleteQuickDeal(dealId) {
-    return this.request(`/seller/quick-deals/${dealId}/`, {
+    return this.request(`api/seller/quick-deals/${dealId}/`, {
       method: 'DELETE',
     });
   }
@@ -811,7 +977,7 @@ class Api {
       if (dealData.picture) formData.append('picture', dealData.picture);
       
       try {
-        const response = await fetch(`${API_BASE_URL}/seller/quick-deals/${dealId}/`, {
+        const response = await fetch(buildUrl(`api/seller/quick-deals/${dealId}/`), {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -829,7 +995,7 @@ class Api {
         return { error: true, message: error.message };
       }
     } else {
-      return this.request(`/seller/quick-deals/${dealId}/`, {
+      return this.request(`api/seller/quick-deals/${dealId}/`, {
         method: 'PUT',
         body: JSON.stringify(dealData),
       });
@@ -838,24 +1004,24 @@ class Api {
 
   async initiatePayment(orderId, phoneNumber) {
     const token = this.getToken();
-    return this.request('/payments/initiate/', {
+    return this.request('api/payments/initiate/', {
       method: 'POST',
       body: JSON.stringify({ order_id: orderId, phone_number: phoneNumber }),
     });
   }
 
   async checkOrderStatus(orderId) {
-    return this.request(`/payments/status/${orderId}/`);
+    return this.request(`api/payments/status/${orderId}/`);
   }
 
   async getChatInbox() {
-    return this.request('/chat/inbox/');
+    return this.request('api/chat/inbox/');
   }
 
   async getChatHistory(userId) {
     console.log(`Fetching chat history for user ID: ${userId}`);
     try {
-      const response = await this.request(`/chat/${userId}/`);
+      const response = await this.request(`api/chat/${userId}/`);
       console.log('Chat history response:', response);
       
       if (response.error) {
@@ -882,18 +1048,18 @@ class Api {
   }
 
   async getSellerUserID(sellerProfileId) {
-    return this.request(`/sellers/${sellerProfileId}/`);
+    return this.request(`api/sellers/${sellerProfileId}/`);
   }
 
   async sendChatMessage(recipientId, content) {
-    return this.request('/chat/send/', {
+    return this.request('api/chat/send/', {
       method: 'POST',
       body: JSON.stringify({ recipient_id: recipientId, content }),
     });
   }
 
   async markMessagesAsRead(senderId) {
-    return this.request('/chat/mark-read/', {
+    return this.request('api/chat/mark-read/', {
       method: 'POST',
       body: JSON.stringify({ sender_id: senderId }),
     });
@@ -943,7 +1109,7 @@ class Api {
 
   async getSellerUserInfo(sellerId) {
     console.log(`Getting user info for seller profile ID: ${sellerId}`);
-    const response = await this.request(`/sellers/${sellerId}/`);
+    const response = await this.request(`api/sellers/${sellerId}/`);
     
     if (!response.error && response.data) {
       const seller = response.data;
@@ -956,11 +1122,80 @@ class Api {
   }
 
   async markChatRead(userId) {
-    return this.request(`/chat/mark-read/${userId}/`, {
+    return this.request(`api/chat/mark-read/${userId}/`, {
       method: 'POST',
     });
   }
 
+  // ============ REPORT APIs ============
+  
+  async createReport(reportData) {
+    console.log('========== API: CREATE REPORT ==========');
+    console.log('Report data:', reportData);
+    
+    try {
+      const response = await this.request('api/reports/create/', {
+        method: 'POST',
+        body: JSON.stringify(reportData),
+      });
+      
+      console.log('Create report response:', response);
+      console.log('========== API REPORT COMPLETE ==========');
+      
+      return response;
+    } catch (error) {
+      console.error('Error in createReport:', error);
+      return { error: true, message: error.message };
+    }
+  }
+
+  async getReports(status = null) {
+    try {
+      let url = 'api/reports/';
+      if (status) {
+        url += `?status=${status}`;
+      }
+      
+      const response = await this.request(url);
+      return response;
+    } catch (error) {
+      console.error('Error in getReports:', error);
+      return { error: true, message: error.message };
+    }
+  }
+
+  async getMyReports() {
+    try {
+      const response = await this.request('api/reports/my/');
+      return response;
+    } catch (error) {
+      console.error('Error in getMyReports:', error);
+      return { error: true, message: error.message };
+    }
+  }
+
+  async getReportDetail(reportId) {
+    try {
+      const response = await this.request(`api/reports/${reportId}/`);
+      return response;
+    } catch (error) {
+      console.error('Error in getReportDetail:', error);
+      return { error: true, message: error.message };
+    }
+  }
+
+  async updateReportStatus(reportId, statusData) {
+    try {
+      const response = await this.request(`api/reports/${reportId}/update-status/`, {
+        method: 'PATCH',
+        body: JSON.stringify(statusData),
+      });
+      return response;
+    } catch (error) {
+      console.error('Error in updateReportStatus:', error);
+      return { error: true, message: error.message };
+    }
+  }
 }
 
 const api = new Api();

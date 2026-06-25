@@ -1,3 +1,4 @@
+// SellerNotfifcations.jsx - Fully updated with real backend notifications and enhanced click handling
 import { SellerCard, SellerCardContent } from './SellerCard';
 import { 
   Bell, CheckCircle, 
@@ -15,9 +16,11 @@ import {
   Truck,
   Clock,
   Eye,
-  ThumbsUp
+  ThumbsUp,
+  ArrowLeft,
+  ExternalLink
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import api from '../../utils/api';
 import { useNavigate } from 'react-router-dom';
 import { useSellerDarkMode } from '../../utils/SellerDarkModeContext';
@@ -25,121 +28,69 @@ import { useSellerDarkMode } from '../../utils/SellerDarkModeContext';
 const SellerNotifications = ({ setHasUnreadNotifications }) => {
   const { isDarkMode } = useSellerDarkMode();
   const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [isPolling, setIsPolling] = useState(false);
+  const [clickedNotificationId, setClickedNotificationId] = useState(null);
+  const pollingIntervalRef = useRef(null);
+  const isMountedRef = useRef(true);
   const navigate = useNavigate();
-
-  // Dummy static notifications for seller
-  const dummyNotifications = [
-    {
-      id: 'dummy-s-1',
-      type: 'order_received',
-      title: 'New Order Received',
-      message: 'You have received a new order #ORD-2024-001 for UGX 45,000. Please confirm the order.',
-      time: '2 hours ago',
-      read: false,
-      data: { order_id: 1001, amount: 45000, customer: 'John Doe' }
-    },
-    {
-      id: 'dummy-s-2',
-      type: 'order_confirmed',
-      title: 'Order Confirmed by Customer',
-      message: 'Customer has confirmed order #ORD-2024-002. Prepare for shipping.',
-      time: '3 hours ago',
-      read: false,
-      data: { order_id: 1002 }
-    },
-    {
-      id: 'dummy-s-3',
-      type: 'payment_received',
-      title: 'Payment Received',
-      message: 'Payment of UGX 32,500 for order #ORD-2024-003 has been received successfully.',
-      time: '5 hours ago',
-      read: true,
-      data: { order_id: 1003, amount: 32500 }
-    },
-    {
-      id: 'dummy-s-4',
-      type: 'product_sold',
-      title: 'Product Sold Out',
-      message: 'Your product "Wireless Headphones" has sold out. Time to restock!',
-      time: '1 day ago',
-      read: true,
-      data: { product_id: 789, product_name: 'Wireless Headphones' }
-    },
-    {
-      id: 'dummy-s-5',
-      type: 'new_review',
-      title: 'New Product Review',
-      message: 'A customer left a 5-star review on your product "Smart Watch".',
-      time: '1 day ago',
-      read: false,
-      data: { product_id: 456, rating: 5 }
-    },
-    {
-      id: 'dummy-s-6',
-      type: 'new_follower',
-      title: 'New Follower',
-      message: 'Jane Smith started following your store.',
-      time: '2 days ago',
-      read: true,
-      data: { follower_id: 789, follower_name: 'Jane Smith' }
-    },
-    {
-      id: 'dummy-s-7',
-      type: 'low_stock',
-      title: 'Low Stock Alert',
-      message: 'Your product "Leather Wallet" is running low on stock (only 3 left).',
-      time: '3 days ago',
-      read: false,
-      data: { product_id: 123, product_name: 'Leather Wallet', stock: 3 }
-    },
-    {
-      id: 'dummy-s-8',
-      type: 'withdrawal_success',
-      title: 'Withdrawal Successful',
-      message: 'Your withdrawal request of UGX 150,000 has been processed successfully.',
-      time: '4 days ago',
-      read: true,
-      data: { amount: 150000, reference: 'WDR-2024-001' }
-    }
-  ];
 
   // Icon mapping based on notification type
   const getIconForType = (type) => {
-    switch(type) {
-      case 'follow':
-        return { icon: Users, color: isDarkMode ? 'text-blue-400' : 'text-blue-500' };
-      case 'order':
-        return { icon: ShoppingCart, color: isDarkMode ? 'text-green-400' : 'text-green-500' };
-      case 'order_received':
-        return { icon: ShoppingCart, color: isDarkMode ? 'text-orange-400' : 'text-orange-500' };
-      case 'order_confirmed':
-        return { icon: CheckCircle, color: isDarkMode ? 'text-green-400' : 'text-green-600' };
-      case 'payment_received':
-        return { icon: DollarSign, color: isDarkMode ? 'text-emerald-400' : 'text-emerald-500' };
-      case 'product_sold':
-        return { icon: Package, color: isDarkMode ? 'text-purple-400' : 'text-purple-500' };
-      case 'new_review':
-        return { icon: Star, color: isDarkMode ? 'text-yellow-400' : 'text-yellow-500' };
-      case 'new_follower':
-        return { icon: Users, color: isDarkMode ? 'text-blue-400' : 'text-blue-500' };
-      case 'low_stock':
-        return { icon: AlertCircle, color: isDarkMode ? 'text-red-400' : 'text-red-500' };
-      case 'withdrawal_success':
-        return { icon: CreditCard, color: isDarkMode ? 'text-green-400' : 'text-green-500' };
-      case 'analytics':
-        return { icon: TrendingUp, color: isDarkMode ? 'text-purple-400' : 'text-purple-500' };
-      case 'customer':
-        return { icon: MessageSquare, color: isDarkMode ? 'text-indigo-400' : 'text-indigo-500' };
-      case 'system':
-        return { icon: CheckCircle, color: isDarkMode ? 'text-gray-400' : 'text-gray-500' };
-      case 'policy':
-        return { icon: AlertCircle, color: isDarkMode ? 'text-red-400' : 'text-red-500' };
-      case 'profile_update':
-        return { icon: User, color: isDarkMode ? 'text-teal-400' : 'text-teal-500' };
-      default:
-        return { icon: Bell, color: isDarkMode ? 'text-gray-400' : 'text-gray-500' };
-    }
+    const iconMap = {
+      'follow': { icon: Users, color: isDarkMode ? 'text-blue-400' : 'text-blue-500' },
+      'order': { icon: ShoppingCart, color: isDarkMode ? 'text-green-400' : 'text-green-500' },
+      'order_received': { icon: ShoppingCart, color: isDarkMode ? 'text-orange-400' : 'text-orange-500' },
+      'order_confirmed': { icon: CheckCircle, color: isDarkMode ? 'text-green-400' : 'text-green-600' },
+      'payment_received': { icon: DollarSign, color: isDarkMode ? 'text-emerald-400' : 'text-emerald-500' },
+      'product_sold': { icon: Package, color: isDarkMode ? 'text-purple-400' : 'text-purple-500' },
+      'new_review': { icon: Star, color: isDarkMode ? 'text-yellow-400' : 'text-yellow-500' },
+      'new_follower': { icon: Users, color: isDarkMode ? 'text-blue-400' : 'text-blue-500' },
+      'low_stock': { icon: AlertCircle, color: isDarkMode ? 'text-red-400' : 'text-red-500' },
+      'withdrawal_success': { icon: CreditCard, color: isDarkMode ? 'text-green-400' : 'text-green-500' },
+      'analytics': { icon: TrendingUp, color: isDarkMode ? 'text-purple-400' : 'text-purple-500' },
+      'customer': { icon: MessageSquare, color: isDarkMode ? 'text-indigo-400' : 'text-indigo-500' },
+      'system': { icon: CheckCircle, color: isDarkMode ? 'text-gray-400' : 'text-gray-500' },
+      'policy': { icon: AlertCircle, color: isDarkMode ? 'text-red-400' : 'text-red-500' },
+      'profile_update': { icon: User, color: isDarkMode ? 'text-teal-400' : 'text-teal-500' },
+      'review': { icon: Star, color: isDarkMode ? 'text-yellow-400' : 'text-yellow-500' },
+      'review_confirmation': { icon: Star, color: isDarkMode ? 'text-green-400' : 'text-green-500' },
+      'chat_message': { icon: MessageSquare, color: isDarkMode ? 'text-indigo-400' : 'text-indigo-500' },
+      'info': { icon: Bell, color: isDarkMode ? 'text-blue-400' : 'text-blue-500' },
+      'warning': { icon: AlertCircle, color: isDarkMode ? 'text-yellow-400' : 'text-yellow-500' },
+      'success': { icon: CheckCircle, color: isDarkMode ? 'text-green-400' : 'text-green-500' },
+    };
+    return iconMap[type] || { icon: Bell, color: isDarkMode ? 'text-gray-400' : 'text-gray-500' };
+  };
+
+  const getNotificationTitle = (type) => {
+    const titles = {
+      'follow': 'New Follower',
+      'follow_confirmation': 'Follow Confirmation',
+      'order': 'Order Update',
+      'order_received': 'New Order Received',
+      'order_confirmed': 'Order Confirmed',
+      'payment_received': 'Payment Received',
+      'payment_successful': 'Payment Successful',
+      'product_sold': 'Product Sold Out',
+      'new_review': 'New Review',
+      'new_follower': 'New Follower',
+      'low_stock': 'Low Stock Alert',
+      'withdrawal_success': 'Withdrawal Successful',
+      'analytics': 'Analytics Update',
+      'customer': 'Customer Message',
+      'system': 'System Notification',
+      'policy': 'Policy Update',
+      'profile_update': 'Profile Updated',
+      'review': 'New Review',
+      'review_confirmation': 'Thank You for Your Review',
+      'chat_message': 'New Message',
+      'info': 'Information',
+      'warning': 'Warning',
+      'success': 'Success',
+    };
+    return titles[type] || 'Notification';
   };
 
   // Format time
@@ -158,169 +109,320 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
     return date.toLocaleDateString();
   };
 
-  // Fetch notifications
-  const fetchNotifications = async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        navigate('/seller/login');
-        return;
-      }
+  // Fetch notifications from backend
+  const fetchNotifications = useCallback(async (force = false) => {
+    if (isPolling && !force) {
+      console.log('Already fetching, skipping...');
+      return;
+    }
 
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      navigate('/seller/login');
+      return;
+    }
+
+    setIsPolling(true);
+    setLoading(true);
+
+    try {
       const result = await api.getSimpleNotifications();
       
+      if (!isMountedRef.current) return;
+
       if (result.data && result.data.status === 'success') {
-        // Format real notifications from backend
-        const realNotifications = result.data.data.map(notif => {
-          // Set appropriate title based on type
-          let title = notif.title;
-          if (!title) {
-            if (notif.notification_type === 'profile_update') {
-              title = 'Profile Update';
-            } else if (notif.notification_type === 'follow') {
-              title = 'New Follower';
-            } else {
-              title = 'Notification';
-            }
+        const formattedNotifications = result.data.data.map(notif => {
+          let title = notif.title || getNotificationTitle(notif.notification_type);
+          
+          if (notif.notification_type === 'follow' && notif.data?.sender_name) {
+            title = `New Follower: ${notif.data.sender_name}`;
           }
           
           return {
             id: notif.id,
-            type: notif.notification_type,
+            type: notif.notification_type || 'system',
             title: title,
             message: notif.message,
             time: formatTime(notif.created_at),
-            read: notif.read,
-            data: notif.data
+            read: notif.read || false,
+            data: notif.data || {},
+            created_at: notif.created_at,
+            action_type: notif.data?.action_type || notif.notification_type,
+            action_url: notif.data?.action_url || null,
           };
         });
         
-        // Combine real notifications with dummy notifications
-        const unreadDummy = dummyNotifications.filter(d => !d.read);
-        const readDummy = dummyNotifications.filter(d => d.read);
+        setNotifications(formattedNotifications);
+        setUnreadCount(result.data.unread_count || 0);
         
-        // Combine all notifications
-        const allNotifications = [
-          ...realNotifications,
-          ...unreadDummy,
-          ...readDummy
-        ];
-        
-        setNotifications(allNotifications);
+        if (typeof setHasUnreadNotifications === 'function') {
+          setHasUnreadNotifications((result.data.unread_count || 0) > 0);
+        }
+      } else {
+        setNotifications([]);
+        setUnreadCount(0);
+        if (typeof setHasUnreadNotifications === 'function') {
+          setHasUnreadNotifications(false);
+        }
       }
     } catch (error) {
-      console.error('Error fetching notifications:', error);
-      // If error, still show dummy notifications
-      setNotifications(dummyNotifications);
+      console.error('Error fetching seller notifications:', error);
+      setNotifications([]);
+      setUnreadCount(0);
     } finally {
-      setLoading(false);
-    }
-  };
-
-  // Effect for fetching notifications on mount and polling
-  useEffect(() => {
-    fetchNotifications();
-    
-    // Poll for new notifications every 30 seconds
-    const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Separate effect for updating parent about unread count
-  useEffect(() => {
-    if (typeof setHasUnreadNotifications === 'function') {
-      const unreadCount = notifications.filter(notif => !notif.read).length;
-      setHasUnreadNotifications(unreadCount > 0);
-    }
-  }, [notifications, setHasUnreadNotifications]);
-
-  const markAsRead = async (id) => {
-    try {
-      // Only try to mark real notifications as read in backend
-      if (!id.toString().startsWith('dummy-')) {
-        await api.markSimpleNotificationRead(id);
+      if (isMountedRef.current) {
+        setLoading(false);
+        setIsPolling(false);
       }
+    }
+  }, [navigate, setHasUnreadNotifications, isPolling]);
+
+  // Mark a single notification as read
+  const markAsRead = useCallback(async (id) => {
+    try {
+      await api.markSimpleNotificationRead(id);
       
       setNotifications(prev =>
-        prev.map(notif => notif.id === id ? { ...notif, read: true } : notif)
+        prev.map(notif => 
+          notif.id === id ? { ...notif, read: true } : notif
+        )
       );
-    } catch (error) {
-      console.error('Error marking as read:', error);
-    }
-  };
-
-  const deleteNotification = async (id, e) => {
-    e.stopPropagation();
-    try {
-      // Only try to delete real notifications from backend
-      if (!id.toString().startsWith('dummy-')) {
-        await api.deleteSimpleNotification(id);
+      setUnreadCount(prev => Math.max(0, prev - 1));
+      
+      if (typeof setHasUnreadNotifications === 'function') {
+        const newUnreadCount = unreadCount - 1;
+        setHasUnreadNotifications(newUnreadCount > 0);
       }
-      
-      setNotifications(prev => prev.filter(notif => notif.id !== id));
     } catch (error) {
-      console.error('Error deleting notification:', error);
+      console.error('Error marking notification as read:', error);
     }
-  };
+  }, [unreadCount, setHasUnreadNotifications]);
 
-  const clearAllNotifications = async () => {
+  // Mark all notifications as read
+  const markAllRead = useCallback(async () => {
     try {
-      // Clear real notifications from backend
-      await api.clearAllSimpleNotifications();
-      
-      // Clear dummy notifications as well
-      setNotifications([]);
-    } catch (error) {
-      console.error('Error clearing notifications:', error);
-    }
-  };
-
-  const markAllRead = async () => {
-    try {
-      // Mark all real notifications as read in backend
       await api.markAllSimpleNotificationsRead();
       
-      // Mark all notifications as read in state (including dummy)
-      setNotifications(prev => prev.map(notif => ({ ...notif, read: true })));
+      setNotifications(prev => 
+        prev.map(notif => ({ ...notif, read: true }))
+      );
+      setUnreadCount(0);
+      
+      if (typeof setHasUnreadNotifications === 'function') {
+        setHasUnreadNotifications(false);
+      }
     } catch (error) {
       console.error('Error marking all as read:', error);
     }
-  };
+  }, [setHasUnreadNotifications]);
 
-  const unreadCount = notifications.filter(notif => !notif.read).length;
-
-  // Handle notification click for navigation
-  const handleNotificationClick = (notification) => {
-    markAsRead(notification.id);
-    
-    // Navigate based on notification type
-    if (notification.type === 'order_received' && notification.data?.order_id) {
-      navigate(`/seller/orders/${notification.data.order_id}`);
-    } else if (notification.type === 'order_confirmed' && notification.data?.order_id) {
-      navigate(`/seller/orders/${notification.data.order_id}`);
-    } else if (notification.type === 'payment_received' && notification.data?.order_id) {
-      navigate(`/seller/orders/${notification.data.order_id}`);
-    } else if (notification.type === 'product_sold' && notification.data?.product_id) {
-      navigate(`/seller/products/${notification.data.product_id}`);
-    } else if (notification.type === 'new_review' && notification.data?.product_id) {
-      navigate(`/seller/products/${notification.data.product_id}/reviews`);
-    } else if (notification.type === 'low_stock' && notification.data?.product_id) {
-      navigate(`/seller/products/${notification.data.product_id}/edit`);
-    } else if (notification.type === 'profile_update') {
-      navigate('/seller/settings');
-    } else if (notification.type === 'analytics') {
-      navigate('/seller/analytics');
+  // Delete a single notification
+  const deleteNotification = useCallback(async (id, e) => {
+    e.stopPropagation();
+    try {
+      await api.deleteSimpleNotification(id);
+      
+      const wasUnread = notifications.find(n => n.id === id)?.read === false;
+      
+      setNotifications(prev => prev.filter(notif => notif.id !== id));
+      if (wasUnread) {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+        if (typeof setHasUnreadNotifications === 'function') {
+          setHasUnreadNotifications(unreadCount - 1 > 0);
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting notification:', error);
     }
-  };
+  }, [notifications, unreadCount, setHasUnreadNotifications]);
 
-  if (loading) {
+  // Clear all notifications
+  const clearAllNotifications = useCallback(async () => {
+    try {
+      await api.clearAllSimpleNotifications();
+      
+      setNotifications([]);
+      setUnreadCount(0);
+      
+      if (typeof setHasUnreadNotifications === 'function') {
+        setHasUnreadNotifications(false);
+      }
+    } catch (error) {
+      console.error('Error clearing notifications:', error);
+    }
+  }, [setHasUnreadNotifications]);
+
+  // Handle notification click - enhanced with proper navigation and actions
+  const handleNotificationClick = useCallback(async (notification) => {
+    // Set clicked state for visual feedback
+    setClickedNotificationId(notification.id);
+    setTimeout(() => setClickedNotificationId(null), 500);
+
+    // Mark as read when clicked
+    if (!notification.read) {
+      await markAsRead(notification.id);
+    }
+
+    // Determine action based on notification type and data
+    const actionType = notification.action_type || notification.type;
+    const data = notification.data || {};
+    const actionUrl = notification.action_url;
+
+    // If there's a direct action URL, use it
+    if (actionUrl) {
+      navigate(actionUrl);
+      return;
+    }
+
+    // Otherwise, navigate based on type
+    switch (actionType) {
+      case 'order_received':
+      case 'order_confirmed':
+      case 'order':
+        if (data.order_id) {
+          navigate(`/seller/orders/${data.order_id}`);
+        } else if (data.order_number) {
+          navigate(`/seller/orders/${data.order_number}`);
+        } else {
+          navigate('/seller/orders');
+        }
+        break;
+
+      case 'payment_received':
+      case 'payment_successful':
+        if (data.order_id) {
+          navigate(`/seller/orders/${data.order_id}`);
+        } else {
+          navigate('/seller/orders');
+        }
+        break;
+
+      case 'product_sold':
+      case 'low_stock':
+        if (data.product_id) {
+          navigate(`/seller/products/${data.product_id}`);
+        } else if (data.product) {
+          navigate(`/seller/products/${data.product}`);
+        } else {
+          navigate('/seller/products');
+        }
+        break;
+
+      case 'new_review':
+      case 'review':
+      case 'review_confirmation':
+        if (data.product_id) {
+          navigate(`/product/${data.product_id}`);
+        } else if (data.review_id) {
+          navigate(`/seller/reviews/${data.review_id}`);
+        } else {
+          navigate('/seller/reviews');
+        }
+        break;
+
+      case 'profile_update':
+        navigate('/seller/settings');
+        break;
+
+      case 'analytics':
+        navigate('/seller/analytics');
+        break;
+
+      case 'follow':
+      case 'new_follower':
+        if (data.follower_id) {
+          navigate(`/profile/${data.follower_id}`);
+        } else if (data.sender_id) {
+          navigate(`/profile/${data.sender_id}`);
+        } else {
+          navigate('/seller/followers');
+        }
+        break;
+
+      case 'chat_message':
+        if (data.sender_id) {
+          navigate(`/seller/chat?userId=${data.sender_id}`);
+        } else if (data.chat_id) {
+          navigate(`/seller/chat/${data.chat_id}`);
+        } else {
+          navigate('/seller/chat');
+        }
+        break;
+
+      case 'withdrawal_success':
+        navigate('/seller/withdrawals');
+        break;
+
+      case 'info':
+      case 'system':
+      case 'warning':
+      case 'success':
+        // Just mark as read, no navigation needed
+        // Show a toast or snackbar if needed
+        break;
+
+      default:
+        // If no specific action, just mark as read
+        console.log('Notification clicked without specific action:', notification);
+        break;
+    }
+  }, [markAsRead, navigate]);
+
+  // Initial fetch and polling setup
+  useEffect(() => {
+    isMountedRef.current = true;
+    
+    fetchNotifications(true);
+
+    pollingIntervalRef.current = setInterval(() => {
+      fetchNotifications();
+    }, 30000);
+
+    const handleAuthChange = () => {
+      fetchNotifications(true);
+    };
+
+    const handleNewNotification = () => {
+      fetchNotifications(true);
+    };
+
+    const handleStorageChange = (e) => {
+      if (e.key === 'accessToken' || e.key === 'access' || e.key === 'user') {
+        fetchNotifications(true);
+      }
+    };
+
+    window.addEventListener('authStateChanged', handleAuthChange);
+    window.addEventListener('newNotification', handleNewNotification);
+    window.addEventListener('followCompleted', handleNewNotification);
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      isMountedRef.current = false;
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+      window.removeEventListener('authStateChanged', handleAuthChange);
+      window.removeEventListener('newNotification', handleNewNotification);
+      window.removeEventListener('followCompleted', handleNewNotification);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [fetchNotifications]);
+
+  // Effect to update parent when notifications change
+  useEffect(() => {
+    if (typeof setHasUnreadNotifications === 'function') {
+      setHasUnreadNotifications(unreadCount > 0);
+    }
+  }, [unreadCount, setHasUnreadNotifications]);
+
+  if (loading && notifications.length === 0) {
     return (
-      <div className={`p-6 max-w-2xl mx-auto min-h-screen ${isDarkMode ? 'bg-gray-900' : ''}`}>
+      <div className={`p-6 max-w-2xl mx-auto min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <div className="animate-pulse">
           <div className={`h-8 rounded w-48 mb-4 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
           <div className="space-y-3">
-            {[1,2,3].map(i => (
+            {[1, 2, 3].map(i => (
               <div key={i} className={`h-24 rounded ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
             ))}
           </div>
@@ -331,18 +433,28 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
 
   return (
     <div className={`p-6 max-w-2xl mx-auto min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className={`text-[23px] font-bold mb-2 flex items-center ${
-              isDarkMode ? 'text-gray-100' : 'text-black'
-            }`}>
-              <Bell className={`w-6 h-6 mr-2 ${isDarkMode ? 'text-blue-400' : 'text-blue-500'}`} />
-              Seller Notifications
-            </p>
-            <p className={isDarkMode ? 'text-gray-300' : 'text-black'}>
-              {unreadCount > 0 ? `${unreadCount} unread notifications` : 'All caught up!'}
-            </p>
+      {/* Header with back button */}
+      <div className="mb-2">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center">
+            <button
+              onClick={() => navigate('/seller-home')}
+              className={`mr-4 p-2 rounded-full transition-colors ${
+                isDarkMode 
+                  ? 'hover:bg-gray-800 text-gray-400' 
+                  : 'hover:bg-gray-200 text-gray-600'
+              }`}
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div>
+              <p className={`text-[23px] font-bold flex items-center ${
+                isDarkMode ? 'text-gray-100' : 'text-gray-900'
+              }`}>
+                <Bell className={`w-6 h-6 mr-2 ${isDarkMode ? 'text-blue-400' : 'text-blue-500'}`} />
+                Notifications
+              </p>
+            </div>
           </div>
           {notifications.length > 0 && (
             <button
@@ -355,145 +467,212 @@ const SellerNotifications = ({ setHasUnreadNotifications }) => {
             </button>
           )}
         </div>
+        <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
+          {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}` : 'All caught up!'}
+        </p>
       </div>
 
       {notifications.length === 0 ? (
-        <SellerCard isDarkMode={isDarkMode}>
+        <SellerCard>
           <SellerCardContent className="p-8 text-center">
-            <Bell className={`w-12 h-12 mx-auto mb-4 ${
-              isDarkMode ? 'text-gray-600' : 'text-gray-400'
-            }`} />
-            <h3 className={`text-lg font-semibold mb-2 ${
-              isDarkMode ? 'text-gray-200' : 'text-black'
-            }`}>No notifications</h3>
+            <Bell className={`w-12 h-12 mx-auto mb-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+            <h3 className={`text-lg font-semibold mb-2 ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>No notifications</h3>
             <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
               You're all caught up! Check back later for updates.
             </p>
           </SellerCardContent>
         </SellerCard>
       ) : (
-        <div className="space-y-3">
-          {notifications.map((notification) => {
-            const { icon: IconComponent, color } = getIconForType(notification.type);
-            return (
-              <SellerCard
-                key={notification.id}
-                isDarkMode={isDarkMode}
-                className={`hover:shadow-md transition-shadow cursor-pointer ${
-                  !notification.read 
-                    ? isDarkMode 
-                      ? 'border-l-4 border-blue-500' 
-                      : 'border-l-4 border-blue-500'
-                    : ''
-                }`}
-                onClick={() => handleNotificationClick(notification)}
-              >
-                <SellerCardContent className="p-4">
-                  <div className="flex items-start">
-                    <div className={`p-2 rounded-full ${color} bg-opacity-20 mr-4`}>
-                      <IconComponent className="w-5 h-5" />
-                    </div>
-                    
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className={`font-semibold ${
-                            isDarkMode ? 'text-gray-200' : 'text-black'
-                          }`}>{notification.title}</h3>
-                          <p className={`mt-1 ${
-                            isDarkMode ? 'text-gray-300' : 'text-black'
-                          }`}>{notification.message}</p>
-                          <p className={`text-sm mt-2 ${
-                            isDarkMode ? 'text-gray-500' : 'text-gray-500'
-                          }`}>{notification.time}</p>
-                          
-                          {/* Show additional info for specific notification types */}
-                          {notification.type === 'order_received' && notification.data?.amount && (
-                            <div className="mt-2 flex items-center gap-2">
-                              <span className={`text-xs px-2 py-1 rounded-full ${
-                                isDarkMode 
-                                  ? 'bg-orange-900/30 text-orange-400' 
-                                  : 'bg-orange-100 text-orange-700'
-                              }`}>
-                                UGX {notification.data.amount.toLocaleString()}
-                              </span>
-                              {notification.data?.customer && (
-                                <span className={`text-xs px-2 py-1 rounded-full ${
+        <>
+          <div className="space-y-3">
+            {notifications.map((notification) => {
+              const { icon: IconComponent, color } = getIconForType(notification.type);
+              const isClicked = clickedNotificationId === notification.id;
+              
+              return (
+                <SellerCard
+                  key={notification.id}
+                  className={`hover:shadow-md transition-all duration-300 cursor-pointer transform ${
+                    isClicked ? 'scale-[0.98]' : 'scale-100'
+                  } ${
+                    !notification.read 
+                      ? isDarkMode 
+                        ? 'border-l-4 border-blue-500 bg-blue-900/10' 
+                        : 'border-l-4 border-blue-500 bg-blue-50/50'
+                      : isDarkMode
+                        ? 'hover:bg-gray-800/50'
+                        : 'hover:bg-gray-50'
+                  }`}
+                  onClick={() => handleNotificationClick(notification)}
+                >
+                  <SellerCardContent className="p-4">
+                    <div className="flex items-start">
+                      <div className={`p-2 rounded-full bg-opacity-20 mr-4 flex-shrink-0 ${color}`}>
+                        <IconComponent className="w-5 h-5" />
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <h3 className={`font-semibold ${isDarkMode ? 'text-gray-100' : 'text-black'} flex items-center gap-2`}>
+                              {notification.title}
+                              {!notification.read && (
+                                <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${
                                   isDarkMode 
-                                    ? 'bg-blue-900/30 text-blue-400' 
+                                    ? 'bg-blue-500/20 text-blue-400' 
                                     : 'bg-blue-100 text-blue-700'
                                 }`}>
-                                  {notification.data.customer}
+                                  New
+                                </span>
+                              )}
+                            </h3>
+                            <p className={`mt-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} break-words`}>
+                              {notification.message}
+                            </p>
+                            <div className="flex items-center gap-2 mt-2 flex-wrap">
+                              <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                {notification.time}
+                              </p>
+                              {!notification.read && (
+                                <span className={`text-xs ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                                  • Click to mark as read
                                 </span>
                               )}
                             </div>
-                          )}
-                          
-                          {notification.type === 'low_stock' && notification.data?.product_name && (
-                            <span className={`inline-block mt-2 text-xs px-2 py-1 rounded-full ${
+                            
+                            {/* Additional info for specific notification types */}
+                            {notification.type === 'order_received' && notification.data?.amount && (
+                              <div className="mt-2 flex items-center gap-2 flex-wrap">
+                                <span className={`text-xs px-2 py-1 rounded-full ${
+                                  isDarkMode 
+                                    ? 'bg-orange-900/30 text-orange-400' 
+                                    : 'bg-orange-100 text-orange-700'
+                                }`}>
+                                  UGX {notification.data.amount.toLocaleString()}
+                                </span>
+                                {notification.data?.customer && (
+                                  <span className={`text-xs px-2 py-1 rounded-full ${
+                                    isDarkMode 
+                                      ? 'bg-blue-900/30 text-blue-400' 
+                                      : 'bg-blue-100 text-blue-700'
+                                  }`}>
+                                    {notification.data.customer}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                            
+                            {notification.type === 'low_stock' && notification.data?.product_name && (
+                              <span className={`inline-block mt-2 text-xs px-2 py-1 rounded-full ${
+                                isDarkMode 
+                                  ? 'bg-red-900/30 text-red-400' 
+                                  : 'bg-red-100 text-red-700'
+                              }`}>
+                                {notification.data.product_name} - {notification.data.stock || 0} left
+                              </span>
+                            )}
+                            
+                            {notification.type === 'new_review' && notification.data?.rating && (
+                              <span className={`inline-block mt-2 text-xs px-2 py-1 rounded-full ${
+                                isDarkMode 
+                                  ? 'bg-yellow-900/30 text-yellow-400' 
+                                  : 'bg-yellow-100 text-yellow-700'
+                              }`}>
+                                {notification.data.rating} ★ Rating
+                              </span>
+                            )}
+                            
+                            {notification.type === 'follow' && notification.data?.follower_name && (
+                              <span className={`inline-block mt-2 text-xs px-2 py-1 rounded-full ${
+                                isDarkMode 
+                                  ? 'bg-blue-900/30 text-blue-400' 
+                                  : 'bg-blue-100 text-blue-700'
+                              }`}>
+                                @{notification.data.follower_name}
+                              </span>
+                            )}
+                          </div>
+                          <button
+                            onClick={(e) => deleteNotification(notification.id, e)}
+                            className={`p-1 ml-2 flex-shrink-0 transition-colors ${
                               isDarkMode 
-                                ? 'bg-red-900/30 text-red-400' 
-                                : 'bg-red-100 text-red-700'
-                            }`}>
-                              {notification.data.product_name} - {notification.data.stock} left
-                            </span>
-                          )}
-                          
-                          {notification.type === 'new_review' && notification.data?.rating && (
-                            <span className={`inline-block mt-2 text-xs px-2 py-1 rounded-full ${
-                              isDarkMode 
-                                ? 'bg-yellow-900/30 text-yellow-400' 
-                                : 'bg-yellow-100 text-yellow-700'
-                            }`}>
-                              {notification.data.rating} ★ Rating
-                            </span>
-                          )}
+                                ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-700 rounded' 
+                                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded'
+                            }`}
+                            aria-label="Delete notification"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
                         </div>
-                        <button
-                          onClick={(e) => deleteNotification(notification.id, e)}
-                          className={`p-1 ml-2 ${
-                            isDarkMode 
-                              ? 'text-gray-600 hover:text-gray-400' 
-                              : 'text-gray-400 hover:text-gray-600'
-                          }`}
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
                       </div>
+
+                      {!notification.read && (
+                        <div className="ml-2 flex-shrink-0 self-start mt-2">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                        </div>
+                      )}
                     </div>
-
-                    {!notification.read && (
-                      <div className="ml-2">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      </div>
-                    )}
-                  </div>
-                </SellerCardContent>
-              </SellerCard>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Quick Actions */}
-      {notifications.length > 0 && (
-        <div className={`mt-8 p-4 rounded-xl border ${
-          isDarkMode 
-            ? 'bg-blue-900/20 border-blue-800' 
-            : 'bg-blue-50 border-blue-100'
-        }`}>
-          <h3 className={`font-medium mb-2 ${
-            isDarkMode ? 'text-gray-200' : 'text-black'
-          }`}>Quick Actions</h3>
-          <div className="flex gap-2 flex-wrap">
-            <button
-              onClick={markAllRead}
-              className="px-3 py-1 bg-blue-600 text-white rounded-full text-sm hover:bg-blue-700 transition-colors"
-            >
-              Mark All Read
-            </button>
+                  </SellerCardContent>
+                </SellerCard>
+              );
+            })}
           </div>
-        </div>
+
+          {/* Quick Actions */}
+          {notifications.length > 0 && (
+            <div className={`mt-8 p-4 rounded-xl border transition-colors ${
+              isDarkMode 
+                ? 'bg-blue-900/20 border-blue-800' 
+                : 'bg-blue-50 border-blue-100'
+            }`}>
+              <h3 className={`font-medium mb-2 ${isDarkMode ? 'text-gray-200' : 'text-black'}`}>
+                Quick Actions
+              </h3>
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  onClick={markAllRead}
+                  className="px-3 py-1 bg-blue-600 text-white rounded-full text-sm hover:bg-blue-700 transition-colors flex items-center gap-1"
+                >
+                  <CheckCircle className="w-3 h-3" />
+                  Mark All Read
+                </button>
+                <button
+                  onClick={() => navigate('/seller/orders')}
+                  className={`px-3 py-1 border rounded-full text-sm transition-colors flex items-center gap-1 ${
+                    isDarkMode 
+                      ? 'border-blue-600 text-blue-400 hover:bg-blue-600 hover:text-white' 
+                      : 'border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white'
+                  }`}
+                >
+                  <ShoppingCart className="w-3 h-3" />
+                  View Orders
+                </button>
+                <button
+                  onClick={() => navigate('/seller/products')}
+                  className={`px-3 py-1 border rounded-full text-sm transition-colors flex items-center gap-1 ${
+                    isDarkMode 
+                      ? 'border-green-600 text-green-400 hover:bg-green-600 hover:text-white' 
+                      : 'border-green-600 text-green-600 hover:bg-green-600 hover:text-white'
+                  }`}
+                >
+                  <Package className="w-3 h-3" />
+                  Manage Products
+                </button>
+                <button
+                  onClick={() => navigate('/seller/analytics')}
+                  className={`px-3 py-1 border rounded-full text-sm transition-colors flex items-center gap-1 ${
+                    isDarkMode 
+                      ? 'border-purple-600 text-purple-400 hover:bg-purple-600 hover:text-white' 
+                      : 'border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white'
+                  }`}
+                >
+                  <TrendingUp className="w-3 h-3" />
+                  Analytics
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

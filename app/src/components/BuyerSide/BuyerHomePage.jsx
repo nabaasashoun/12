@@ -1,11 +1,13 @@
-// BuyerHomePage.jsx - Updated with unified Header containing Settings navigation
+// BuyerHomePage.jsx - Updated with fixed filtering and random organization
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BuyerCard, BuyerCardContent } from './BuyerCard';
 import {
   Heart, MessageSquare, Star, Bookmark, Plus, Settings,
   MoreHorizontal, X, ChevronUp, ChevronDown, Share2,
-  Search, MapPin, Filter, Check
+  Search, MapPin, Filter, Check, Flag, ArrowLeft,
+  ArrowUp, Sliders, DollarSign, TrendingUp, Clock,
+  Award, Users, ChevronRight, Trash2, Sparkles, RefreshCw
 } from 'lucide-react';
 import api from '../../utils/api';
 import { useCart } from '../../utils/CartContext';
@@ -15,8 +17,16 @@ import Loader from '../UISkeleton/Loader';
 import { usePageLoading } from '../../utils/PageLoadingContext';
 import { useDarkMode } from '../../utils/BuyerDarkModeContext';
 import ShareModal from './ShareModal';
+import ProductMetaTags from './ProductMetaTags';
+import ReportModal from './ReportModal';
 import { getProductShareLink, copyToClipboard } from '../../utils/shareUtils';
 import Header from './Header';
+
+// API Base URL - defined once at the top
+const API_BASE_URL = 'http://localhost:8000';
+
+// Local storage key for recent searches
+const RECENT_SEARCHES_KEY = 'recentSearches';
 
 const formatCurrency = (amount) => {
   return `UGX ${parseFloat(amount).toLocaleString('en-UG')}`;
@@ -60,6 +70,59 @@ const sampleQuickDeals = [
   { id: 2, title: 'Fitness', product: 'Smart Tracker', image: '/sample2.jpg', color: 'bg-pink-100 dark:bg-pink-900/30' }
 ];
 
+// Filter options for the "Others" modal
+const FILTER_OPTIONS = {
+  price: {
+    label: 'Price Range',
+    options: [
+      { value: 'all', label: 'All Prices' },
+      { value: 'under_500k', label: 'Under 500,000 UGX' },
+      { value: '500k_1m', label: '500,000 - 1,000,000 UGX' },
+      { value: '1m_5m', label: '1,000,000 - 5,000,000 UGX' },
+      { value: 'above_5m', label: 'Above 5,000,000 UGX' },
+    ]
+  },
+  rating: {
+    label: 'Minimum Rating',
+    options: [
+      { value: 0, label: 'Any Rating' },
+      { value: 1, label: '⭐ 1+ Stars' },
+      { value: 2, label: '⭐⭐ 2+ Stars' },
+      { value: 3, label: '⭐⭐⭐ 3+ Stars' },
+      { value: 4, label: '⭐⭐⭐⭐ 4+ Stars' },
+      { value: 5, label: '⭐⭐⭐⭐⭐ 5 Stars' },
+    ]
+  },
+  stock: {
+    label: 'Stock Status',
+    options: [
+      { value: 'all', label: 'All Products' },
+      { value: 'in_stock', label: 'In Stock' },
+      { value: 'low_stock', label: 'Low Stock (< 10)' },
+      { value: 'out_of_stock', label: 'Out of Stock' },
+    ]
+  }
+};
+
+const SORT_OPTIONS = [
+  { value: 'newest', label: 'Newest First', icon: Clock },
+  { value: 'price_low', label: 'Price: Low to High', icon: DollarSign },
+  { value: 'price_high', label: 'Price: High to Low', icon: DollarSign },
+  { value: 'rating', label: 'Best Rating', icon: Award },
+  { value: 'popularity', label: 'Most Popular', icon: TrendingUp },
+  { value: 'relevance', label: 'Relevance', icon: Sparkles },
+];
+
+// Fisher-Yates shuffle algorithm for randomizing array
+const shuffleArray = (array) => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 const BuyerHomePage = () => {
   const { isDarkMode } = useDarkMode();
   const [dropdownOpen, setDropdownOpen] = useState(null);
@@ -94,8 +157,93 @@ const BuyerHomePage = () => {
   // Filter state
   const [filterCategory, setFilterCategory] = useState('');
   const [filterLocation, setFilterLocation] = useState('');
+  const [filterSort, setFilterSort] = useState('newest'); // Default to newest
+  const [filterPrice, setFilterPrice] = useState('all');
+  const [filterRating, setFilterRating] = useState(0);
+  const [filterStock, setFilterStock] = useState('all');
+  const [isFilterApplied, setIsFilterApplied] = useState(false);
 
-  // fetchProductsWithParams with location support
+  // Others filter modal state
+  const [othersModalOpen, setOthersModalOpen] = useState(false);
+  const [tempFilters, setTempFilters] = useState({
+    price: 'all',
+    rating: 0,
+    stock: 'all',
+    sort: 'newest'
+  });
+
+  // Recent searches state
+  const [recentSearches, setRecentSearches] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchBarFocused, setSearchBarFocused] = useState(false);
+  const searchInputRef = useRef(null);
+
+  // State for the product being shared via meta tags
+  const [sharingProduct, setSharingProduct] = useState(null);
+
+  // Report modal state
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportingSellerId, setReportingSellerId] = useState(null);
+  const [reportingSellerName, setReportingSellerName] = useState('');
+  const [reportingProductId, setReportingProductId] = useState(null);
+  const [reportingProductName, setReportingProductName] = useState('');
+
+  // Back to top button state
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  // Load recent searches from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(RECENT_SEARCHES_KEY);
+      if (saved) {
+        setRecentSearches(JSON.parse(saved));
+      }
+    } catch (e) {
+      console.error('Error loading recent searches:', e);
+    }
+  }, []);
+
+  // Save recent searches to localStorage
+  const saveRecentSearches = useCallback((searches) => {
+    try {
+      localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(searches));
+      setRecentSearches(searches);
+    } catch (e) {
+      console.error('Error saving recent searches:', e);
+    }
+  }, []);
+
+  // Add search term to recent searches
+  const addRecentSearch = useCallback((term) => {
+    if (!term || !term.trim()) return;
+    const trimmed = term.trim();
+    const updated = [
+      trimmed,
+      ...recentSearches.filter(s => s.toLowerCase() !== trimmed.toLowerCase())
+    ].slice(0, 5);
+    saveRecentSearches(updated);
+  }, [recentSearches, saveRecentSearches]);
+
+  // Clear all recent searches
+  const clearRecentSearches = useCallback(() => {
+    saveRecentSearches([]);
+  }, [saveRecentSearches]);
+
+  // Back to top scroll handler
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 500);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+// BuyerHomePage.jsx - Fully updated fetchProductsWithParams
+  // Fully Updated fetchProductsWithParams
   const fetchProductsWithParams = useCallback(async (params = {}) => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
@@ -105,79 +253,233 @@ const BuyerHomePage = () => {
 
     setIsPageLoading(true);
     setIsLoading(true);
-    try {
-      let productsResult;
-      const hasSearch = params.search && params.search.trim() !== '';
-      const hasCategory = params.category && params.category !== 'all' && params.category !== '';
-      const hasLocation = params.location && params.location.trim() !== '';
-      
-      productsResult = await api.searchProducts({
-        search: params.search || '',
-        category: params.category || '',
-        location: params.location || '',
-      });
-      
-      const products = productsResult.data || [];
 
+    try {
+      const queryParams = new URLSearchParams();
+
+      // Search text
+      if (params.search?.trim()) {
+        queryParams.append('search', params.search.trim());
+      }
+
+      // Category
+      if (params.category && params.category !== 'all' && params.category !== '') {
+        queryParams.append('category', params.category);
+      }
+
+      // Location
+      if (params.location?.trim()) {
+        queryParams.append('location', params.location.trim());
+      }
+
+      // Price Range
+      if (params.price && params.price !== 'all') {
+        queryParams.append('price_range', params.price);
+      }
+
+      // Minimum Rating
+      if (params.rating && params.rating > 0) {
+        queryParams.append('min_rating', params.rating);
+      }
+
+      // Stock Status
+      if (params.stock && params.stock !== 'all') {
+        queryParams.append('stock_status', params.stock);
+      }
+
+      // Sort (Backend handles most, frontend handles 'random')
+      // Always send sort unless it's the default 'newest' (optional)
+      if (params.sort && params.sort !== 'newest') {
+        queryParams.append('sort', params.sort);
+      }
+
+      // Pagination (optional for future use)
+      if (params.page) queryParams.append('page', params.page);
+      if (params.page_size) queryParams.append('page_size', params.page_size);
+
+      // Build final URL
+      let url = `${API_BASE_URL}/api/products/search/`;
+      if (queryParams.toString()) {
+        url += `?${queryParams.toString()}`;
+      }
+
+      console.log('🔍 Fetching products from:', url);
+      console.log('📋 Params sent:', Object.fromEntries(queryParams));
+      console.log('🔍 Final fetch params:', {
+        search: params.search,
+        category: params.category,
+        location: params.location,
+        price: params.price,
+        rating: params.rating,
+        stock: params.stock,
+        sort: params.sort
+      });
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        console.error(`❌ API Error ${response.status}: ${response.statusText}`);
+        throw new Error(`Failed to fetch products: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('📦 Products API response:', result);
+
+      // Extract products
+      let products = result.data || result.results || result || [];
+
+      // Handle random sorting on frontend
+      if (params.sort === 'random' || !params.sort) {
+        products = shuffleArray(products);
+      }
+
+      // Transform products for UI
       const transformedPosts = products.map(product => {
-        const productId = product.id;
         const sellerName = product.seller_name || product.seller?.name || 'Seller';
         const storeDisplay = `${sellerName}'s store`;
 
         return {
-          id: productId,
+          id: product.id,
           sellerName: storeDisplay,
-          sellerUsername: product.seller?.user?.username || 'seller',
-          authorAvatar: sellerName.charAt(0),
+          sellerUsername: product.seller?.user?.username || product.seller?.username || 'seller',
+          authorAvatar: sellerName.charAt(0).toUpperCase(),
           price: formatCurrency(product.unit_price || 0),
           images: product.images && product.images.length > 0
             ? product.images
             : (product.product_photo ? [product.product_photo] : ['/sample1.jpg']),
           product: product.name || 'Product',
           content: product.description || 'No description available',
-          rating: Math.round(product.rating_magnitude) || 0,
+          rating: Math.round(product.rating_magnitude || 0),
           ratingCount: product.rating_number || 0,
           commentCount: product.comment_count || 0,
           like_count: product.like_count || 0,
-          sellerId: product.seller,
-          sellerUserId: product.seller_user_id,
+          sellerId: product.seller?.id || product.seller,
+          sellerUserId: product.seller_user_id || product.seller?.user?.id,
           unit_price: product.unit_price,
           location: product.location || product.seller?.location || '',
+          description: product.description || '',
+          stock_quantity: product.stock_quantity || 0,
+          category: product.category,
+          date_of_post: product.date_of_post,
         };
       });
 
       setPosts(transformedPosts);
-      if (transformedPosts.length === 0 && (hasSearch || hasCategory || hasLocation)) {
-        setSearchToast('No products found matching your criteria.');
+
+      // Detect if any filter is active
+      const hasActiveFilter = !!(
+        params.search?.trim() ||
+        (params.category && params.category !== 'all' && params.category !== '') ||
+        params.location?.trim() ||
+        (params.price && params.price !== 'all') ||
+        (params.rating && params.rating > 0) ||
+        (params.stock && params.stock !== 'all') ||
+        (params.sort && params.sort !== 'newest')   // ← Changed from 'random'
+      );
+
+      setIsFilterApplied(hasActiveFilter);
+
+      // Toast messages
+      if (transformedPosts.length === 0) {
+        setSearchToast(hasActiveFilter 
+          ? 'No products found matching your filters.' 
+          : 'No products available at the moment.');
       } else {
         setSearchToast('');
       }
+
     } catch (error) {
-      console.error('Error fetching data:', error);
-      setPosts(samplePosts);
+      console.error('❌ Error fetching products:', error);
+      setPosts(shuffleArray(samplePosts));
+      setSearchToast('Failed to load products. Showing sample data.');
     } finally {
       setIsLoading(false);
       setIsPageLoading(false);
     }
   }, [navigate, setIsPageLoading]);
 
-  // Handle search from Header
   const handleSearch = useCallback((query, category, location) => {
     setFilterCategory(category || '');
     setFilterLocation(location || '');
-    fetchProductsWithParams({ search: query, category, location });
-  }, [fetchProductsWithParams]);
 
-  // Handle filter change
+    if (query?.trim()) {
+      addRecentSearch(query.trim());
+    }
+
+    fetchProductsWithParams({
+      search: query || '',
+      category: category || '',
+      location: location || '',
+      price: filterPrice,
+      rating: filterRating,
+      stock: filterStock,
+      sort: filterSort
+    });
+  }, [fetchProductsWithParams, filterPrice, filterRating, filterStock, filterSort, addRecentSearch]);
+
   const handleFilterChange = useCallback((filters) => {
+    console.log('📨 Filter change from Header:', filters);
+
     setFilterCategory(filters.category || '');
     setFilterLocation(filters.location || '');
+
+    // IMPORTANT: Use ALL values from Header, do NOT fall back to old local state
     fetchProductsWithParams({
       search: filters.search || '',
       category: filters.category || '',
       location: filters.location || '',
+      price: filters.price || 'all',
+      rating: filters.rating || 0,
+      stock: filters.stock || 'all',
+      sort: filters.sort || 'random'
     });
-  }, [fetchProductsWithParams]);
+  }, [fetchProductsWithParams]);   // ← Minimal dependencies
+
+  const applyAllFilters = useCallback(() => {
+    console.log('🚀 Applying Advanced Filters from Modal:', tempFilters);
+
+    setFilterPrice(tempFilters.price);
+    setFilterRating(tempFilters.rating);
+    setFilterStock(tempFilters.stock);
+    setFilterSort(tempFilters.sort);
+
+    setOthersModalOpen(false);
+
+    fetchProductsWithParams({
+      search: searchQuery?.trim() || '',
+      category: filterCategory || '',
+      location: filterLocation || '',
+      price: tempFilters.price,
+      rating: tempFilters.rating,
+      stock: tempFilters.stock,
+      sort: tempFilters.sort
+    });
+  }, [tempFilters, fetchProductsWithParams, searchQuery, filterCategory, filterLocation]);
+
+  // Handle search input change for recent searches
+  const handleSearchInputChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleSearchInputFocus = () => {
+    setSearchBarFocused(true);
+  };
+
+  const handleSearchInputBlur = () => {
+    setTimeout(() => setSearchBarFocused(false), 200);
+  };
+
+  const handleRecentSearchClick = (term) => {
+    setSearchQuery(term);
+    setSearchBarFocused(false);
+    handleSearch(term, filterCategory, filterLocation);
+  };
 
   // Clear toasts after 3 seconds
   useEffect(() => {
@@ -215,8 +517,15 @@ const BuyerHomePage = () => {
     fetchCategories();
   }, []);
 
+  // Initial load - random order
+// Initial load - only once (empty dependency array is important!)
+// Initial load - ONLY ONCE (critical fix)
+// Initial load - default to newest (no more random)
   useEffect(() => {
-    fetchProductsWithParams();
+    console.log('🏠 Initial load with newest sort');
+    fetchProductsWithParams({ 
+      sort: 'newest' 
+    });
   }, [fetchProductsWithParams]);
 
   const fetchQuickDeals = useCallback(async () => {
@@ -236,7 +545,6 @@ const BuyerHomePage = () => {
         }));
         setQuickDeals(transformedDeals);
       } else {
-        console.warn('Unexpected API response format, using sample data', result);
         setQuickDeals(sampleQuickDeals);
       }
     } catch (error) {
@@ -351,6 +659,19 @@ const BuyerHomePage = () => {
   };
 
   const handleShareTo = (post) => {
+    const productForSharing = {
+      id: post.id,
+      name: post.product,
+      product: post.product,
+      price: post.price,
+      images: post.images,
+      sellerName: post.sellerName,
+      sellerId: post.sellerId,
+      description: post.content,
+      unit_price: parseFloat(post.price.replace(/[^0-9.]/g, '')) || 0,
+    };
+    
+    setSharingProduct(productForSharing);
     setSelectedProduct({
       id: post.id,
       name: post.product,
@@ -362,6 +683,15 @@ const BuyerHomePage = () => {
     });
     setShareModalOpen(true);
     closeDropdown();
+  };
+
+  const handleReportSeller = (post) => {
+    closeDropdown();
+    setReportingSellerId(post.sellerId);
+    setReportingSellerName(post.sellerName);
+    setReportingProductId(post.id);
+    setReportingProductName(post.product);
+    setReportModalOpen(true);
   };
 
   const toggleDescriptionExpansion = (postId, event) => {
@@ -403,9 +733,13 @@ const BuyerHomePage = () => {
 
   const dropdownItems = useCallback((post) => {
     return [
-      { label: 'Report', action: () => { closeDropdown(); } },
+      { 
+        label: 'Report Seller', 
+        action: () => handleReportSeller(post)
+      },
       { 
         label: 'Message Seller', 
+        icon: MessageSquare,
         action: async () => {
           closeDropdown();
           let targetUserId = post?.sellerUserId;
@@ -430,18 +764,269 @@ const BuyerHomePage = () => {
           }
         }
       },
-      { label: 'Go to Post', action: () => { closeDropdown(); navigate(`/product/${post.id}`); } },
+      { label: 'Go to Post', icon: null, action: () => { closeDropdown(); navigate(`/product/${post.id}`); } },
       { 
         label: 'Share to', 
+        icon: Share2,
         action: () => handleShareTo(post)
       },
       { 
         label: 'Copy Link', 
+        icon: null,
         action: () => handleCopyLink(post.id)
       },
-      { label: 'Cancel', action: closeDropdown },
+      { label: 'Cancel', icon: null, action: closeDropdown },
     ];
   }, [navigate, startChat, handleShareTo, handleCopyLink]);
+
+  // Get the product image for meta tags
+  const getProductImage = (product) => {
+    if (!product) return null;
+    return product.images && product.images.length > 0 
+      ? product.images[0] 
+      : product.product_photo || null;
+  };
+
+  // Reset filters to default (random)
+  const resetAllFilters = () => {
+    setFilterPrice('all');
+    setFilterRating(0);
+    setFilterStock('all');
+    setFilterSort('random');
+    setFilterCategory('');
+    setFilterLocation('');
+    setSearchQuery('');
+    setTempFilters({ price: 'all', rating: 0, stock: 'all', sort: 'random' });
+    setIsFilterApplied(false);
+    if (searchInputRef.current) {
+      searchInputRef.current.value = '';
+    }
+    fetchProductsWithParams({ sort: 'random' });
+  };
+
+  // Others Filter Modal Component
+  const OthersFilterModal = () => {
+    return (
+      <div 
+        className={`fixed inset-0 z-[200] flex items-center justify-center p-4 ${
+          othersModalOpen ? 'animate-fadeIn' : 'pointer-events-none opacity-0'
+        }`}
+        onClick={() => setOthersModalOpen(false)}
+      >
+        <div 
+          className={`absolute inset-0 bg-black/60 backdrop-blur-sm ${othersModalOpen ? 'animate-fadeIn' : ''}`}
+        />
+        <div 
+          className={`relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl ${
+            isDarkMode ? 'bg-gray-800' : 'bg-white'
+          } ${othersModalOpen ? 'animate-scaleIn' : 'scale-95'}`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Modal Header */}
+          <div className={`sticky top-0 z-10 flex items-center justify-between p-4 border-b ${
+            isDarkMode ? 'border-gray-700' : 'border-gray-200'
+          } ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-t-2xl`}>
+            <div className="flex items-center gap-3">
+              <Sliders className={`w-5 h-5 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`} />
+              <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                Advanced Filters
+              </h2>
+            </div>
+            <button
+              onClick={() => setOthersModalOpen(false)}
+              className={`p-2 rounded-full transition-colors ${
+                isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+              }`}
+            >
+              <X className={`w-5 h-5 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`} />
+            </button>
+          </div>
+
+          {/* Modal Body */}
+          <div className="p-4 space-y-6">
+            {/* Sort Section */}
+            <div>
+              <label className={`block text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                Sort By
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {SORT_OPTIONS.map((option) => {
+                  const Icon = option.icon;
+                  const isSelected = tempFilters.sort === option.value;
+                  return (
+                    <button
+                      key={option.value}
+                      onClick={() => setTempFilters(prev => ({ ...prev, sort: option.value }))}
+                      className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                        isSelected
+                          ? isDarkMode
+                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
+                            : 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
+                          : isDarkMode
+                            ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span>{option.label}</span>
+                      {isSelected && <Check className="w-4 h-4 ml-auto" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Price Filter */}
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                Price Range
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {FILTER_OPTIONS.price.options.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setTempFilters(prev => ({ ...prev, price: option.value }))}
+                    className={`px-4 py-2 rounded-xl text-sm transition-all ${
+                      tempFilters.price === option.value
+                        ? isDarkMode
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-blue-600 text-white'
+                        : isDarkMode
+                          ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Rating Filter */}
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                Minimum Rating
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {FILTER_OPTIONS.rating.options.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setTempFilters(prev => ({ ...prev, rating: option.value }))}
+                    className={`px-4 py-2 rounded-xl text-sm transition-all ${
+                      tempFilters.rating === option.value
+                        ? isDarkMode
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-blue-600 text-white'
+                        : isDarkMode
+                          ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Stock Filter */}
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                Stock Status
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {FILTER_OPTIONS.stock.options.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setTempFilters(prev => ({ ...prev, stock: option.value }))}
+                    className={`px-4 py-2 rounded-xl text-sm transition-all ${
+                      tempFilters.stock === option.value
+                        ? isDarkMode
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-blue-600 text-white'
+                        : isDarkMode
+                          ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Modal Footer */}
+          <div className={`sticky bottom-0 flex gap-3 p-4 border-t ${
+            isDarkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'
+          } rounded-b-2xl`}>
+            <button
+              onClick={() => {
+                setTempFilters({ price: 'all', rating: 0, stock: 'all', sort: 'random' });
+                setOthersModalOpen(false);
+                resetAllFilters();
+              }}
+              className={`flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                isDarkMode
+                  ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Reset All
+            </button>
+            <button
+              onClick={applyAllFilters}
+              className="flex-1 px-4 py-3 rounded-xl text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/25"
+            >
+              Apply Filters
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Recent Searches Dropdown
+  const RecentSearchesDropdown = () => {
+    if (!searchBarFocused || recentSearches.length === 0) return null;
+    
+    return (
+      <div 
+        className={`absolute top-full left-0 right-0 mt-2 rounded-xl shadow-xl overflow-hidden ${
+          isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+        } border animate-slideDown z-50`}
+      >
+        <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+          <span className={`text-xs font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+            Recent Searches
+          </span>
+          <button
+            onClick={clearRecentSearches}
+            className="flex items-center gap-1 text-xs text-red-500 hover:text-red-600 transition-colors"
+          >
+            <Trash2 className="w-3 h-3" />
+            Clear All
+          </button>
+        </div>
+        <div className="py-1">
+          {recentSearches.map((term, index) => (
+            <button
+              key={index}
+              onClick={() => handleRecentSearchClick(term)}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-all ${
+                isDarkMode
+                  ? 'text-gray-300 hover:bg-gray-700'
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <Clock className={`w-4 h-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+              <span>{term}</span>
+              <ChevronRight className={`w-4 h-4 ml-auto ${isDarkMode ? 'text-gray-600' : 'text-gray-300'}`} />
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   if (contextLoading || !initialFetchDone || isLoading) {
     return (
@@ -453,21 +1038,48 @@ const BuyerHomePage = () => {
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      {/* ProductMetaTags for sharing */}
+      {sharingProduct && (
+        <ProductMetaTags 
+          product={sharingProduct}
+          productImage={getProductImage(sharingProduct)}
+          productDescription={sharingProduct.description}
+        />
+      )}
+      
       <div className="p-2 sm:p-4 md:p-6 max-w-6xl mx-auto relative">
 
+        {/* Back to Top Button */}
+        {showBackToTop && (
+          <button
+            onClick={scrollToTop}
+            className={`fixed bottom-8 right-8 z-50 p-3 rounded-full shadow-lg transition-all transform hover:scale-110 ${
+              isDarkMode
+                ? 'bg-blue-600 text-white hover:bg-blue-700'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
+            } animate-fadeIn`}
+            aria-label="Back to top"
+          >
+            <ArrowUp className="w-5 h-5" />
+          </button>
+        )}
+
         {/* Header with Search, Filters, and Settings Icon */}
-        <Header
-          showBackButton={false}
+        <Header 
           onSearch={handleSearch}
           onFilterChange={handleFilterChange}
           categories={categories}
           isDarkMode={isDarkMode}
-          initialCategory={filterCategory}
-          initialLocation={filterLocation}
-          showFilters={true}
-          showSettings={true}
-          settingsPath="/settings"
+          searchQuery={searchQuery}
+          onSearchInputChange={handleSearchInputChange}
+          onSearchInputFocus={handleSearchInputFocus}
+          onSearchInputBlur={handleSearchInputBlur}
+          searchInputRef={searchInputRef}
         />
+
+
+        {/* Recent Searches Dropdown */}
+        <RecentSearchesDropdown />
 
         {/* Search Toast */}
         {searchToast && (
@@ -537,6 +1149,18 @@ const BuyerHomePage = () => {
             />
           </div>
         </div>
+
+        {/* Filter Status Bar */}
+        {isFilterApplied && (
+          <div className="flex justify-end mb-3">
+            <button
+              onClick={resetAllFilters}
+              className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 flex items-center gap-1 transition-colors underline-offset-2 hover:underline"
+            >
+              Clear all
+            </button>
+          </div>
+        )}
 
         {/* Products Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
@@ -737,6 +1361,25 @@ const BuyerHomePage = () => {
           })}
         </div>
 
+        {/* Empty State */}
+        {posts.length === 0 && !isLoading && (
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">🔍</div>
+            <h3 className={`text-xl font-semibold mb-2 ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+              No products found
+            </h3>
+            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              Try adjusting your filters or search terms
+            </p>
+            <button
+              onClick={resetAllFilters}
+              className="mt-4 px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+            >
+              Clear all filters
+            </button>
+          </div>
+        )}
+
         {/* Description Tooltip */}
         {expandedDescriptionId && (
           <div
@@ -795,22 +1438,29 @@ const BuyerHomePage = () => {
                 <h3 className={`font-semibold text-lg ${isDarkMode ? 'text-gray-100' : 'text-black'}`}>Post Options</h3>
               </div>
               <div className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-100'}`}>
-                {dropdownOpen && dropdownItems(posts.find(p => p.id === dropdownOpen)).map((item, index) => (
-                  <button
-                    key={index}
-                    onClick={item.action}
-                    className={`w-full text-center px-4 py-3 text-sm transition-colors first:rounded-t-lg last:rounded-b-lg ${isDarkMode 
-                      ? 'text-gray-300 hover:bg-gray-700' 
-                      : 'text-black hover:bg-gray-50'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
+                {dropdownOpen && dropdownItems(posts.find(p => p.id === dropdownOpen)).map((item, index) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={index}
+                      onClick={item.action}
+                      className={`w-full text-center px-4 py-3 text-sm transition-colors first:rounded-t-lg last:rounded-b-lg flex items-center justify-center gap-2 ${
+                        isDarkMode 
+                          ? 'text-gray-300 hover:bg-gray-700' 
+                          : 'text-black hover:bg-gray-50'
+                      } ${item.label === 'Report Seller' ? 'text-red-500 hover:text-red-600' : ''}`}
+                    >
+                      {item.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
         )}
+
+        {/* Others Filter Modal */}
+        <OthersFilterModal />
 
         {/* Share Modal */}
         {shareModalOpen && selectedProduct && (
@@ -819,11 +1469,29 @@ const BuyerHomePage = () => {
             onClose={() => {
               setShareModalOpen(false);
               setSelectedProduct(null);
+              setSharingProduct(null);
             }}
             product={selectedProduct}
             isDarkMode={isDarkMode}
           />
         )}
+
+        {/* Report Modal */}
+        <ReportModal
+          isOpen={reportModalOpen}
+          onClose={() => {
+            setReportModalOpen(false);
+            setReportingSellerId(null);
+            setReportingSellerName('');
+            setReportingProductId(null);
+            setReportingProductName('');
+          }}
+          sellerId={reportingSellerId}
+          sellerName={reportingSellerName}
+          productId={reportingProductId}
+          productName={reportingProductName}
+          isDarkMode={isDarkMode}
+        />
       </div>
     </div>
   );

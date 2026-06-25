@@ -3,12 +3,24 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from django.utils import timezone
 from datetime import timedelta
-from .models import Product, Buyer, Order, Category, Address, Cart, CartItem, ProductLike, ProductComment, Wishlist, WishlistItem, Seller, QuickDeal
+from .models import Product, Report, Buyer, Order, Category, Address, Cart, CartItem, ProductLike, ProductComment, Wishlist, WishlistItem, Seller, QuickDeal
 from .serializers import (
     ProductSerializer, CategorySerializer, WishlistItemSerializer, CartSerializer,
-    CartItemSerializer, ProductCommentSerializer, SellerSerializer, BuyerRegisterSerializer,
-    SellerRegisterSerializer, QuickDealSerializer, SellerProfileSerializer, SellerProductSerializer,
+    CartItemSerializer, ReportSerializer, ProductCommentSerializer, SellerSerializer, BuyerRegisterSerializer,
+    SellerRegisterSerializer, QuickDealSerializer, ReportCreateSerializer, SellerProfileSerializer, SellerProductSerializer,
     SellerOrderSerializer, SellerQuickDealSerializer, SellerStatsSerializer )
+from django.db.models.functions import Coalesce
+from django.db.models import Q, Count, Avg, F, Min, Max, DecimalField 
+from django.db.models.functions import Coalesce
+from decimal import Decimal
+from django.contrib.auth.models import User
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Product, Category, Seller, Buyer, ProductComment, Report
+from .serializers import ProductSerializer, CategorySerializer
+
 from rest_framework.permissions import AllowAny
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -21,7 +33,6 @@ from django.db.models import Avg
 import json
 import logging
 from .serializers import InitiatePaymentSerializer, DusuPayWebhookSerializer
-
 logger = logging.getLogger("dusupay")
 from django.shortcuts import get_object_or_404
 from .permissions import IsSeller, IsBuyer, IsOwner
@@ -47,11 +58,56 @@ from .dusupay_utils import DusuPayClient
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 from .models import DusuPayConfig
-
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 dusupay_client = DusuPayClient()
+
+def get_user_profile_photo(user, request=None):
+    """Get profile photo URL reliably with multiple fallbacks"""
+    if not user:
+        return None
+    
+    profile_photo = None
+    
+    # Try Seller profile
+    if hasattr(user, 'seller_profile') and user.seller_profile:
+        if user.seller_profile.profile_photo:
+            try:
+                if request:
+                    profile_photo = request.build_absolute_uri(user.seller_profile.profile_photo.url)
+                else:
+                    profile_photo = user.seller_profile.profile_photo.url
+            except:
+                pass
+    
+    # Try Buyer profile (if not found in seller)
+    if not profile_photo and hasattr(user, 'buyer_profile') and user.buyer_profile:
+        if user.buyer_profile.profile_photo:
+            try:
+                if request:
+                    profile_photo = request.build_absolute_uri(user.buyer_profile.profile_photo.url)
+                else:
+                    profile_photo = user.buyer_profile.profile_photo.url
+            except:
+                pass
+    
+    # If no profile photo found, return None (frontend will use default)
+    return profile_photo
+
+
+def get_user_display_name(user):
+    """
+    Get the display name for a user.
+    """
+    if not user:
+        return 'User'
+    
+    if hasattr(user, 'seller_profile') and user.seller_profile:
+        return user.seller_profile.name or user.username
+    elif hasattr(user, 'buyer_profile') and user.buyer_profile:
+        return user.buyer_profile.name or user.username
+    return user.username
 
 def create_profile_notification(user, field_name):
     """
@@ -1086,7 +1142,6 @@ def initiate_payment(request):
         }
     )
 
-
 @api_view(["GET", "POST"])
 @permission_classes([permissions.AllowAny])
 def pesapal_ipn(request):
@@ -1122,36 +1177,42 @@ def pesapal_ipn(request):
         )
         return Response({"status": 200, "message": "Status fetch failed"}, status=200)
 
-    event = serializer.validated_data['event']
-    payload = serializer.validated_data['payload']
+    # Get event and payload from request data
+    event = params.get('event', '')
+    payload = params.get('payload', {})
 
     # Update config to track webhook receipt
     config, _ = DusuPayConfig.objects.get_or_create(pk=1)
     config.webhook_received_at = timezone.now()
     config.save()
 
-    merchant_reference = payload.get('merchant_reference')
-    internal_reference = payload.get('internal_reference')
+    merchant_ref = payload.get('merchant_reference') if isinstance(payload, dict) else None
+    internal_ref = payload.get('internal_reference') if isinstance(payload, dict) else None
 
     # Find the order
     try:
-        if merchant_reference:
-            order = Order.objects.get(id=merchant_reference)
-        elif internal_reference:
-            order = Order.objects.get(dusupay_internal_reference=internal_reference)
+        if merchant_ref:
+            order = Order.objects.get(id=merchant_ref)
+        elif internal_ref:
+            order = Order.objects.get(dusupay_internal_reference=internal_ref)
         else:
             logger.warning("No reference found in webhook payload")
             return Response({"status": "ok"}, status=200)
     except Order.DoesNotExist:
-        logger.error(f"Order not found for merchant_reference: {merchant_reference}")
+        logger.error(f"Order not found for merchant_reference: {merchant_ref}")
         return Response({"status": "ok"}, status=200)
 
-    transaction_status = payload.get('transaction_status', '').upper()
+    transaction_status = payload.get('transaction_status', '').upper() if isinstance(payload, dict) else ''
+
+    # Define variables for payment update
+    amount = order.total_amount
+    payment_method = payload.get('provider_code', payload.get('bank_code', 'card')) if isinstance(payload, dict) else 'card'
+    confirmation_code = order.dusupay_internal_reference or order.dusupay_merchant_reference or order_tracking_id
 
     if event == 'transaction.completed' or transaction_status == 'COMPLETED':
         # Payment successful
         order.status = 'paid'
-        order.payment_method = payload.get('provider_code', payload.get('bank_code', 'card'))
+        order.payment_method = payment_method
         order.save()
 
         Payment.objects.update_or_create(
@@ -1168,13 +1229,12 @@ def pesapal_ipn(request):
         logger.info(
             f"Order {order.id} marked as paid with method {order.payment_method}"
         )
-    elif payment_status and payment_status.lower() in ["failed", "invalid"]:
+    elif transaction_status and transaction_status.lower() in ["failed", "invalid"]:
         order.status = "cancelled"
         order.save()
-        logger.info(f"Order {order.id} cancelled due to {payment_status}")
+        logger.info(f"Order {order.id} cancelled due to {transaction_status}")
 
-        return Response({"status": 200}, status=200)
-
+    return Response({"status": 200}, status=200)
 
 @api_view(["GET"])
 @permission_classes([permissions.AllowAny])
@@ -1517,7 +1577,7 @@ def toggle_follow_seller(request, seller_id):
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         # Check if user has seller profile (they shouldn't)
-        print(f"Has seller_profile: {hasattr(request.user, 'seller_profile')}")
+        print(f"Has seller_profile: {hasattr(request.user, 'seller_profile00000000000000000')}")
         
         # Check if user has both (shouldn't)
         if hasattr(request.user, 'buyer_profile') and hasattr(request.user, 'seller_profile'):
@@ -2260,12 +2320,12 @@ def update_seller_location(request):
         })
     except Exception as e:
         return Response({"error": str(e)}, status=400)
-
+    
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_chat_inbox(request):
     """
-    Get all conversations for the current user with profile photos.
+    Get all conversations with reliable profile photos.
     """
     from django.db.models import Q
     from .models import ChatMessage
@@ -2274,23 +2334,18 @@ def get_chat_inbox(request):
     current_user = request.user
     print(f"🔍 Getting inbox for user: {current_user.username} (ID: {current_user.id})")
     
-    # Get all users the current user has chatted with (either as sender or recipient)
     sent_users = ChatMessage.objects.filter(sender=current_user).values_list('recipient_id', flat=True).distinct()
     received_users = ChatMessage.objects.filter(recipient=current_user).values_list('sender_id', flat=True).distinct()
     partner_ids = set(list(sent_users) + list(received_users))
     
-    print(f"📋 Found {len(partner_ids)} conversation partners")
-    
     conversations = []
     
     for partner_id in partner_ids:
-        # Get the partner user
         try:
             partner = User.objects.get(id=partner_id)
         except User.DoesNotExist:
             continue
         
-        # Get the last message between these two users
         last_message = ChatMessage.objects.filter(
             (Q(sender=current_user, recipient=partner) | 
              Q(sender=partner, recipient=current_user))
@@ -2299,54 +2354,32 @@ def get_chat_inbox(request):
         if not last_message:
             continue
         
-        # Get unread count for this conversation
         unread_count = ChatMessage.objects.filter(
-            sender=partner,
-            recipient=current_user,
-            is_read=False
+            sender=partner, recipient=current_user, is_read=False
         ).count()
         
-        # Get partner name
-        partner_name = partner.username
-        profile_photo = None
+        partner_name = get_user_display_name(partner)
+        profile_photo = get_user_profile_photo(partner, request)
         
-        # Check if partner has a seller profile
-        if hasattr(partner, 'seller_profile'):
-            partner_name = partner.seller_profile.name
-            if partner.seller_profile.profile_photo:
-                # Build absolute URL for the profile photo
-                request = self.context.get('request') if hasattr(self, 'context') else None
-                if request:
-                    profile_photo = request.build_absolute_uri(partner.seller_profile.profile_photo.url)
-                else:
-                    profile_photo = partner.seller_profile.profile_photo.url
-        
-        # Check if partner has a buyer profile
-        elif hasattr(partner, 'buyer_profile'):
-            partner_name = partner.buyer_profile.name
-            if partner.buyer_profile.profile_photo:
-                request = self.context.get('request') if hasattr(self, 'context') else None
-                if request:
-                    profile_photo = request.build_absolute_uri(partner.buyer_profile.profile_photo.url)
-                else:
-                    profile_photo = partner.buyer_profile.profile_photo.url
-        
-        print(f"💬 Conversation with {partner_name} (ID: {partner_id}): {unread_count} unread")
+        # Only use fallback if no profile photo exists
+        if not profile_photo:
+            # Use default profile image - frontend will handle fallback
+            profile_photo = None
         
         conversations.append({
             'partner_id': partner.id,
             'partner_name': partner_name,
-            'profile_photo': profile_photo,  # Add profile photo URL
-            'last_message': last_message.content,
+            'profile_photo': profile_photo,  # Send None if no photo
+            'last_message': last_message.content[:60] + ('...' if len(last_message.content) > 60 else ''),
             'timestamp': last_message.timestamp.isoformat(),
             'unread_count': unread_count
         })
     
-    # Sort by timestamp (newest first)
     conversations.sort(key=lambda x: x['timestamp'], reverse=True)
     
-    print(f"📬 Returning {len(conversations)} conversations")
     return Response(conversations, status=status.HTTP_200_OK)
+
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -2378,18 +2411,9 @@ def get_chat_history(request, user_id):
     ).update(is_read=True)
     
     # Serialize messages
-    serializer = ChatMessageSerializer(messages, many=True)
-    data = serializer.data
+    serializer = ChatMessageSerializer(messages, many=True, context={'request': request})
     
-    # Add profile photo of the other user for the chat header
-    profile_photo = get_user_profile_photo(other_user, request)
-    
-    return Response({
-        'messages': data,
-        'partner_profile_photo': profile_photo,
-        'partner_name': get_user_display_name(other_user)
-    })
-
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -2506,3 +2530,557 @@ def test_send_message(request):
         'content': message.content,
         'timestamp': message.timestamp.isoformat()
     }, status=201)
+
+
+# Add these to your views.py
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsBuyer])
+def create_report(request):
+    """
+    Create a report against a seller
+    """
+    print("=" * 50)
+    print("CREATE REPORT - Request received")
+    print(f"Request data: {request.data}")
+    print(f"User: {request.user.username}")
+    print("=" * 50)
+    
+    try:
+        serializer = ReportCreateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({
+                'error': 'Invalid data',
+                'details': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        data = serializer.validated_data
+        
+        # Get the seller
+        try:
+            seller = Seller.objects.get(id=data['seller_id'])
+        except Seller.DoesNotExist:
+            return Response({
+                'error': 'Seller not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Prevent reporting yourself
+        if seller.user == request.user:
+            return Response({
+                'error': 'You cannot report yourself'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check if user already reported this seller (pending or investigating)
+        existing_report = Report.objects.filter(
+            reporter=request.user,
+            seller=seller,
+            status__in=['pending', 'investigating']
+        ).exists()
+        
+        if existing_report:
+            return Response({
+                'error': 'You already have an active report against this seller'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Get product if provided
+        product = None
+        if data.get('product_id'):
+            try:
+                product = Product.objects.get(id=data['product_id'])
+            except Product.DoesNotExist:
+                pass
+        
+        # Create the report
+        report = Report.objects.create(
+            reporter=request.user,
+            seller=seller,
+            product=product,
+            report_type=data['report_type'],
+            description=data['description'],
+            evidence=data.get('evidence', ''),
+            status='pending'
+        )
+        
+        print(f"✓ Report #{report.id} created successfully")
+        
+        # Create notification for admin (you can implement this later)
+        # create_admin_notification(report)
+        
+        return Response({
+            'success': True,
+            'message': 'Report submitted successfully',
+            'report_id': report.id,
+            'report': ReportSerializer(report, context={'request': request}).data
+        }, status=status.HTTP_201_CREATED)
+        
+    except Exception as e:
+        print(f"Error creating report: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return Response({
+            'error': 'Failed to create report',
+            'detail': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_reports(request):
+    """
+    Get reports - Admins get all, users get their own reports
+    """
+    try:
+        # Check if user is admin (staff)
+        is_admin = request.user.is_staff
+        
+        if is_admin:
+            # Admin gets all reports
+            reports = Report.objects.all()
+            status_filter = request.query_params.get('status')
+            if status_filter:
+                reports = reports.filter(status=status_filter)
+            
+            # Apply ordering
+            sort_by = request.query_params.get('sort', '-created_at')
+            if sort_by in ['created_at', '-created_at', 'status', '-status']:
+                reports = reports.order_by(sort_by)
+            else:
+                reports = reports.order_by('-created_at')
+                
+        else:
+            # Regular user gets only their reports
+            reports = Report.objects.filter(reporter=request.user)
+        
+        serializer = ReportSerializer(reports, many=True, context={'request': request})
+        
+        # Count by status for admins
+        stats = {}
+        if is_admin:
+            stats = {
+                'total': reports.count(),
+                'pending': reports.filter(status='pending').count(),
+                'investigating': reports.filter(status='investigating').count(),
+                'resolved': reports.filter(status='resolved').count(),
+                'dismissed': reports.filter(status='dismissed').count(),
+            }
+        
+        return Response({
+            'success': True,
+            'count': reports.count(),
+            'reports': serializer.data,
+            'stats': stats
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        print(f"Error fetching reports: {e}")
+        return Response({
+            'error': 'Failed to fetch reports',
+            'detail': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_report_detail(request, report_id):
+    """
+    Get details of a specific report
+    """
+    try:
+        report = Report.objects.get(id=report_id)
+        
+        # Check permission: admin can view all, users can only view their own
+        if not request.user.is_staff and report.reporter != request.user:
+            return Response({
+                'error': 'You do not have permission to view this report'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        serializer = ReportSerializer(report, context={'request': request})
+        return Response({
+            'success': True,
+            'report': serializer.data
+        }, status=status.HTTP_200_OK)
+        
+    except Report.DoesNotExist:
+        return Response({
+            'error': 'Report not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'error': 'Failed to fetch report',
+            'detail': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['PUT', 'PATCH'])
+@permission_classes([IsAuthenticated])
+def update_report_status(request, report_id):
+    """
+    Update report status - Admin only
+    """
+    if not request.user.is_staff:
+        return Response({
+            'error': 'Only administrators can update report status'
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        report = Report.objects.get(id=report_id)
+        
+        status_value = request.data.get('status')
+        admin_notes = request.data.get('admin_notes', '')
+        
+        if not status_value:
+            return Response({
+                'error': 'Status is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        valid_statuses = ['pending', 'investigating', 'resolved', 'dismissed']
+        if status_value not in valid_statuses:
+            return Response({
+                'error': f'Invalid status. Must be one of: {", ".join(valid_statuses)}'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        old_status = report.status
+        report.status = status_value
+        
+        if admin_notes:
+            report.admin_notes = admin_notes
+        
+        if status_value in ['resolved', 'dismissed'] and old_status not in ['resolved', 'dismissed']:
+            report.resolved_at = timezone.now()
+            report.handled_by = request.user
+        
+        if status_value in ['investigating'] and old_status != 'investigating':
+            report.handled_by = request.user
+        
+        report.save()
+        
+        # Create notification for the reporter
+        try:
+            from .models import SimpleNotification
+            
+            status_messages = {
+                'investigating': f'Your report against {report.seller.name} is now under investigation.',
+                'resolved': f'Your report against {report.seller.name} has been resolved.',
+                'dismissed': f'Your report against {report.seller.name} has been reviewed and dismissed.',
+            }
+            
+            if status_value in status_messages:
+                SimpleNotification.objects.create(
+                    recipient=report.reporter,
+                    sender_name='System',
+                    message=status_messages[status_value],
+                    type='system'
+                )
+                print(f"✓ Notification sent to reporter about status update")
+        except Exception as e:
+            print(f"Could not send notification: {e}")
+        
+        serializer = ReportSerializer(report, context={'request': request})
+        return Response({
+            'success': True,
+            'message': 'Report status updated successfully',
+            'report': serializer.data
+        }, status=status.HTTP_200_OK)
+        
+    except Report.DoesNotExist:
+        return Response({
+            'error': 'Report not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'error': 'Failed to update report',
+            'detail': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_my_reports(request):
+    """
+    Get reports created by the authenticated user
+    """
+    try:
+        reports = Report.objects.filter(reporter=request.user).order_by('-created_at')
+        serializer = ReportSerializer(reports, many=True, context={'request': request})
+        
+        stats = {
+            'total': reports.count(),
+            'pending': reports.filter(status='pending').count(),
+            'investigating': reports.filter(status='investigating').count(),
+            'resolved': reports.filter(status='resolved').count(),
+            'dismissed': reports.filter(status='dismissed').count(),
+        }
+        
+        return Response({
+            'success': True,
+            'count': reports.count(),
+            'reports': serializer.data,
+            'stats': stats
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({
+            'error': 'Failed to fetch reports',
+            'detail': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ===== RECENT SEARCHES =====
+
+@api_view(['GET', 'POST', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def recent_searches(request):
+    """
+    GET: Get user's recent searches
+    POST: Add a search term
+    DELETE: Clear all recent searches
+    """
+    user = request.user
+    
+    if request.method == 'GET':
+        # Get recent searches from user profile or use localStorage fallback
+        try:
+            buyer = Buyer.objects.get(user=user)
+            # If you add a recent_searches field to Buyer model
+            if hasattr(buyer, 'recent_searches'):
+                searches = buyer.recent_searches or []
+                return Response({
+                    'status': 'success',
+                    'searches': searches[:5]  # Max 5
+                })
+        except Buyer.DoesNotExist:
+            pass
+        
+        # Fallback: return empty list (frontend will use localStorage)
+        return Response({
+            'status': 'success',
+            'searches': []
+        })
+    
+    elif request.method == 'POST':
+        term = request.data.get('term', '').strip()
+        if not term:
+            return Response({
+                'status': 'error',
+                'message': 'Search term is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            buyer = Buyer.objects.get(user=user)
+            if hasattr(buyer, 'recent_searches'):
+                searches = buyer.recent_searches or []
+                # Remove duplicate and add to front
+                searches = [term] + [s for s in searches if s.lower() != term.lower()]
+                searches = searches[:5]  # Keep max 5
+                buyer.recent_searches = searches
+                buyer.save()
+        except Buyer.DoesNotExist:
+            pass
+        
+        return Response({
+            'status': 'success',
+            'message': 'Search term saved'
+        })
+    
+    elif request.method == 'DELETE':
+        try:
+            buyer = Buyer.objects.get(user=user)
+            if hasattr(buyer, 'recent_searches'):
+                buyer.recent_searches = []
+                buyer.save()
+        except Buyer.DoesNotExist:
+            pass
+        
+        return Response({
+            'status': 'success',
+            'message': 'Recent searches cleared'
+        })
+
+
+# ===== UPDATED PRODUCT SEARCH WITH ADVANCED FILTERS =====
+
+@api_view(['GET'])
+def search_products(request):
+    """
+    Search products with advanced filters including:
+    - search: text search in name and description
+    - category: category ID
+    - location: seller location
+    - price_range: under_500k, 500k_1m, 1m_5m, above_5m
+    - min_rating: minimum rating (1-5)
+    - stock_status: all, in_stock, low_stock, out_of_stock
+    - sort: newest, price_low, price_high, rating, popularity, relevance
+    """
+    queryset = Product.objects.all().select_related('seller', 'category')
+    
+    # Search text
+    search = request.query_params.get('search', '')
+    if search:
+        queryset = queryset.filter(
+            Q(name__icontains=search) |
+            Q(description__icontains=search)
+        )
+    
+    # Category filter
+    category = request.query_params.get('category')
+    if category and category != 'all':
+        queryset = queryset.filter(category_id=category)
+    
+    # Location filter
+    location = request.query_params.get('location', '')
+    if location:
+        queryset = queryset.filter(
+            Q(seller__location__icontains=location) |
+            Q(seller__location_address__icontains=location)
+        )
+    
+    # Price range filter
+    price_range = request.query_params.get('price_range', 'all')
+    if price_range != 'all':
+        price_ranges = {
+            'under_500k': (0, 500000),
+            '500k_1m': (500000, 1000000),
+            '1m_5m': (1000000, 5000000),
+            'above_5m': (5000000, None)
+        }
+        if price_range in price_ranges:
+            min_price, max_price = price_ranges[price_range]
+            if max_price is None:
+                queryset = queryset.filter(unit_price__gte=min_price)
+            else:
+                queryset = queryset.filter(unit_price__gte=min_price, unit_price__lt=max_price)
+    
+    # Rating filter
+    min_rating = request.query_params.get('min_rating')
+    if min_rating and min_rating.isdigit():
+        min_rating = int(min_rating)
+        if min_rating > 0:
+            queryset = queryset.filter(rating_magnitude__gte=min_rating)
+    
+    # Stock status filter
+    stock_status = request.query_params.get('stock_status', 'all')
+    if stock_status != 'all':
+        if stock_status == 'in_stock':
+            queryset = queryset.filter(stock_quantity__gt=10)
+        elif stock_status == 'low_stock':
+            queryset = queryset.filter(stock_quantity__gte=1, stock_quantity__lte=10)
+        elif stock_status == 'out_of_stock':
+            queryset = queryset.filter(stock_quantity=0)
+    
+    # Sorting
+    sort = request.query_params.get('sort', 'newest')
+    sort_mappings = {
+        'newest': '-date_of_post',
+        'price_low': 'unit_price',
+        'price_high': '-unit_price',
+        'rating': '-rating_magnitude',
+        'popularity': '-sales_count',
+        'relevance': '-like_count',
+    }
+    if sort in sort_mappings:
+        queryset = queryset.order_by(sort_mappings[sort])
+    
+    # Pagination
+    page = int(request.query_params.get('page', 1))
+    page_size = int(request.query_params.get('page_size', 20))
+    start = (page - 1) * page_size
+    end = start + page_size
+    
+    total_count = queryset.count()
+    products = queryset[start:end]
+    
+    # Serialize with request context for image URLs
+    serializer = ProductSerializer(products, many=True, context={'request': request})
+    
+    return Response({
+        'status': 'success',
+        'data': serializer.data,
+        'pagination': {
+            'page': page,
+            'page_size': page_size,
+            'total_count': total_count,
+            'total_pages': (total_count + page_size - 1) // page_size
+        }
+    })
+
+
+# ===== GET FILTER OPTIONS =====
+
+@api_view(['GET'])
+def get_filter_options(request):
+    """
+    Get available filter options for the frontend
+    """
+    # Get unique price ranges from products
+    price_ranges = Product.objects.aggregate(
+        min_price=Coalesce(Min('unit_price'), Decimal('0')),
+        max_price=Coalesce(Max('unit_price'), Decimal('0'))
+    )
+    
+    # Get categories with product counts
+    categories = Category.objects.filter(
+        products__isnull=False,
+        is_active=True
+    ).annotate(
+        product_count=Count('products')
+    ).values('id', 'name', 'product_count')
+    
+    # Get locations from sellers with products
+    locations = Seller.objects.filter(
+        products__isnull=False
+    ).exclude(
+        location__isnull=True
+    ).exclude(
+        location=''
+    ).values_list('location', flat=True).distinct()[:50]
+    
+    # Get rating distribution
+    rating_distribution = Product.objects.aggregate(
+        rating_1=Count('id', filter=Q(rating_magnitude__gte=1, rating_magnitude__lt=2)),
+        rating_2=Count('id', filter=Q(rating_magnitude__gte=2, rating_magnitude__lt=3)),
+        rating_3=Count('id', filter=Q(rating_magnitude__gte=3, rating_magnitude__lt=4)),
+        rating_4=Count('id', filter=Q(rating_magnitude__gte=4, rating_magnitude__lt=5)),
+        rating_5=Count('id', filter=Q(rating_magnitude__gte=5)),
+    )
+    
+    return Response({
+        'status': 'success',
+        'data': {
+            'price_range': {
+                'min': float(price_ranges['min_price'] or 0),
+                'max': float(price_ranges['max_price'] or 0)
+            },
+            'categories': list(categories),
+            'locations': list(locations[:20]),  # Limit to 20 locations
+            'rating_distribution': rating_distribution,
+            'sort_options': [
+                {'value': 'newest', 'label': 'Newest First'},
+                {'value': 'price_low', 'label': 'Price: Low to High'},
+                {'value': 'price_high', 'label': 'Price: High to Low'},
+                {'value': 'rating', 'label': 'Best Rating'},
+                {'value': 'popularity', 'label': 'Most Popular'},
+                {'value': 'relevance', 'label': 'Relevance'},
+            ],
+            'price_options': [
+                {'value': 'all', 'label': 'All Prices'},
+                {'value': 'under_500k', 'label': 'Under 500,000 UGX'},
+                {'value': '500k_1m', 'label': '500,000 - 1,000,000 UGX'},
+                {'value': '1m_5m', 'label': '1,000,000 - 5,000,000 UGX'},
+                {'value': 'above_5m', 'label': 'Above 5,000,000 UGX'},
+            ],
+            'rating_options': [
+                {'value': 0, 'label': 'Any Rating'},
+                {'value': 1, 'label': '⭐ 1+ Stars'},
+                {'value': 2, 'label': '⭐⭐ 2+ Stars'},
+                {'value': 3, 'label': '⭐⭐⭐ 3+ Stars'},
+                {'value': 4, 'label': '⭐⭐⭐⭐ 4+ Stars'},
+                {'value': 5, 'label': '⭐⭐⭐⭐⭐ 5 Stars'},
+            ],
+            'stock_options': [
+                {'value': 'all', 'label': 'All Products'},
+                {'value': 'in_stock', 'label': 'In Stock'},
+                {'value': 'low_stock', 'label': 'Low Stock (< 10)'},
+                {'value': 'out_of_stock', 'label': 'Out of Stock'},
+            ]
+        }
+    })

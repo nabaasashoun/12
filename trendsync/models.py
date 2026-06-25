@@ -66,10 +66,10 @@ class Buyer(models.Model):
     contact = models.CharField(max_length=100, blank=True)
     dob = models.DateField(null=True, blank=True)
     profile_photo = models.ImageField(upload_to='buyers/', blank=True, null=True)
+    recent_searches = models.JSONField(default=list, blank=True) 
 
     def __str__(self):
         return self.name
-
 
 class Product(models.Model):
     seller = models.ForeignKey(Seller, on_delete=models.CASCADE, related_name='products')
@@ -441,4 +441,80 @@ class ChatMessage(models.Model):
         ordering = ['timestamp']
 
     def __str__(self):
-        return f"From {self.sender.username} to {self.recipient.username} at {self.timestamp}"
+        return f"From {self.sender.username} to {self.recipient.username} at {self.timestamp}"
+
+
+# Add this to your models.py
+
+class Report(models.Model):
+    REPORT_TYPES = (
+        ('fraud', 'Fraud / Scam'),
+        ('fake_product', 'Fake / Counterfeit Product'),
+        ('harassment', 'Harassment / Abuse'),
+        ('spam', 'Spam / Misleading'),
+        ('wrong_category', 'Wrong Category'),
+        ('price_manipulation', 'Price Manipulation'),
+        ('intellectual_property', 'Intellectual Property Violation'),
+        ('other', 'Other'),
+    )
+    
+    REPORT_STATUS = (
+        ('pending', 'Pending Review'),
+        ('investigating', 'Under Investigation'),
+        ('resolved', 'Resolved'),
+        ('dismissed', 'Dismissed'),
+    )
+    
+    # Who is reporting
+    reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reports_made')
+    
+    # What is being reported (seller)
+    seller = models.ForeignKey(Seller, on_delete=models.CASCADE, related_name='reports_received')
+    
+    # Optional: link to specific product if applicable
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True, related_name='reports')
+    
+    # Report details
+    report_type = models.CharField(max_length=50, choices=REPORT_TYPES)
+    description = models.TextField()
+    evidence = models.TextField(blank=True, help_text="Additional evidence or details")
+    
+    # Status tracking
+    status = models.CharField(max_length=20, choices=REPORT_STATUS, default='pending')
+    admin_notes = models.TextField(blank=True)
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    
+    # Admin who handled the report
+    handled_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='handled_reports')
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"Report #{self.id}: {self.reporter.username} reported {self.seller.name}"
+    
+    def mark_resolved(self, admin_user, notes=''):
+        self.status = 'resolved'
+        self.handled_by = admin_user
+        self.admin_notes = notes
+        self.resolved_at = timezone.now()
+        self.save()
+    
+    def mark_investigating(self, admin_user, notes=''):
+        self.status = 'investigating'
+        self.handled_by = admin_user
+        self.admin_notes = notes
+        self.save()
+    
+    def dismiss(self, admin_user, notes=''):
+        self.status = 'dismissed'
+        self.handled_by = admin_user
+        self.admin_notes = notes
+        self.resolved_at = timezone.now()
+        self.save()
+
+

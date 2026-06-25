@@ -1,3 +1,5 @@
+# settings.py - FIXED (without allauth)
+
 from pathlib import Path
 import os
 from datetime import timedelta
@@ -142,8 +144,8 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels.layers.InMemoryChannelLayer",
         "CONFIG": {
-            "capacity": 1000,  # Increase capacity
-            "expiry": 10,  # Shorter expiry for faster cleanup
+            "capacity": 1000,
+            "expiry": 10,
         },
     },
 }
@@ -187,3 +189,37 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
 
+# ==========================================
+# GOOGLE OAUTH SETTINGS (without allauth)
+# ==========================================
+
+# Google OAuth Credentials
+# Get these from Google Cloud Console:
+# https://console.cloud.google.com/apis/credentials
+GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID_HERE'
+GOOGLE_CLIENT_SECRET = 'YOUR_GOOGLE_CLIENT_SECRET_HERE'
+
+# Frontend and Backend URLs
+FRONTEND_URL = 'http://localhost:5173'  # Your React app URL
+BACKEND_URL = 'http://localhost:8000'   # Your Django backend URL
+
+# ==========================================
+# REMOVED allauth settings (not needed)
+# ==========================================
+
+# REMOVED: AUTHENTICATION_BACKENDS with allauth
+# REMOVED: SITE_ID
+# REMOVED: SOCIALACCOUNT_PROVIDERS
+# REMOVED: LOGIN_REDIRECT_URL with allauth
+
+# ==========================================
+# Optional: Add these if you need them
+# ==========================================
+
+# Email settings (for password reset, etc.)
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'your-email@gmail.com'
+# EMAIL_HOST_PASSWORD = 'your-app-password'

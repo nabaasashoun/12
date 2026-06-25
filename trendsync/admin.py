@@ -1,8 +1,9 @@
 from django.contrib import admin
 from django import forms
 from django.contrib.auth.models import User
+from django.utils import timezone
 from .models import (
-    Category, Seller, Buyer, Product, ProductLike, ProductComment,
+    Category, Seller, Buyer, Report, Product, ProductLike, ProductComment,
     Wishlist, WishlistItem, Cart, CartItem, Address, Order, OrderItem,
     Payment, Delivery, QuickDeal, ProductQuestion, QuestionOption, ProductImage
 )
@@ -432,3 +433,41 @@ class QuickDealAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Wishlist, WishlistAdmin)
+
+
+@admin.register(Report)
+class ReportAdmin(admin.ModelAdmin):
+    list_display = ('id', 'reporter', 'seller', 'report_type', 'status', 'created_at')
+    list_filter = ('report_type', 'status', 'created_at')
+    search_fields = ('reporter__username', 'seller__name', 'description', 'evidence')
+    readonly_fields = ('created_at', 'updated_at', 'resolved_at')
+    
+    fieldsets = (
+        ('Report Information', {
+            'fields': ('reporter', 'seller', 'product', 'report_type', 'description', 'evidence')
+        }),
+        ('Status', {
+            'fields': ('status', 'admin_notes', 'handled_by', 'resolved_at')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    actions = ['mark_investigating', 'mark_resolved', 'dismiss_reports']
+    
+    def mark_investigating(self, request, queryset):
+        updated = queryset.update(status='investigating')
+        self.message_user(request, f'{updated} reports marked as under investigation.')
+    mark_investigating.short_description = 'Mark as Under Investigation'
+    
+    def mark_resolved(self, request, queryset):
+        updated = queryset.update(status='resolved', resolved_at=timezone.now())  # Now timezone is defined
+        self.message_user(request, f'{updated} reports marked as resolved.')
+    mark_resolved.short_description = 'Mark as Resolved'
+    
+    def dismiss_reports(self, request, queryset):
+        updated = queryset.update(status='dismissed', resolved_at=timezone.now())  # Now timezone is defined
+        self.message_user(request, f'{updated} reports dismissed.')
+    dismiss_reports.short_description = 'Dismiss Reports'
