@@ -1,5 +1,5 @@
 // api.js - Fully updated with correct URL construction
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 // Helper function to build API URLs correctly
 const buildUrl = (endpoint) => {
