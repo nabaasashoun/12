@@ -1,1 +1,1 @@
-web: gunicorn trendsync.wsgi --bind 0.0.0.0:$PORT --log-file -
+web: python manage.py migrate --noinput && gunicorn config.wsgi --bind 0.0.0.0:$PORT --log-file -
