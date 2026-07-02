@@ -66,12 +66,12 @@ const SellerRoute = ({ children, userRole, isAuthenticated }) => {
 };
 
 // Public routes that don't require authentication
-const PublicRoutes = () => {
+const PublicRoutes = ({ setIsAuthenticated, setUserRole }) => {
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/login" element={<LoginPage setIsAuthenticated={setIsAuthenticated} setUserRole={setUserRole} />} />
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/seller/login" element={<SellerLoginPage />} />
+      <Route path="/seller/login" element={<SellerLoginPage setIsAuthenticated={setIsAuthenticated} setUserRole={setUserRole} />} />
       <Route path="/seller/register" element={<SellerRegisterPage />} />
       {/* Public legal pages - accessible without authentication */}
       <Route path="/privacy" element={<PrivacyPolicy />} />
@@ -83,7 +83,7 @@ const PublicRoutes = () => {
 
 const AuthenticatedContent = ({ isAuthenticated, userRole, handleLogout, setIsAuthenticated, setUserRole }) => {
   if (!isAuthenticated) {
-    return <PublicRoutes />;
+    return <PublicRoutes setIsAuthenticated={setIsAuthenticated} setUserRole={setUserRole} />;
   }
 
   return (
