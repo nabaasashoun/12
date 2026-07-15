@@ -346,15 +346,14 @@ def custom_jwt_login(request):
     username_or_email = request.data.get('username')
     password = request.data.get('password')
 
-    try:
-        if '@' in username_or_email:
-            user = User.objects.get(email=username_or_email)
-            username = user.username
-        else:
-            username = username_or_email
-            user = User.objects.get(username=username)
-    except User.DoesNotExist:
+    if '@' in username_or_email:
+        user_obj = User.objects.filter(email=username_or_email).order_by('id').first()
+    else:
+        user_obj = User.objects.filter(username=username_or_email).first()
+
+    if not user_obj:
         return Response({'error': 'User not found'}, status=400)
+    username = user_obj.username
 
     user = authenticate(username=username, password=password)
 
@@ -479,11 +478,10 @@ def login_view(request):
             return Response({'error': 'Please provide username and password'}, status=400)
 
         if '@' in username:
-            try:
-                user = User.objects.get(email=username)
-                username = user.username
-            except User.DoesNotExist:
+            user_obj = User.objects.filter(email=username).order_by('id').first()
+            if not user_obj:
                 return Response({'error': 'Invalid credentials'}, status=401)
+            username = user_obj.username
 
         user = authenticate(username=username, password=password)
 
